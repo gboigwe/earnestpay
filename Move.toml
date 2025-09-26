@@ -1,0 +1,17 @@
+[package]
+name = "AptosPayroll"
+version = "1.0.0"
+authors = []
+
+[addresses]
+payroll_addr = "_"
+
+[dev-addresses]
+payroll_addr = "0x7f7cbb5829aa8d4165c0e2cc038745407bdde62654af1bc1ac46a69c05aa2de4"
+
+[dependencies.AptosFramework]
+git = "https://github.com/aptos-labs/aptos-framework.git"
+rev = "mainnet"
+subdir = "aptos-framework"
+
+[dev-dependencies]
