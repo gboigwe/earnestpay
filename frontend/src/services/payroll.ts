@@ -1,7 +1,7 @@
 import { Aptos, AptosConfig, Network } from '@aptos-labs/ts-sdk';
 
-// Contract addresses (replace with actual deployed addresses)
-const PAYROLL_ADDRESS = '0x7f7cbb5829aa8d4165c0e2cc038745407bdde62654af1bc1ac46a69c05aa2de4';
+// Contract addresses - Updated with deployed contract
+const PAYROLL_ADDRESS = '0xcc6e28e46af6c8bcc60a46ef75c500a618a56f29ff8023d9083bd12990a8c8e4';
 
 // Initialize Aptos client
 const config = new AptosConfig({ network: Network.DEVNET });
