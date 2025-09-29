@@ -1,6 +1,6 @@
 import React from 'react';
 import { Layout, Typography, Space, Card, Table, Tag, Button, Row, Col, Statistic } from 'antd';
-import { DollarCircleOutlined, CalendarOutlined, FileTextOutlined, UserOutlined } from '@ant-design/icons';
+import { DollarCircleOutlined, FileTextOutlined, UserOutlined } from '@ant-design/icons';
 
 const { Header, Content } = Layout;
 const { Title, Text } = Typography;
