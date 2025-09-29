@@ -198,6 +198,16 @@ Built for hackathon purposes. See individual components for specific licensing.
 - **Mobile Responsive**: Works across all device types
 - **Accessibility**: Designed for users of all technical levels
 
+Deployment successful!
+📝 Contract deployed at: 0xcc6e28e46af6c8bcc60a46ef75c500a618a56f29ff8023d9083bd12990a8c8e4
+
+📋 Your contract modules:
+  - 0xcc6e28e46af6c8bcc60a46ef75c500a618a56f29ff8023d9083bd12990a8c8e4::payroll_manager
+  - 0xcc6e28e46af6c8bcc60a46ef75c500a618a56f29ff8023d9083bd12990a8c8e4::employee_registry
+  - 0xcc6e28e46af6c8bcc60a46ef75c500a618a56f29ff8023d9083bd12990a8c8e4::payment_scheduler
+  - 0xcc6e28e46af6c8bcc60a46ef75c500a618a56f29ff8023d9083bd12990a8c8e4::tax_calculator
+
+🎉 Ready to use!
 ---
 
 **Built with ❤️ for the Aptos ecosystem and the future of decentralized finance**

@@ -7,7 +7,7 @@ authors = []
 payroll_addr = "_"
 
 [dev-addresses]
-payroll_addr = "0x7f7cbb5829aa8d4165c0e2cc038745407bdde62654af1bc1ac46a69c05aa2de4"
+payroll_addr = "0xcc6e28e46af6c8bcc60a46ef75c500a618a56f29ff8023d9083bd12990a8c8e4"
 
 [dependencies.AptosFramework]
 git = "https://github.com/aptos-labs/aptos-framework.git"
