@@ -1,46 +1,40 @@
-# Getting Started with Create React App
+## Create Aptos Dapp Boilerplate Template
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+The Boilerplate template provides a starter dapp with all necessary dapp infrastructure and a simple wallet info implementation, transfer APT and a simple message board functionality to send and read a message on chain.
 
-## Available Scripts
+## Read the Boilerplate template docs
 
-In the project directory, you can run:
+To get started with the Boilerplate template and learn more about the template functionality and usage, head over to the [Boilerplate template docs](https://learn.aptoslabs.com/en/dapp-templates/boilerplate-template)
 
-### `npm start`
+## The Boilerplate template provides:
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+- **Folder structure** - A pre-made dapp folder structure with a `frontend` and `contract` folders.
+- **Dapp infrastructure** - All required dependencies a dapp needs to start building on the Aptos network.
+- **Wallet Info implementation** - Pre-made `WalletInfo` components to demonstrate how one can use to read a connected Wallet info.
+- **Transfer APT implementation** - Pre-made `transfer` components to send APT to an address.
+- **Message board functionality implementation** - Pre-made `message` components to send and read a message on chain
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+## What tools the template uses?
 
-### `npm test`
+- React framework
+- Vite development tool
+- shadcn/ui + tailwind for styling
+- Aptos TS SDK
+- Aptos Wallet Adapter
+- Node based Move commands
+- [Vite-pwa](https://vite-pwa-org.netlify.app/)
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## What Move commands are available?
 
-### `npm run build`
+The tool utilizes [aptos-cli npm package](https://github.com/aptos-labs/aptos-cli) that lets us run Aptos CLI in a Node environment.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Some commands are built-in the template and can be ran as a npm script, for example:
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+- `npm run move:publish` - a command to publish the Move contract
+- `npm run move:test` - a command to run Move unit tests
+- `npm run move:compile` - a command to compile the Move contract
+- `npm run move:upgrade` - a command to upgrade the Move contract
+- `npm run dev` - a command to run the frontend locally
+- `npm run deploy` - a command to deploy the dapp to Vercel
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+For all other available CLI commands, can run `npx aptos` and see a list of all available commands.
