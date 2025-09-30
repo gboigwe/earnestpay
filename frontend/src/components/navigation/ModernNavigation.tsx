@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { ModernButton } from '../ui/ModernButton';
 import { StatusBadge } from '../ui/StatusBadge';
+import { useWallet } from '../../WalletProvider';
 
 interface NavigationItem {
   id: string;
@@ -49,6 +50,9 @@ export const ModernNavigation: React.FC<ModernNavigationProps> = ({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [expandedSubmenu, setExpandedSubmenu] = useState<string | null>(null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  // Wallet context (multi-wallet)
+  const { connected, account, wallets, connectWith, connect, disconnect } = useWallet();
+  const [walletMenuOpen, setWalletMenuOpen] = useState(false);
 
   const navigationItems: NavigationItem[] = [
     {
@@ -138,28 +142,82 @@ export const ModernNavigation: React.FC<ModernNavigationProps> = ({
 
           {/* Wallet Connection */}
           <div className="px-4 mb-6">
-            {walletConnected ? (
+            {(connected || walletConnected) ? (
               <div className={`wallet-connected ${isSidebarCollapsed ? 'justify-center' : ''}`}>
                 <Wallet size={16} className="text-blue-400" />
                 {!isSidebarCollapsed && (
                   <>
                     <span className="text-sm">
-                      {walletAddress ? formatWalletAddress(walletAddress) : 'Connected'}
+                      {account?.address ? formatWalletAddress(account.address) : (walletAddress ? formatWalletAddress(walletAddress) : 'Connected')}
                     </span>
                     <StatusBadge status="active" text="" size="sm" />
+                    <button
+                      className="ml-auto text-xs text-red-300 hover:text-red-200"
+                      onClick={() => disconnect()}
+                    >
+                      Disconnect
+                    </button>
                   </>
                 )}
               </div>
             ) : (
-              <ModernButton
-                variant="gradient"
-                size="sm"
-                onClick={onWalletConnect}
-                icon={<Wallet size={16} className="text-blue-400" />}
-                className={`w-full ${isSidebarCollapsed ? 'px-2' : ''}`}
-              >
-                {!isSidebarCollapsed ? 'Connect Wallet' : ''}
-              </ModernButton>
+              <div className="relative">
+                <ModernButton
+                  variant="gradient"
+                  size="sm"
+                  onClick={() => setWalletMenuOpen((s) => !s)}
+                  icon={<Wallet size={16} className="text-blue-400" />}
+                  className={`w-full ${isSidebarCollapsed ? 'px-2' : ''}`}
+                >
+                  {!isSidebarCollapsed ? 'Connect Wallet' : ''}
+                </ModernButton>
+                {/* Wallet picker */}
+                <AnimatePresence>
+                  {walletMenuOpen && !isSidebarCollapsed && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -6 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute z-20 mt-2 w-full rounded-lg border border-white/10 bg-black/70 backdrop-blur p-2"
+                    >
+                      <div className="text-xs text-gray-400 px-2 pb-1">Select a wallet</div>
+                      <div className="space-y-1">
+                        {wallets && wallets.length > 0 ? (
+                          wallets.map((w) => (
+                            <button
+                              key={w.name}
+                              onClick={async () => {
+                                setWalletMenuOpen(false);
+                                try {
+                                  await connectWith(w.name);
+                                } catch (e) {
+                                  console.error('Wallet connect failed:', e);
+                                  // fallback to generic connect if specific fails
+                                  try { await connect(); } catch {}
+                                }
+                              }}
+                              className="w-full text-left text-sm px-3 py-2 rounded hover:bg-white/10 text-white"
+                            >
+                              {w.name}
+                            </button>
+                          ))
+                        ) : (
+                          <button
+                            onClick={async () => {
+                              setWalletMenuOpen(false);
+                              try { await connect(); } catch (e) { console.error(e); }
+                            }}
+                            className="w-full text-left text-sm px-3 py-2 rounded hover:bg-white/10 text-white"
+                          >
+                            Try Connect
+                          </button>
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             )}
           </div>
 

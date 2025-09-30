@@ -1,11 +1,13 @@
 import { Aptos, AptosConfig, Network } from '@aptos-labs/ts-sdk';
+import { MODULES, APTOS_NETWORK, fn } from './config';
 
-// Contract addresses - Updated with deployed contract
-const PAYROLL_ADDRESS = '0xcc6e28e46af6c8bcc60a46ef75c500a618a56f29ff8023d9083bd12990a8c8e4';
-
-// Initialize Aptos client
-const config = new AptosConfig({ network: Network.DEVNET });
+// Initialize Aptos client using centralized network config
+const network = APTOS_NETWORK === 'mainnet' ? Network.MAINNET : APTOS_NETWORK === 'testnet' ? Network.TESTNET : Network.DEVNET;
+const config = new AptosConfig({ network });
 const aptos = new Aptos(config);
+
+// Helpers
+const toBytes = (s: string) => Array.from(new TextEncoder().encode(s));
 
 export interface Employee {
   id: number;
@@ -40,8 +42,8 @@ export class PayrollService {
       const transaction = await aptos.transaction.build.simple({
         sender: account.address,
         data: {
-          function: `${PAYROLL_ADDRESS}::payroll_manager::register_company`,
-          functionArguments: [companyName]
+          function: fn(MODULES.payrollManager, 'register_company'),
+          functionArguments: [toBytes(companyName)]
         }
       });
 
@@ -69,7 +71,7 @@ export class PayrollService {
       const transaction = await aptos.transaction.build.simple({
         sender: account.address,
         data: {
-          function: `${PAYROLL_ADDRESS}::payroll_manager::fund_treasury`,
+          function: fn(MODULES.payrollManager, 'fund_treasury'),
           functionArguments: [amount]
         }
       });
@@ -98,7 +100,7 @@ export class PayrollService {
       const transaction = await aptos.transaction.build.simple({
         sender: account.address,
         data: {
-          function: `${PAYROLL_ADDRESS}::payroll_manager::add_employee`,
+          function: fn(MODULES.payrollManager, 'add_employee'),
           functionArguments: [employeeAddress]
         }
       });
@@ -127,7 +129,7 @@ export class PayrollService {
       const transaction = await aptos.transaction.build.simple({
         sender: account.address,
         data: {
-          function: `${PAYROLL_ADDRESS}::payroll_manager::process_payment`,
+          function: fn(MODULES.payrollManager, 'process_payment'),
           functionArguments: [employeeAddress, amount]
         }
       });
@@ -169,18 +171,18 @@ export class PayrollService {
       const transaction = await aptos.transaction.build.simple({
         sender: account.address,
         data: {
-          function: `${PAYROLL_ADDRESS}::employee_registry::create_employee_profile`,
+          function: fn(MODULES.employeeRegistry, 'create_employee_profile'),
           functionArguments: [
             employeeAddress,
             employeeId,
-            firstName,
-            lastName,
-            email,
+            toBytes(firstName),
+            toBytes(lastName),
+            toBytes(email),
             role,
-            department,
+            toBytes(department),
             salary,
             managerAddress,
-            taxJurisdiction,
+            toBytes(taxJurisdiction),
             paymentAddress
           ]
         }
@@ -209,12 +211,17 @@ export class PayrollService {
     try {
       const response = await aptos.view({
         payload: {
-          function: `${PAYROLL_ADDRESS}::payroll_manager::get_company_info`,
+          function: fn(MODULES.payrollManager, 'get_company_info'),
           functionArguments: [companyAddress]
         }
       });
       return response;
-    } catch (error) {
+    } catch (error: any) {
+      const msg = String(error?.message || '');
+      if (msg.includes('E_COMPANY_NOT_REGISTERED')) {
+        // Not registered yet is a valid state; suppress noisy log
+        return null;
+      }
       console.error('Error getting company info:', error);
       return null;
     }
@@ -225,7 +232,7 @@ export class PayrollService {
     try {
       const response = await aptos.view({
         payload: {
-          function: `${PAYROLL_ADDRESS}::payroll_manager::get_treasury_balance`,
+          function: fn(MODULES.payrollManager, 'get_treasury_balance'),
           functionArguments: [companyAddress]
         }
       });
@@ -241,7 +248,7 @@ export class PayrollService {
     try {
       const response = await aptos.view({
         payload: {
-          function: `${PAYROLL_ADDRESS}::payroll_manager::is_employee`,
+          function: fn(MODULES.payrollManager, 'is_employee'),
           functionArguments: [companyAddress, employeeAddress]
         }
       });
@@ -257,7 +264,7 @@ export class PayrollService {
     try {
       const response = await aptos.view({
         payload: {
-          function: `${PAYROLL_ADDRESS}::employee_registry::get_employee_profile`,
+          function: fn(MODULES.employeeRegistry, 'get_employee_profile'),
           functionArguments: [companyAddress, employeeAddress]
         }
       });
@@ -277,8 +284,8 @@ export class PayrollService {
     try {
       const response = await aptos.view({
         payload: {
-          function: `${PAYROLL_ADDRESS}::tax_calculator::preview_tax_calculation`,
-          functionArguments: [employeeAddress, grossAmount, jurisdictionCode]
+          function: fn(MODULES.taxCalculator, 'preview_tax_calculation'),
+          functionArguments: [employeeAddress, grossAmount, toBytes(jurisdictionCode)]
         }
       });
       return response;
@@ -301,7 +308,7 @@ export class PayrollService {
       const transaction = await aptos.transaction.build.simple({
         sender: account.address,
         data: {
-          function: `${PAYROLL_ADDRESS}::payment_scheduler::create_payment_schedule`,
+          function: fn(MODULES.paymentScheduler, 'create_payment_schedule'),
           functionArguments: [employeeAddress, paymentType, frequency, amount, startDate]
         }
       });

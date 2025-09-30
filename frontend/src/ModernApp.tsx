@@ -19,8 +19,10 @@ import { ModernButton, FloatingActionButton } from './components/ui/ModernButton
 import { StatusBadge } from './components/ui/StatusBadge';
 import { PayrollInsightsChart, DepartmentSpendingChart } from './components/charts/ModernChart';
 import { ModernNavigation } from './components/navigation/ModernNavigation';
-import { WalletProvider } from './WalletProvider';
 import { EmployeePortal } from './EmployeePortal';
+import { useWallet } from './WalletProvider';
+import { MODULES, fn } from './services/config';
+import { payrollService } from './services/payroll';
 
 // Import styles
 import './styles/globals.css';
@@ -96,6 +98,75 @@ export const ModernApp: React.FC<ModernAppProps> = ({
   const [activeTab, setActiveTab] = useState('dashboard');
   const [currentView, setCurrentView] = useState<'dashboard' | 'employee'>('dashboard');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const { connected, connect, signAndSubmit, account } = useWallet();
+  const [showRegister, setShowRegister] = useState(false);
+  const [companyName, setCompanyName] = useState('');
+  const [txLoading, setTxLoading] = useState(false);
+  const [txMessage, setTxMessage] = useState<string | null>(null);
+  const [txError, setTxError] = useState<string | null>(null);
+  const [showFund, setShowFund] = useState(false);
+  const [fundAmount, setFundAmount] = useState('');
+  const [showAddEmployee, setShowAddEmployee] = useState(false);
+  const [newEmployeeAddress, setNewEmployeeAddress] = useState('');
+  const [statusLoading, setStatusLoading] = useState(false);
+  const [companyStatus, setCompanyStatus] = useState<{
+    name?: string;
+    owner?: string;
+    treasury?: number;
+    employees?: number;
+    active?: boolean;
+  } | null>(null);
+  const [showProcessPayroll, setShowProcessPayroll] = useState(false);
+  const [ppEmployeeAddress, setPpEmployeeAddress] = useState('');
+  const [ppAmount, setPpAmount] = useState('');
+
+  // Load company status when wallet connects
+  React.useEffect(() => {
+    const loadStatus = async () => {
+      if (!account?.address) {
+        setCompanyStatus(null);
+        return;
+      }
+      try {
+        setStatusLoading(true);
+        // First, cheap existence check using is_employee (returns false if company does not exist)
+        const exists = await payrollService.isEmployee(account.address, account.address);
+        if (!exists) {
+          setCompanyStatus(null);
+          return;
+        }
+        const info = await payrollService.getCompanyInfo(account.address);
+        // info returns (name, owner, treasury_balance, employee_count, is_active)
+        if (info && Array.isArray(info) && info.length >= 5) {
+          const [nameVec, owner, treasury, empCount, active] = info as any[];
+          // nameVec may be bytes; try to decode to string if present
+          let name = '';
+          try {
+            if (Array.isArray(nameVec)) {
+              name = new TextDecoder().decode(new Uint8Array(nameVec));
+            } else if (typeof nameVec === 'string') {
+              name = nameVec;
+            }
+          } catch {}
+          setCompanyStatus({
+            name,
+            owner: String(owner),
+            treasury: Number(treasury),
+            employees: Number(empCount),
+            active: Boolean(active)
+          });
+        } else {
+          setCompanyStatus(null);
+        }
+      } catch (e) {
+        // Keep silent; UI will show placeholder when not available
+        setCompanyStatus(null);
+      } finally {
+        setStatusLoading(false);
+      }
+    };
+    loadStatus();
+  }, [account?.address]);
 
   // Animation variants
   const containerVariants = {
@@ -222,6 +293,15 @@ export const ModernApp: React.FC<ModernAppProps> = ({
                 variant="gradient" 
                 className="w-full justify-start" 
                 icon={<Plus size={20} />}
+                onClick={() => setShowRegister((s) => !s)}
+              >
+                Register Company
+              </ModernButton>
+              <ModernButton 
+                variant="gradient" 
+                className="w-full justify-start" 
+                icon={<Plus size={20} />}
+                onClick={() => setShowAddEmployee((s) => !s)}
               >
                 Add Employee
               </ModernButton>
@@ -229,6 +309,15 @@ export const ModernApp: React.FC<ModernAppProps> = ({
                 variant="secondary" 
                 className="w-full justify-start" 
                 icon={<DollarSign size={20} />}
+                onClick={() => setShowFund((s) => !s)}
+              >
+                Fund Treasury
+              </ModernButton>
+              <ModernButton 
+                variant="secondary" 
+                className="w-full justify-start" 
+                icon={<DollarSign size={20} />}
+                onClick={() => setShowProcessPayroll((s) => !s)}
               >
                 Process Payroll
               </ModernButton>
@@ -250,6 +339,288 @@ export const ModernApp: React.FC<ModernAppProps> = ({
             </div>
           </ModernCard>
 
+          {/* Register Company Form */}
+          {showRegister && (
+            <div className="mt-6">
+              <GlassCard>
+                <div className="space-y-4">
+                  <h4 className="text-white font-semibold">Register Company</h4>
+                  <div className="space-y-2">
+                    <label className="text-sm text-gray-300">Company Name</label>
+                    <input
+                      type="text"
+                      value={companyName}
+                      onChange={(e) => setCompanyName(e.target.value)}
+                      className="w-full px-3 py-2 rounded bg-white/10 text-white border border-white/10 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="e.g. Acme Corp"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <ModernButton
+                      variant="primary"
+                      disabled={!companyName || txLoading}
+                      onClick={async () => {
+                        setTxMessage(null);
+                        setTxError(null);
+                        try {
+                          if (!connected) {
+                            await connect();
+                          }
+                          if (!account?.address) {
+                            throw new Error('Wallet not connected.');
+                          }
+                          setTxLoading(true);
+                          const companyNameBytes = Array.from(new TextEncoder().encode(companyName));
+                          const payload = {
+                            type: 'entry_function_payload',
+                            function: fn(MODULES.payrollManager, 'register_company'),
+                            type_arguments: [] as string[],
+                            arguments: [companyNameBytes]
+                          };
+                          const res = await signAndSubmit(payload);
+                          setTxMessage(`Registered! Tx: ${res.hash}`);
+                          setShowRegister(false);
+                          setCompanyName('');
+                          // refresh status
+                          try { const info = await payrollService.getCompanyInfo(account.address); if (info) { const [nameVec, owner, treasury, empCount, active] = info as any[]; let name = ''; try { if (Array.isArray(nameVec)) { name = new TextDecoder().decode(new Uint8Array(nameVec)); } else if (typeof nameVec === 'string') { name = nameVec; } } catch {} setCompanyStatus({ name, owner: String(owner), treasury: Number(treasury), employees: Number(empCount), active: Boolean(active) }); } } catch {}
+                        } catch (err: any) {
+                          setTxError(err?.message || 'Failed to register company');
+                        } finally {
+                          setTxLoading(false);
+                        }
+                      }}
+                    >
+                      {txLoading ? 'Submitting…' : 'Submit'}
+                    </ModernButton>
+                    <ModernButton variant="secondary" onClick={() => setShowRegister(false)}>
+                      Cancel
+                    </ModernButton>
+                  </div>
+                  {txMessage && (
+                    <div className="text-green-400 text-sm break-all">{txMessage}</div>
+                  )}
+
+          {/* Process Payroll Form */}
+          {showProcessPayroll && (
+            <div className="mt-6">
+              <GlassCard>
+                <div className="space-y-4">
+                  <h4 className="text-white font-semibold">Process Payroll</h4>
+                  <div className="space-y-2">
+                    <label className="text-sm text-gray-300">Employee Address</label>
+                    <input
+                      type="text"
+                      value={ppEmployeeAddress}
+                      onChange={(e) => setPpEmployeeAddress(e.target.value)}
+                      className="w-full px-3 py-2 rounded bg-white/10 text-white border border-white/10 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="0x..."
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm text-gray-300">Amount (u64)</label>
+                    <input
+                      type="number"
+                      value={ppAmount}
+                      onChange={(e) => setPpAmount(e.target.value)}
+                      className="w-full px-3 py-2 rounded bg-white/10 text-white border border-white/10 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="e.g. 1000"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <ModernButton
+                      variant="primary"
+                      disabled={!ppEmployeeAddress || !ppAmount || Number(ppAmount) <= 0 || txLoading}
+                      onClick={async () => {
+                        setTxMessage(null);
+                        setTxError(null);
+                        try {
+                          if (!connected) {
+                            await connect();
+                          }
+                          if (!account?.address) {
+                            throw new Error('Wallet not connected.');
+                          }
+                          setTxLoading(true);
+                          const amt = Number(ppAmount);
+                          const payload = {
+                            type: 'entry_function_payload',
+                            function: fn(MODULES.payrollManager, 'process_payment'),
+                            type_arguments: [] as string[],
+                            arguments: [ppEmployeeAddress, amt]
+                          };
+                          const res = await signAndSubmit(payload);
+                          setTxMessage(`Payment processed! Tx: ${res.hash}`);
+                          setShowProcessPayroll(false);
+                          setPpEmployeeAddress('');
+                          setPpAmount('');
+                          // refresh status
+                          try { const info = await payrollService.getCompanyInfo(account.address); if (info) { const [nameVec, owner, treasury, empCount, active] = info as any[]; let name = ''; try { if (Array.isArray(nameVec)) { name = new TextDecoder().decode(new Uint8Array(nameVec)); } else if (typeof nameVec === 'string') { name = nameVec; } } catch {} setCompanyStatus({ name, owner: String(owner), treasury: Number(treasury), employees: Number(empCount), active: Boolean(active) }); } } catch {}
+                        } catch (err: any) {
+                          setTxError(err?.message || 'Failed to process payment');
+                        } finally {
+                          setTxLoading(false);
+                        }
+                      }}
+                    >
+                      {txLoading ? 'Submitting…' : 'Pay'}
+                    </ModernButton>
+                    <ModernButton variant="secondary" onClick={() => setShowProcessPayroll(false)}>
+                      Cancel
+                    </ModernButton>
+                  </div>
+                  {txMessage && (
+                    <div className="text-green-400 text-sm break-all">{txMessage}</div>
+                  )}
+                  {txError && (
+                    <div className="text-red-400 text-sm break-all">{txError}</div>
+                  )}
+                </div>
+              </GlassCard>
+            </div>
+          )}
+                  {txError && (
+                    <div className="text-red-400 text-sm break-all">{txError}</div>
+                  )}
+                </div>
+              </GlassCard>
+            </div>
+          )}
+
+          {/* Add Employee Form */}
+          {showAddEmployee && (
+            <div className="mt-6">
+              <GlassCard>
+                <div className="space-y-4">
+                  <h4 className="text-white font-semibold">Add Employee</h4>
+                  <div className="space-y-2">
+                    <label className="text-sm text-gray-300">Employee Address</label>
+                    <input
+                      type="text"
+                      value={newEmployeeAddress}
+                      onChange={(e) => setNewEmployeeAddress(e.target.value)}
+                      className="w-full px-3 py-2 rounded bg-white/10 text-white border border-white/10 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="0x..."
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <ModernButton
+                      variant="primary"
+                      disabled={!newEmployeeAddress || txLoading}
+                      onClick={async () => {
+                        setTxMessage(null);
+                        setTxError(null);
+                        try {
+                          if (!connected) {
+                            await connect();
+                          }
+                          if (!account?.address) {
+                            throw new Error('Wallet not connected.');
+                          }
+                          setTxLoading(true);
+                          const payload = {
+                            type: 'entry_function_payload',
+                            function: fn(MODULES.payrollManager, 'add_employee'),
+                            type_arguments: [] as string[],
+                            arguments: [newEmployeeAddress]
+                          };
+                          const res = await signAndSubmit(payload);
+                          setTxMessage(`Employee added! Tx: ${res.hash}`);
+                          setShowAddEmployee(false);
+                          setNewEmployeeAddress('');
+                          // refresh status
+                          try { const info = await payrollService.getCompanyInfo(account.address); if (info) { const [nameVec, owner, treasury, empCount, active] = info as any[]; let name = ''; try { if (Array.isArray(nameVec)) { name = new TextDecoder().decode(new Uint8Array(nameVec)); } else if (typeof nameVec === 'string') { name = nameVec; } } catch {} setCompanyStatus({ name, owner: String(owner), treasury: Number(treasury), employees: Number(empCount), active: Boolean(active) }); } } catch {}
+                        } catch (err: any) {
+                          setTxError(err?.message || 'Failed to add employee');
+                        } finally {
+                          setTxLoading(false);
+                        }
+                      }}
+                    >
+                      {txLoading ? 'Submitting…' : 'Add'}
+                    </ModernButton>
+                    <ModernButton variant="secondary" onClick={() => setShowAddEmployee(false)}>
+                      Cancel
+                    </ModernButton>
+                  </div>
+                  {txMessage && (
+                    <div className="text-green-400 text-sm break-all">{txMessage}</div>
+                  )}
+                  {txError && (
+                    <div className="text-red-400 text-sm break-all">{txError}</div>
+                  )}
+                </div>
+              </GlassCard>
+            </div>
+          )}
+
+          {/* Fund Treasury Form */}
+          {showFund && (
+            <div className="mt-6">
+              <GlassCard>
+                <div className="space-y-4">
+                  <h4 className="text-white font-semibold">Fund Treasury</h4>
+                  <div className="space-y-2">
+                    <label className="text-sm text-gray-300">Amount (u64)</label>
+                    <input
+                      type="number"
+                      value={fundAmount}
+                      onChange={(e) => setFundAmount(e.target.value)}
+                      className="w-full px-3 py-2 rounded bg-white/10 text-white border border-white/10 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="e.g. 1000000"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <ModernButton
+                      variant="primary"
+                      disabled={!fundAmount || Number(fundAmount) <= 0 || txLoading}
+                      onClick={async () => {
+                        setTxMessage(null);
+                        setTxError(null);
+                        try {
+                          if (!connected) {
+                            await connect();
+                          }
+                          if (!account?.address) {
+                            throw new Error('Wallet not connected.');
+                          }
+                          setTxLoading(true);
+                          const amt = Number(fundAmount);
+                          const payload = {
+                            type: 'entry_function_payload',
+                            function: fn(MODULES.payrollManager, 'fund_treasury'),
+                            type_arguments: [] as string[],
+                            arguments: [amt]
+                          };
+                          const res = await signAndSubmit(payload);
+                          setTxMessage(`Treasury funded! Tx: ${res.hash}`);
+                          setShowFund(false);
+                          setFundAmount('');
+                          // refresh status
+                          try { const info = await payrollService.getCompanyInfo(account.address); if (info) { const [nameVec, owner, treasury, empCount, active] = info as any[]; let name = ''; try { if (Array.isArray(nameVec)) { name = new TextDecoder().decode(new Uint8Array(nameVec)); } else if (typeof nameVec === 'string') { name = nameVec; } } catch {} setCompanyStatus({ name, owner: String(owner), treasury: Number(treasury), employees: Number(empCount), active: Boolean(active) }); } } catch {}
+                        } catch (err: any) {
+                          setTxError(err?.message || 'Failed to fund treasury');
+                        } finally {
+                          setTxLoading(false);
+                        }
+                      }}
+                    >
+                      {txLoading ? 'Submitting…' : 'Fund'}
+                    </ModernButton>
+                    <ModernButton variant="secondary" onClick={() => setShowFund(false)}>
+                      Cancel
+                    </ModernButton>
+                  </div>
+                  {txMessage && (
+                    <div className="text-green-400 text-sm break-all">{txMessage}</div>
+                  )}
+                  {txError && (
+                    <div className="text-red-400 text-sm break-all">{txError}</div>
+                  )}
+                </div>
+              </GlassCard>
+            </div>
+          )}
+
           {/* Treasury Status */}
           <div className="mt-6">
             <GlassCard>
@@ -259,17 +630,25 @@ export const ModernApp: React.FC<ModernAppProps> = ({
               </div>
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-gray-400">APT Balance</span>
-                  <span className="text-white font-medium">125,000 APT</span>
+                  <span className="text-gray-400">Company</span>
+                  <span className="text-white font-medium">{statusLoading ? 'Loading…' : (companyStatus?.name || '—')}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-400">USDC Balance</span>
-                  <span className="text-white font-medium">$2,400,000</span>
+                  <span className="text-gray-400">Owner</span>
+                  <span className="text-white font-medium">{companyStatus?.owner ? `${companyStatus.owner.slice(0,6)}...${companyStatus.owner.slice(-4)}` : '—'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Treasury (u64)</span>
+                  <span className="text-white font-medium">{companyStatus?.treasury ?? 0}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Employees</span>
+                  <span className="text-white font-medium">{companyStatus?.employees ?? 0}</span>
                 </div>
                 <div className="w-full bg-gray-700 rounded-full h-2">
-                  <div className="bg-gradient-to-r from-green-500 to-blue-500 h-2 rounded-full" style={{ width: '78%' }}></div>
+                  <div className="bg-gradient-to-r from-green-500 to-blue-500 h-2 rounded-full" style={{ width: `${Math.min(100, (companyStatus?.treasury ?? 0) > 0 ? 80 : 10)}%` }}></div>
                 </div>
-                <p className="text-xs text-gray-400">78% of recommended treasury size</p>
+                <p className="text-xs text-gray-400">On-chain status shown for connected company</p>
               </div>
             </GlassCard>
           </div>
@@ -335,14 +714,11 @@ export const ModernApp: React.FC<ModernAppProps> = ({
 
   if (currentView === 'employee') {
     return (
-      <WalletProvider>
-        <EmployeePortal onBack={() => setCurrentView('dashboard')} />
-      </WalletProvider>
+      <EmployeePortal onBack={() => setCurrentView('dashboard')} />
     );
   }
 
   return (
-    <WalletProvider>
       <div className="main-layout">
         <ModernNavigation
           activeTab={activeTab}
@@ -379,6 +755,5 @@ export const ModernApp: React.FC<ModernAppProps> = ({
           onClick={() => setActiveTab('employees')}
         />
       </div>
-    </WalletProvider>
   );
 };

@@ -93,7 +93,30 @@ aptos move compile
 aptos move test
 ```
 
-### 4. Start Frontend
+### 4. Frontend Configuration
+
+Create a `.env` file in `frontend/` (you can copy from `.env.example`) and set your deployed publisher address and the Aptos network. All module IDs will be derived from this address in the frontend.
+
+```
+cd frontend
+cp .env.example .env
+
+# Edit .env to match your deployment
+REACT_APP_APTOS_NETWORK=devnet        # or testnet | mainnet
+REACT_APP_MODULE_ADDR=0xcc6e28e46af6c8bcc60a46ef75c500a618a56f29ff8023d9083bd12990a8c8e4
+
+# If you build with Vite, you can use these instead
+VITE_APTOS_NETWORK=devnet
+VITE_MODULE_ADDR=0xcc6e28e46af6c8bcc60a46ef75c500a618a56f29ff8023d9083bd12990a8c8e4
+```
+
+The app references your modules as:
+- `REACT_APP_MODULE_ADDR::payroll_manager`
+- `REACT_APP_MODULE_ADDR::employee_registry`
+- `REACT_APP_MODULE_ADDR::payment_scheduler`
+- `REACT_APP_MODULE_ADDR::tax_calculator`
+
+### 5. Start Frontend
 
 ```bash
 # Start development server

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ModernApp } from './ModernApp';
 import './styles/globals.css';
+import { WalletProvider } from './WalletProvider';
 
 function App() {
   const [walletConnected, setWalletConnected] = useState(false);
@@ -13,11 +14,13 @@ function App() {
   };
 
   return (
-    <ModernApp 
-      walletConnected={walletConnected}
-      walletAddress={walletAddress}
-      onWalletConnect={handleWalletConnect}
-    />
+    <WalletProvider>
+      <ModernApp 
+        walletConnected={walletConnected}
+        walletAddress={walletAddress}
+        onWalletConnect={handleWalletConnect}
+      />
+    </WalletProvider>
   );
 }
 
