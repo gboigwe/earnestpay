@@ -92,6 +92,39 @@ export class PayrollService {
     }
   }
 
+  // ================================
+  // Employee Registry - Entry funcs
+  // ================================
+
+  // Initialize employee registry (idempotent)
+  async initializeEmployeeRegistry(account: any): Promise<any> {
+    try {
+      const transaction = await aptos.transaction.build.simple({
+        sender: account.address,
+        data: {
+          function: `${PAYROLL_ADDRESS}::employee_registry::initialize_registry`,
+          functionArguments: []
+        }
+      });
+
+      const senderAuthenticator = await aptos.transaction.sign({
+        signer: account,
+        transaction
+      });
+
+      const response = await aptos.transaction.submit.simple({
+        transaction,
+        senderAuthenticator
+      });
+
+      await aptos.waitForTransaction({ transactionHash: response.hash });
+      return response;
+    } catch (error) {
+      console.error('Error initializing employee registry:', error);
+      throw error;
+    }
+  }
+
   // Add employee
   async addEmployee(account: any, employeeAddress: string): Promise<any> {
     try {
@@ -117,6 +150,64 @@ export class PayrollService {
       return response;
     } catch (error) {
       console.error('Error adding employee:', error);
+      throw error;
+    }
+  }
+
+  // Update employee salary
+  async updateEmployeeSalary(account: any, employeeAddress: string, newSalary: number): Promise<any> {
+    try {
+      const transaction = await aptos.transaction.build.simple({
+        sender: account.address,
+        data: {
+          function: `${PAYROLL_ADDRESS}::employee_registry::update_employee_salary`,
+          functionArguments: [employeeAddress, newSalary]
+        }
+      });
+
+      const senderAuthenticator = await aptos.transaction.sign({
+        signer: account,
+        transaction
+      });
+
+      const response = await aptos.transaction.submit.simple({
+        transaction,
+        senderAuthenticator
+      });
+
+      await aptos.waitForTransaction({ transactionHash: response.hash });
+      return response;
+    } catch (error) {
+      console.error('Error updating employee salary:', error);
+      throw error;
+    }
+  }
+
+  // Deactivate employee
+  async deactivateEmployee(account: any, employeeAddress: string): Promise<any> {
+    try {
+      const transaction = await aptos.transaction.build.simple({
+        sender: account.address,
+        data: {
+          function: `${PAYROLL_ADDRESS}::employee_registry::deactivate_employee`,
+          functionArguments: [employeeAddress]
+        }
+      });
+
+      const senderAuthenticator = await aptos.transaction.sign({
+        signer: account,
+        transaction
+      });
+
+      const response = await aptos.transaction.submit.simple({
+        transaction,
+        senderAuthenticator
+      });
+
+      await aptos.waitForTransaction({ transactionHash: response.hash });
+      return response;
+    } catch (error) {
+      console.error('Error deactivating employee:', error);
       throw error;
     }
   }
@@ -204,6 +295,10 @@ export class PayrollService {
     }
   }
 
+  // ================================
+  // Employee Registry - View funcs
+  // ================================
+
   // Get company info
   async getCompanyInfo(companyAddress: string): Promise<any> {
     try {
@@ -268,6 +363,102 @@ export class PayrollService {
     }
   }
 
+  // Get employee salary
+  async getEmployeeSalary(employeeAddress: string): Promise<number> {
+    try {
+      const response = await aptos.view({
+        payload: {
+          function: `${PAYROLL_ADDRESS}::employee_registry::get_employee_salary`,
+          functionArguments: [employeeAddress]
+        }
+      });
+      return response[0] as number;
+    } catch (error) {
+      console.error('Error getting employee salary:', error);
+      return 0;
+    }
+  }
+
+  // Get employee role
+  async getEmployeeRole(employeeAddress: string): Promise<number> {
+    try {
+      const response = await aptos.view({
+        payload: {
+          function: `${PAYROLL_ADDRESS}::employee_registry::get_employee_role`,
+          functionArguments: [employeeAddress]
+        }
+      });
+      return response[0] as number;
+    } catch (error) {
+      console.error('Error getting employee role:', error);
+      return 0;
+    }
+  }
+
+  // Is employee active
+  async isEmployeeActive(employeeAddress: string): Promise<boolean> {
+    try {
+      const response = await aptos.view({
+        payload: {
+          function: `${PAYROLL_ADDRESS}::employee_registry::is_employee_active`,
+          functionArguments: [employeeAddress]
+        }
+      });
+      return response[0] as boolean;
+    } catch (error) {
+      console.error('Error checking if employee is active:', error);
+      return false;
+    }
+  }
+
+  // Get company employee count
+  async getCompanyEmployeeCount(companyAddress: string): Promise<number> {
+    try {
+      const response = await aptos.view({
+        payload: {
+          function: `${PAYROLL_ADDRESS}::employee_registry::get_company_employee_count`,
+          functionArguments: [companyAddress]
+        }
+      });
+      return response[0] as number;
+    } catch (error) {
+      console.error('Error getting company employee count:', error);
+      return 0;
+    }
+  }
+
+  // Is manager or above
+  async isManagerOrAbove(employeeAddress: string): Promise<boolean> {
+    try {
+      const response = await aptos.view({
+        payload: {
+          function: `${PAYROLL_ADDRESS}::employee_registry::is_manager_or_above`,
+          functionArguments: [employeeAddress]
+        }
+      });
+      return response[0] as boolean;
+    } catch (error) {
+      console.error('Error checking if manager or above:', error);
+      return false;
+    }
+  }
+
+  // Can manage payroll
+  async canManagePayroll(employeeAddress: string): Promise<boolean> {
+    try {
+      const response = await aptos.view({
+        payload: {
+          function: `${PAYROLL_ADDRESS}::employee_registry::can_manage_payroll`,
+          functionArguments: [employeeAddress]
+        }
+      });
+      return response[0] as boolean;
+    } catch (error) {
+      console.error('Error checking payroll management permission:', error);
+      return false;
+    }
+  }
+
   // Calculate taxes preview
   async previewTaxCalculation(
     employeeAddress: string,
@@ -285,6 +476,39 @@ export class PayrollService {
     } catch (error) {
       console.error('Error previewing tax calculation:', error);
       return null;
+    }
+  }
+
+  // ================================
+  // Payment Scheduler - Entry funcs
+  // ================================
+
+  // Initialize payment scheduler (idempotent)
+  async initializeScheduler(account: any): Promise<any> {
+    try {
+      const transaction = await aptos.transaction.build.simple({
+        sender: account.address,
+        data: {
+          function: `${PAYROLL_ADDRESS}::payment_scheduler::initialize_scheduler`,
+          functionArguments: []
+        }
+      });
+
+      const senderAuthenticator = await aptos.transaction.sign({
+        signer: account,
+        transaction
+      });
+
+      const response = await aptos.transaction.submit.simple({
+        transaction,
+        senderAuthenticator
+      });
+
+      await aptos.waitForTransaction({ transactionHash: response.hash });
+      return response;
+    } catch (error) {
+      console.error('Error initializing scheduler:', error);
+      throw error;
     }
   }
 
@@ -321,6 +545,161 @@ export class PayrollService {
     } catch (error) {
       console.error('Error creating payment schedule:', error);
       throw error;
+    }
+  }
+
+  // Update schedule amount
+  async updateScheduleAmount(account: any, scheduleId: number, newAmount: number): Promise<any> {
+    try {
+      const transaction = await aptos.transaction.build.simple({
+        sender: account.address,
+        data: {
+          function: `${PAYROLL_ADDRESS}::payment_scheduler::update_schedule_amount`,
+          functionArguments: [scheduleId, newAmount]
+        }
+      });
+
+      const senderAuthenticator = await aptos.transaction.sign({
+        signer: account,
+        transaction
+      });
+
+      const response = await aptos.transaction.submit.simple({
+        transaction,
+        senderAuthenticator
+      });
+
+      await aptos.waitForTransaction({ transactionHash: response.hash });
+      return response;
+    } catch (error) {
+      console.error('Error updating schedule amount:', error);
+      throw error;
+    }
+  }
+
+  // Deactivate schedule
+  async deactivateSchedule(account: any, scheduleId: number): Promise<any> {
+    try {
+      const transaction = await aptos.transaction.build.simple({
+        sender: account.address,
+        data: {
+          function: `${PAYROLL_ADDRESS}::payment_scheduler::deactivate_schedule`,
+          functionArguments: [scheduleId]
+        }
+      });
+
+      const senderAuthenticator = await aptos.transaction.sign({
+        signer: account,
+        transaction
+      });
+
+      const response = await aptos.transaction.submit.simple({
+        transaction,
+        senderAuthenticator
+      });
+
+      await aptos.waitForTransaction({ transactionHash: response.hash });
+      return response;
+    } catch (error) {
+      console.error('Error deactivating schedule:', error);
+      throw error;
+    }
+  }
+
+  // Execute due payments
+  async executeDuePayments(account: any): Promise<any> {
+    try {
+      const transaction = await aptos.transaction.build.simple({
+        sender: account.address,
+        data: {
+          function: `${PAYROLL_ADDRESS}::payment_scheduler::execute_due_payments`,
+          functionArguments: []
+        }
+      });
+
+      const senderAuthenticator = await aptos.transaction.sign({
+        signer: account,
+        transaction
+      });
+
+      const response = await aptos.transaction.submit.simple({
+        transaction,
+        senderAuthenticator
+      });
+
+      await aptos.waitForTransaction({ transactionHash: response.hash });
+      return response;
+    } catch (error) {
+      console.error('Error executing due payments:', error);
+      throw error;
+    }
+  }
+
+  // ================================
+  // Payment Scheduler - View funcs
+  // ================================
+
+  // Get payment schedule details
+  async getPaymentSchedule(companyAddress: string, scheduleId: number): Promise<any> {
+    try {
+      const response = await aptos.view({
+        payload: {
+          function: `${PAYROLL_ADDRESS}::payment_scheduler::get_payment_schedule`,
+          functionArguments: [companyAddress, scheduleId]
+        }
+      });
+      return response;
+    } catch (error) {
+      console.error('Error getting payment schedule:', error);
+      return null;
+    }
+  }
+
+  // Get active schedules count for an employee
+  async getEmployeeSchedulesCount(companyAddress: string, employeeAddress: string): Promise<number> {
+    try {
+      const response = await aptos.view({
+        payload: {
+          function: `${PAYROLL_ADDRESS}::payment_scheduler::get_employee_schedules_count`,
+          functionArguments: [companyAddress, employeeAddress]
+        }
+      });
+      return response[0] as number;
+    } catch (error) {
+      console.error('Error getting employee schedules count:', error);
+      return 0;
+    }
+  }
+
+  // Get due payments count for the company
+  async getDuePaymentsCount(companyAddress: string): Promise<number> {
+    try {
+      const response = await aptos.view({
+        payload: {
+          function: `${PAYROLL_ADDRESS}::payment_scheduler::get_due_payments_count`,
+          functionArguments: [companyAddress]
+        }
+      });
+      return response[0] as number;
+    } catch (error) {
+      console.error('Error getting due payments count:', error);
+      return 0;
+    }
+  }
+
+  // Get total schedules count for the company
+  async getTotalSchedulesCount(companyAddress: string): Promise<number> {
+    try {
+      const response = await aptos.view({
+        payload: {
+          function: `${PAYROLL_ADDRESS}::payment_scheduler::get_total_schedules_count`,
+          functionArguments: [companyAddress]
+        }
+      });
+      return response[0] as number;
+    } catch (error) {
+      console.error('Error getting total schedules count:', error);
+      return 0;
     }
   }
 }

@@ -22,6 +22,10 @@ import { GradientButton, FloatingActionButton } from './ui/enhanced-button';
 import { StatusBadge, TransactionStatus, TrendBadge } from './ui/status-badge';
 import { ModernNavigation } from './ModernNavigation';
 import { PayrollTrendChart, DepartmentSpendingChart } from './charts/PayrollChart';
+import { CompanyRegistration } from './CompanyRegistration';
+import { executeDuePayments } from '@/utils/payroll';
+import { CompanyStatus } from './CompanyStatus';
+import { toast } from './ui/use-toast';
 
 // Mock data for the dashboard
 const mockPayrollData = [
@@ -87,7 +91,20 @@ interface PayrollDashboardProps {
 export const PayrollDashboard: React.FC<PayrollDashboardProps> = ({ onBack }) => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const { account } = useWallet();
+  const { account, signAndSubmitTransaction } = useWallet();
+  const [executing, setExecuting] = useState(false);
+
+  const onExecuteDuePayments = async () => {
+    if (!account) return;
+    setExecuting(true);
+    try {
+      const walletLike: any = { account, signAndSubmitTransaction };
+      await executeDuePayments(walletLike);
+      toast({ title: 'Scheduled payments executed' });
+    } finally {
+      setExecuting(false);
+    }
+  };
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -114,6 +131,12 @@ export const PayrollDashboard: React.FC<PayrollDashboardProps> = ({ onBack }) =>
       animate="visible"
       className="space-y-6"
     >
+      {/* On-chain Company Status */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <motion.div variants={itemVariants}>
+          <CompanyStatus />
+        </motion.div>
+      </div>
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
@@ -303,10 +326,10 @@ export const PayrollDashboard: React.FC<PayrollDashboardProps> = ({ onBack }) =>
               </div>
             </div>
             
-            <div className="border-t pt-6">
-              <Button size="lg" className="w-full bg-blue-500 hover:bg-blue-600">
+            <div className="border-t pt-6 space-y-3">
+              <Button size="lg" className="w-full bg-blue-500 hover:bg-blue-600" onClick={onExecuteDuePayments} disabled={executing}>
                 <DollarSign className="h-5 w-5 mr-2" />
-                Execute Payroll
+                {executing ? 'Executing...' : 'Execute Due Payments'}
               </Button>
               <p className="text-xs text-gray-500 mt-2 text-center">
                 This will trigger the smart contract to process all payments automatically
@@ -376,8 +399,11 @@ export const PayrollDashboard: React.FC<PayrollDashboardProps> = ({ onBack }) =>
           <div className="space-y-6">
             <h2 className="text-2xl font-bold">Settings</h2>
             <Card>
+              <CardHeader>
+                <CardTitle>Company Registration</CardTitle>
+              </CardHeader>
               <CardContent className="p-6">
-                <p className="text-gray-500">Settings panel would go here...</p>
+                <CompanyRegistration />
               </CardContent>
             </Card>
           </div>
