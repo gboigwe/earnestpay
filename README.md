@@ -199,13 +199,13 @@ Built for hackathon purposes. See individual components for specific licensing.
 - **Accessibility**: Designed for users of all technical levels
 
 Deployment successful!
-📝 Contract deployed at: 0xcc6e28e46af6c8bcc60a46ef75c500a618a56f29ff8023d9083bd12990a8c8e4
+📝 Contract deployed at: 0x4f5ccbe1c0d287233e5d0bdf4d884c2558dbfa43816f96c4286fbab9f0047e44
 
 📋 Your contract modules:
-  - 0xcc6e28e46af6c8bcc60a46ef75c500a618a56f29ff8023d9083bd12990a8c8e4::payroll_manager
-  - 0xcc6e28e46af6c8bcc60a46ef75c500a618a56f29ff8023d9083bd12990a8c8e4::employee_registry
-  - 0xcc6e28e46af6c8bcc60a46ef75c500a618a56f29ff8023d9083bd12990a8c8e4::payment_scheduler
-  - 0xcc6e28e46af6c8bcc60a46ef75c500a618a56f29ff8023d9083bd12990a8c8e4::tax_calculator
+  - 0x4f5ccbe1c0d287233e5d0bdf4d884c2558dbfa43816f96c4286fbab9f0047e44::payroll_manager
+  - 0x4f5ccbe1c0d287233e5d0bdf4d884c2558dbfa43816f96c4286fbab9f0047e44::employee_registry
+  - 0x4f5ccbe1c0d287233e5d0bdf4d884c2558dbfa43816f96c4286fbab9f0047e44::payment_scheduler
+  - 0x4f5ccbe1c0d287233e5d0bdf4d884c2558dbfa43816f96c4286fbab9f0047e44::tax_calculator
 
 🎉 Ready to use!
 ---

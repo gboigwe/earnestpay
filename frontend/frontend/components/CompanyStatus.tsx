@@ -1,43 +1,37 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { getCompanyInfo, getTotalSchedulesCount, getDuePaymentsCount } from "@/utils/payroll";
+import { getCompanyEmployeeCount, getTotalSchedulesCount, getDuePaymentsCount, getTreasuryBalance } from "@/utils/payroll";
+import { StatCard } from "./ui/enhanced-card";
+import { DollarSign, Users, Calendar, Clock } from "lucide-react";
 
 export function CompanyStatus() {
   const { account } = useWallet();
   const [loading, setLoading] = useState(false);
-  const [company, setCompany] = useState<any | null>(null);
   const [totalSchedules, setTotalSchedules] = useState<number | null>(null);
   const [dueSchedules, setDueSchedules] = useState<number | null>(null);
-  const address = account?.address ?? "";
+  const [employeeCount, setEmployeeCount] = useState<number | null>(null);
+  const [treasury, setTreasury] = useState<number | null>(null);
+  const address = (account?.address as any)?.toString?.() ?? (account?.address ? String(account.address) : "");
 
   useEffect(() => {
     let cancelled = false;
     async function load() {
-      if (!address) {
-        setCompany(null);
-        setTotalSchedules(null);
-        setDueSchedules(null);
-        return;
-      }
+      if (!address) { setTotalSchedules(null); setDueSchedules(null); setEmployeeCount(null); return; }
       setLoading(true);
       try {
-        const info = await getCompanyInfo(address);
-        // get_company_info returns (name, owner, treasury_balance, employee_count, is_active)
-        const [name, owner, treasury, employeeCount, isActive] = info ?? [];
-        const total = await getTotalSchedulesCount(address);
-        const due = await getDuePaymentsCount(address);
+        const empCount = await getCompanyEmployeeCount(address as string);
+        const total = await getTotalSchedulesCount(address as string);
+        const due = await getDuePaymentsCount(address as string);
+        const bal = await getTreasuryBalance(address as string);
         if (!cancelled) {
-          setCompany({ name, owner, treasury, employeeCount, isActive });
-          setTotalSchedules(typeof total === 'number' ? total : 0);
-          setDueSchedules(typeof due === 'number' ? due : 0);
+          setEmployeeCount(Number(empCount ?? 0));
+          setTotalSchedules(Number(total ?? 0));
+          setDueSchedules(Number(due ?? 0));
+          setTreasury(Number(bal ?? 0));
         }
       } catch {
-        if (!cancelled) {
-          setCompany(null);
-          setTotalSchedules(null);
-          setDueSchedules(null);
-        }
+        if (!cancelled) { setEmployeeCount(null); setTotalSchedules(null); setDueSchedules(null); setTreasury(null); }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -47,48 +41,54 @@ export function CompanyStatus() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [address]);
 
+  function formatAmount(n: any): string {
+    const v = Number(n);
+    if (!isFinite(v)) return '₳0';
+    return `₳${Math.trunc(v).toLocaleString()}`;
+  }
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Company Status</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-2">
+      <CardContent>
         {!address && <p className="text-sm text-gray-500">Connect wallet to view status.</p>}
         {address && loading && <p className="text-sm text-gray-500">Loading on-chain data...</p>}
-        {address && !loading && !company && (
-          <p className="text-sm text-yellow-600">No company found for this address.</p>
-        )}
-        {address && !loading && company && (
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <div className="text-gray-500">Name</div>
-              <div className="font-medium break-all">{typeof company.name === 'string' ? company.name : '(bytes)'}</div>
-            </div>
-            <div>
-              <div className="text-gray-500">Owner</div>
-              <div className="font-medium break-all">{company.owner}</div>
-            </div>
-            <div>
-              <div className="text-gray-500">Treasury Balance</div>
-              <div className="font-medium">{company.treasury}</div>
-            </div>
-            <div>
-              <div className="text-gray-500">Employees</div>
-              <div className="font-medium">{company.employeeCount}</div>
-            </div>
-            <div>
-              <div className="text-gray-500">Total Schedules</div>
-              <div className="font-medium">{totalSchedules ?? '-'}</div>
-            </div>
-            <div>
-              <div className="text-gray-500">Due Payments</div>
-              <div className="font-medium">{dueSchedules ?? '-'}</div>
-            </div>
-            <div>
-              <div className="text-gray-500">Active</div>
-              <div className="font-medium">{company.isActive ? 'Yes' : 'No'}</div>
-            </div>
+        {address && !loading && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <StatCard
+              title="Treasury Balance"
+              value={formatAmount(treasury ?? 0)}
+              subtitle="On-chain company treasury"
+              icon={<DollarSign className="h-6 w-6" />}
+              gradient="from-blue-500 to-blue-600"
+            />
+            <StatCard
+              title="Employees"
+              value={`${employeeCount ?? '-'}`}
+              subtitle="Registered in employee registry"
+              icon={<Users className="h-6 w-6" />}
+              gradient="from-green-500 to-green-600"
+            />
+            <StatCard
+              title="Total Schedules"
+              value={`${totalSchedules ?? '-'}`}
+              subtitle="Active payment schedules"
+              icon={<Calendar className="h-6 w-6" />}
+              gradient="from-purple-500 to-purple-600"
+            />
+            <StatCard
+              title="Due Payments"
+              value={`${dueSchedules ?? '-'}`}
+              subtitle="Payments ready to execute"
+              icon={<Clock className="h-6 w-6" />}
+              gradient="from-orange-500 to-orange-600"
+            />
           </div>
+        )}
+        {address && (
+          <div className="mt-4 text-xs text-gray-400 break-all">Company: {address}</div>
         )}
       </CardContent>
     </Card>
