@@ -8,7 +8,7 @@ export const getMessageContent = async (): Promise<string> => {
       functionArguments: [],
       typeArguments: [],
     })
-    .catch((error) => {
+    .catch((error: any) => {
       console.error(error);
       return ["message not exist"];
     });

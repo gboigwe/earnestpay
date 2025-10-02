@@ -8,10 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getAccountAPTBalance } from "@/view-functions/getAccountBalance";
 import { COIN_ABI } from "@/utils/coin_abi";
+import { surfClient } from "@/utils/surfClient";
 
 export function TransferAPT() {
   const { account } = useWallet();
-
+  const client = surfClient();
   const queryClient = useQueryClient();
 
   const [aptBalance, setAptBalance] = useState<number>(0);

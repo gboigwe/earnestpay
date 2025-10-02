@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";

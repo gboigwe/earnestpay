@@ -1,0 +1,16 @@
+<svg width="200" height="60" viewBox="0 0 200 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Checkmark Circle Icon -->
+  <g>
+    <!-- Outer Circle -->
+    <circle cx="30" cy="30" r="26" stroke="#60A5FA" stroke-width="3" fill="none"/>
+    <!-- Inner Circle -->
+    <circle cx="30" cy="30" r="20" stroke="#60A5FA" stroke-width="2.5" fill="none"/>
+    <!-- Checkmark -->
+    <path d="M20 30 L27 37 L42 22" stroke="#60A5FA" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  </g>
+
+  <!-- EarnestPay Text -->
+  <text x="65" y="38" font-family="Inter, system-ui, -apple-system, sans-serif" font-size="24" font-weight="700" fill="#E5E7EB">
+    EarnestPay
+  </text>
+</svg>

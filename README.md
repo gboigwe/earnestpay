@@ -1,8 +1,8 @@
-# AptosPayroll - Decentralized Payroll Management System
+# EarnestPay - Payroll you can trust—on time, every time.
 
 ## Overview
 
-AptosPayroll is a comprehensive decentralized payroll management tool built on the Aptos blockchain. This system enables on-chain salary disbursement in stablecoins with integrated tax calculation and compliance features.
+EarnestPay is a modern payroll and payouts platform for companies and salary earners, secured by Aptos. This system enables on-chain salary disbursement in stablecoins with integrated tax calculation and compliance features.
 
 **🏆 Built for Aptos Ctrl+MOVE Hackathon 2025**  
 **Target Categories:** Main Track ($65,000 pool) and Best Tech Implementation ($15,000)
