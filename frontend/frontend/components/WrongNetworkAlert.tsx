@@ -5,7 +5,12 @@ import * as Dialog from "@radix-ui/react-dialog";
 export function WrongNetworkAlert() {
   const { network, connected } = useWallet();
 
-  return !connected || network?.name === NETWORK ? (
+  const walletName = (network?.name || "").toLowerCase();
+  const appNetwork = (NETWORK || "").toLowerCase();
+  const show = connected && walletName !== appNetwork;
+  const targetLabel = appNetwork ? appNetwork.charAt(0).toUpperCase() + appNetwork.slice(1) : "";
+
+  return !show ? (
     <></>
   ) : (
     <Dialog.Root open={true}>
@@ -17,8 +22,8 @@ export function WrongNetworkAlert() {
               Wrong Network
             </Dialog.Title>
             <Dialog.Description className="text-lg text-gray-700 dark:text-gray-300">
-              Your wallet is currently on <span className="font-bold">{network?.name}</span>. Please switch to{" "}
-              <span className="font-bold">{NETWORK}</span> to continue using the app.
+              Your wallet is currently on <span className="font-bold">{network?.name}</span>. Please switch to {" "}
+              <span className="font-bold">{targetLabel}</span> to continue using the app.
             </Dialog.Description>
           </div>
         </Dialog.Content>

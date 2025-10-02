@@ -71,7 +71,7 @@ export function CompanyRegistration() {
       <div>
         <label className="block text-sm font-medium mb-1">Company Name</label>
         <Input
-          placeholder="e.g. AptosPayroll Labs"
+          placeholder="e.g. EarnestPay"
           value={companyName}
           onChange={(e) => setCompanyName(e.target.value)}
         />

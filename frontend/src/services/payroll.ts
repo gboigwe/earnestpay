@@ -1,10 +1,11 @@
 import { Aptos, AptosConfig, Network } from '@aptos-labs/ts-sdk';
+import { MODULE_ADDRESS } from '../../frontend/constants';
 
-// Contract addresses - Updated with deployed contract
-const PAYROLL_ADDRESS = '0xcc6e28e46af6c8bcc60a46ef75c500a618a56f29ff8023d9083bd12990a8c8e4';
+// Contract module address comes from frontend constants/env
+const PAYROLL_ADDRESS = MODULE_ADDRESS;
 
-// Initialize Aptos client
-const config = new AptosConfig({ network: Network.DEVNET });
+// Initialize Aptos client (use Testnet)
+const config = new AptosConfig({ network: Network.TESTNET });
 const aptos = new Aptos(config);
 
 export interface Employee {

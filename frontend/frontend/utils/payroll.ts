@@ -42,6 +42,28 @@ export async function fundTreasury(wallet: WalletLike, amount: number) {
   return result as any;
 }
 
+// Combined helper: actually transfer APT from wallet to company address, then update module counter
+export async function fundTreasuryWithWalletTransfer(wallet: WalletLike, amountApt: number) {
+  const { account, signAndSubmitTransaction } = wallet;
+  if (!account) throw new Error("Wallet not connected");
+  const companyAddress = String(account.address);
+  // Convert APT -> Octas (1 APT = 1e8 Octas)
+  const octas = Math.round(Number(amountApt) * 1e8);
+  if (!isFinite(octas) || octas <= 0) throw new Error("Invalid APT amount");
+  // 1) Transfer APT from wallet to company account using core transfer
+  const transferTx = await signAndSubmitTransaction({
+    sender: account.address,
+    data: {
+      function: `0x1::aptos_account::transfer`,
+      functionArguments: [companyAddress, n(octas)],
+    },
+  });
+  await aptosClient().waitForTransaction({ transactionHash: transferTx.hash });
+  // 2) Call module entry to update internal counter
+  const updateRes = await fundTreasury(wallet, octas);
+  return { transferHash: transferTx.hash, update: updateRes } as any;
+}
+
 export async function addEmployee(wallet: WalletLike, employeeAddress: string) {
   const { account, signAndSubmitTransaction } = wallet;
   if (!account) throw new Error("Wallet not connected");
@@ -250,11 +272,25 @@ function fqEvent(module: string, event: string) {
 
 function filterEventsByTypes(txs: AptosUserTransaction[], types: string[]) {
   const out: { event: AptosEvent; tx: AptosUserTransaction }[] = [];
+  const suffixes = types.map((t) => {
+    const parts = (t || '').split('::');
+    if (parts.length >= 3) {
+      const mod = parts[parts.length - 2];
+      const name = parts[parts.length - 1];
+      return `::${mod}::${name}`;
+    }
+    return t;
+  });
   for (const tx of txs) {
     for (const ev of tx.events ?? []) {
-      if (types.includes(ev.type)) {
-        out.push({ event: ev, tx });
+      const et = ev.type || '';
+      let match = false;
+      for (let i = 0; i < types.length; i++) {
+        const full = types[i];
+        const suf = suffixes[i];
+        if (et === full || (suf && et.endsWith(suf))) { match = true; break; }
       }
+      if (match) out.push({ event: ev, tx });
     }
   }
   return out;
@@ -328,6 +364,67 @@ export async function getEmployeeProfile(companyAddress: string, employeeAddress
   });
 }
 
+export type OnChainEmployee = {
+  address: string;
+  // Optional display fields if retrievable
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  department?: string;
+  active?: boolean;
+};
+
+export async function listCompanyEmployees(companyAddress: string, onlyActive: boolean = true): Promise<OnChainEmployee[]> {
+  // Collect from EmployeeProfileCreated and EmployeeAdded events; merge and de-duplicate
+  const evsProfile = await getEmployeeProfileCreatedEvents(companyAddress, 200).catch(() => [] as any[]);
+  const evsAdded = await getEmployeeAddedEvents(companyAddress, 200).catch(() => [] as any[]);
+  const rows = ([] as string[])
+    .concat(
+      (evsProfile || []).map(({ event }) => {
+        const d = (event as any)?.data || {};
+        const addr = d.employee || d.employee_address || d.addr || '';
+        return String(addr || '');
+      }),
+      (evsAdded || []).map(({ event }) => {
+        const d = (event as any)?.data || {};
+        const addr = d.employee || d.employee_address || d.addr || '';
+        return String(addr || '');
+      })
+    )
+    .filter(Boolean)
+    .reverse();
+  const seen = new Set<string>();
+  const uniqueAddrs: string[] = [];
+  for (const a of rows) {
+    const key = a.toLowerCase();
+    if (!seen.has(key)) { seen.add(key); uniqueAddrs.push(a); }
+  }
+  // Optionally filter by active flag
+  const out: OnChainEmployee[] = [];
+  for (const addr of uniqueAddrs) {
+    let active: boolean | undefined = undefined;
+    try { active = await isEmployeeActive(addr); } catch {}
+    if (onlyActive && active === false) continue;
+    // Attempt to read profile details (may fail on current deployment)
+    let firstName: string | undefined;
+    let lastName: string | undefined;
+    let email: string | undefined;
+    let department: string | undefined;
+    try {
+      const profile = await getEmployeeProfile(companyAddress, addr);
+      // Depending on Move function return shape, profile may be tuple array; keep defensive
+      const p = Array.isArray(profile) ? profile : [];
+      // If the function returns bytes for strings, they may already be utf8 strings in SDK; leave as is
+      firstName = String(p[2] ?? '').trim() || undefined;
+      lastName = String(p[3] ?? '').trim() || undefined;
+      email = String(p[4] ?? '').trim() || undefined;
+      department = String(p[6] ?? '').trim() || undefined;
+    } catch {}
+    out.push({ address: addr, firstName, lastName, email, department, active });
+  }
+  return out;
+}
+
 export async function getCompanyInfo(companyAddress: string) {
   return aptosClient().view({
     payload: {
@@ -335,6 +432,30 @@ export async function getCompanyInfo(companyAddress: string) {
       functionArguments: [companyAddress],
     },
   });
+}
+
+export async function isCompanyRegistered(companyAddress: string): Promise<boolean> {
+  try {
+    const res = await getCompanyInfo(companyAddress);
+    // get_company_info returns tuple; existence indicates registered
+    return Array.isArray(res);
+  } catch {
+    return false;
+  }
+}
+
+export async function getTreasuryBalance(companyAddress: string) {
+  try {
+    const res = await aptosClient().view({
+      payload: {
+        function: `${MODULE_ADDRESS}::payroll_manager::get_treasury_balance`,
+        functionArguments: [companyAddress],
+      },
+    });
+    return (res?.[0] as number) ?? 0;
+  } catch {
+    return 0;
+  }
 }
 
 export async function getEmployeeSalary(employeeAddress: string) {
@@ -434,4 +555,23 @@ export async function getTotalSchedulesCount(companyAddress: string) {
     },
   });
   return res?.[0] as number;
+}
+
+// ---------------------------
+// Tax calculator views
+// ---------------------------
+
+export async function getSupportedJurisdictions(companyAddress: string) {
+  try {
+    const res = await aptosClient().view({
+      payload: {
+        function: `${MODULE_ADDRESS}::tax_calculator::get_supported_jurisdictions`,
+        functionArguments: [companyAddress],
+      },
+    });
+    // Expecting vector<String> -> string[]
+    return (res as any[] | undefined) ?? [];
+  } catch {
+    return [] as string[];
+  }
 }
