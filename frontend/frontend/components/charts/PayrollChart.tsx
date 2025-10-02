@@ -119,9 +119,9 @@ export const PayrollChart: React.FC<PayrollChartProps> = ({
                 outerRadius={100}
                 fill="#6366f1"
                 dataKey="value"
-                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                label={({ name, percent }) => `${name} ${((percent as number) * 100).toFixed(0)}%`}
               >
-                {data.map((entry, index) => (
+                {data.map((_entry, index) => (
                   <Cell key={`cell-${index}`} fill={GRADIENT_COLORS[index % GRADIENT_COLORS.length]} />
                 ))}
               </Pie>

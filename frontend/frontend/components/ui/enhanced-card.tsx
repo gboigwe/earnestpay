@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle } from './card';
+import { Card, CardContent } from './card';
 import { cn } from '@/lib/utils';
 
 interface StatCardProps {

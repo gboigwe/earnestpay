@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { 
-  ArrowRight, 
-  Shield, 
-  Star,
+import {
+  ArrowRight,
+  Shield,
   DollarSign,
   Menu,
   X,
@@ -21,7 +20,7 @@ const LandingPage: React.FC<{ onGetStarted: () => void }> = ({ onGetStarted }) =
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [showWalletModal, setShowWalletModal] = useState(false);
-  const { connect, wallets, connected, account } = useWallet();
+  const { connect, wallets, connected } = useWallet();
 
   const handleGetStarted = async () => {
     if (!connected) {

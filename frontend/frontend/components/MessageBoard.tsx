@@ -7,9 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getMessageContent } from "@/view-functions/getMessageContent";
 import { MESSAGE_BOARD_ABI } from "@/utils/message_board_abi";
+import { surfClient } from "@/utils/surfClient";
 
 export function MessageBoard() {
-
+  const client = surfClient();
   const queryClient = useQueryClient();
 
   const [messageContent, setMessageContent] = useState<string>();
