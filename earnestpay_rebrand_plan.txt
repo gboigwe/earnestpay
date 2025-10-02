@@ -1,0 +1,410 @@
+EARNESTPAY — FULL REBRAND IMPLEMENTATION GUIDE (from “AptosPayroll”)
+
+Audience: Engineering, Design, Product, DevOps, Legal, Sales/Marketing
+Scope: Rename and reposition all code, content, and brand assets from “AptosPayroll” to “EarnestPay”. Aptos blockchain remains the settlement layer.
+
+──────────────────────────────────────────────────────────────────────────────
+0) EXECUTIVE SUMMARY
+──────────────────────────────────────────────────────────────────────────────
+Goal: Rebrand the existing Aptos payroll platform to **EarnestPay** without breaking deployments, smart-contract addresses, or developer workflows. This document is an actionable, end‑to‑end checklist covering: source code, Move contracts, APIs, env vars, databases, CI/CD, cloud infra, analytics, UX copy, legal pages, and launch comms.
+
+Core positioning (use across site/app/docs/pitch):
+• Name: EarnestPay
+• Tagline: “Payroll you can trust—on time, every time.”
+• One‑liner: “EarnestPay is a modern payroll and payouts platform for companies and salary earners, secured by Aptos.”
+• Value pillars: Reliability (on‑time payouts), Transparency (clear status & fees), Control (role‑based approvals), Compliance (KYC/AML hooks), Speed (Aptos finality).
+
+Non‑goals: Large feature rewrites. Contract address migrations are optional; prefer in‑place upgrades where possible.
+
+
+──────────────────────────────────────────────────────────────────────────────
+1) CANONICAL NAMING & VOCABULARY
+──────────────────────────────────────────────────────────────────────────────
+Project name (product): EarnestPay
+Repository root folder: earnestpay/
+NPM package scopes (if applicable): @earnestpay/*
+Docker images: ghcr.io/<org>/earnestpay-*
+Binary/CLIs (if any): earnestpay, epctl
+Mobile bundle id(s): com.earnestpay.app
+Website domains (placeholder): earnestpay.app, earnestpay.com
+Support mailbox: support@earnestpay.app
+Security mailbox: security@earnestpay.app
+
+Preferred words:
+• “Employer” (or “Company”) for the paying entity
+• “Employee” (or “Salary earner”) for the recipient
+• “Payroll run” for a batch payout
+• “Payout” for a single employee payment
+• “Approver” and “Preparer” as roles
+Avoid: “AptosPayroll” or “AP” in public‑facing UI, docs, code comments.
+
+
+──────────────────────────────────────────────────────────────────────────────
+2) GLOBAL FIND‑AND‑REPLACE MAP
+──────────────────────────────────────────────────────────────────────────────
+Primary tokens to replace:
+• AptosPayroll → EarnestPay
+• aptos‑payroll → earnestpay
+• aptospayroll → earnestpay
+• APTOS_PAYROLL_* → EARNESTPAY_*
+• Aptos Payroll (spaced) → EarnestPay
+
+Secondary (case‑by‑case):
+• company_payroll_* → earners_payroll_* or payroll_*
+• ap_ (prefix) → ep_ (ensure no collisions)
+
+Use ripgrep to audit:
+rg -n --hidden -S "AptosPayroll|aptos-payroll|aptospayroll|APTOS_PAYROLL" .
+
+macOS/Linux in‑place rename examples (GNU sed):
+sed -i 's/AptosPayroll/EarnestPay/g' $(rg -l "AptosPayroll")
+sed -i 's/aptos-payroll/earnestpay/g' $(rg -l "aptos-payroll")
+sed -i 's/aptospayroll/earnestpay/g'   $(rg -l "aptospayroll")
+sed -i 's/APTOS_PAYROLL_/EARNESTPAY_/g' $(rg -l "APTOS_PAYROLL_")
+
+Windows PowerShell equivalents:
+(Get-ChildItem -Recurse -File | Select-String "AptosPayroll").Path | Get-Unique | % { (Get-Content $_) -replace 'AptosPayroll','EarnestPay' | Set-Content $_ }
+
+
+
+──────────────────────────────────────────────────────────────────────────────
+3) MOVE CONTRACTS (APTOS) — RENAME & UPGRADE
+──────────────────────────────────────────────────────────────────────────────
+Files: contracts/earnestpay/Move.toml, sources/*.move
+Typical elements to update:
+• Move.toml:
+  [package]
+  name = "earnestpay"
+  version = "1.0.0"
+  published-at = "<EXISTING_ADDRESS if already on testnet/mainnet>"
+
+  [addresses]
+  earnestpay = "<deployer_address>"
+  aptos_std = "0x1"
+
+• Module names:
+  module {{earnestpay}}::payroll { ... }      // formerly ::aptos_payroll::payroll
+  module {{earnestpay}}::roles { ... }
+  module {{earnestpay}}::registry { ... }
+  module {{earnestpay}}::disburse { ... }
+
+• Resource & event names (keep compatibility if queried by indexers):
+  struct PayrollRun {...}
+  struct Payout {...}
+  event PayrollRunCreatedEvent
+  event PayoutDisbursedEvent
+  // If names change, ship a compatibility indexer or emit dual events for one release cycle.
+
+• Public entry functions: keep function selectors stable; update doc comments and error codes:
+  /// @title EarnestPay: create a payroll run
+  public entry fun create_payroll_run(...)
+  public entry fun approve_payroll_run(...)
+  public entry fun disburse_payouts(...)
+
+• Error codes namespace:
+  const E_NOT_AUTHORISED: u64 = 1;          // use clear, documented errors
+  const E_INVALID_STATUS: u64 = 2;
+
+• Testing:
+  aptos move test
+  aptos move publish --profile testnet --named-addresses earnestpay=<addr>
+
+• Migration strategy:
+  - If addresses must remain: republish modules with new package name but same address. Update clients to new package name.
+  - If addresses can change: deploy new address; build a one-time “handover” script to read pending runs from old storage and re‑create in the new module. Pin both in UI with “Legacy” banner for 1–2 cycles.
+
+• SDK impact:
+  - Update TypeScript/Go client bindings to new module paths (e.g., 0xADDR::earnestpay::payroll).
+
+
+──────────────────────────────────────────────────────────────────────────────
+4) BACKEND & API RENAMING
+──────────────────────────────────────────────────────────────────────────────
+Namespaces:
+• REST base path: /v1 → keep; but service id → “earnestpay-api”
+• Example endpoints (update OpenAPI/Swagger):
+  POST /payroll-runs
+  POST /payroll-runs/{id}/approve
+  POST /payroll-runs/{id}/disburse
+  GET  /payouts/{id}
+  GET  /employees?orgId=...
+
+Environment variables (prefix):
+• EARNESTPAY_DB_URL=...
+• EARNESTPAY_QUEUE_URL=...
+• EARNESTPAY_APTOS_NODE=https://...
+• EARNESTPAY_INDEXER_URL=...
+• EARNESTPAY_WEB_ORIGIN=https://app.earnestpay.app
+
+Database:
+• Schema names & tables: rename only if safe; otherwise add views to keep legacy names stable.
+  CREATE VIEW payroll_runs_v AS SELECT * FROM aptos_payroll_runs;   -- temporary
+• Migrations: write idempotent migrations; include rollback.
+
+Queues/Crons:
+• Rename workers to “earnestpay-*”; update metrics names (Prometheus/OpenTelemetry).
+
+
+──────────────────────────────────────────────────────────────────────────────
+5) FRONTEND / UX COPY / ASSETS
+──────────────────────────────────────────────────────────────────────────────
+Brand assets:
+• App name: EarnestPay
+• Logo: /assets/brand/earnestpay-logo.svg
+• Colours (example; adjust to design system):
+  Primary: #0A3D62 (deep blue)
+  Accent:  #00B894 (mint)
+  Neutral: #0F172A (slate)
+• Icon: ep-mark.svg (simple “EP” monogram or concentric circle with tick)
+
+Global copy updates (examples):
+• “Welcome to EarnestPay”
+• “Create payroll run” → primary call to action
+• “Disburse payouts”
+• “On‑time payroll, transparently tracked”
+• Empty states and tooltips: prefer plain language, avoid chain jargon in user‑facing screens.
+
+Navigation:
+• Dashboard | Payroll Runs | Employees | Approvals | Settings
+
+Employee portal text:
+• “You’ve been paid by <Company> via EarnestPay.”
+• “Track payment status: Pending → Approved → Disbursed → Finalised.”
+
+Email templates (transactional):
+• Subject: “EarnestPay: Your payroll run #{{runNumber}} has been approved”
+• Sender: notifications@earnestpay.app
+• Update DKIM/SPF/DMARC for the new domain.
+
+
+──────────────────────────────────────────────────────────────────────────────
+6) ANALYTICS & OBSERVABILITY
+──────────────────────────────────────────────────────────────────────────────
+Event renames:
+• ap.payroll.created → ep.payroll.created
+• ap.payroll.disbursed → ep.payroll.disbursed
+• ap.employee.invited → ep.employee.invited
+
+OpenTelemetry:
+• service.name = “earnestpay-api”, “earnestpay-web”, “earnestpay-worker”
+• Update dashboards and alerts to the new service names.
+
+SLOs (targets):
+• P95 payroll run creation < 500ms (backend)
+• P99 disbursement request enqueue < 1s
+• Web vital LCP < 2.5s on dashboard
+
+
+──────────────────────────────────────────────────────────────────────────────
+7) SECURITY, COMPLIANCE, PERMISSIONS
+──────────────────────────────────────────────────────────────────────────────
+Access model (role‑based):
+• ORG_ADMIN – manage org, add approvers
+• PREPARER – create payroll runs
+• APPROVER – approve runs and disburse
+• AUDITOR – read‑only
+
+Secrets rotation:
+• Rotate API keys and JWT secrets when re‑branding public endpoints.
+• Rename secret paths in secret manager: secret/earnestpay/*
+
+Compliance language (docs & site):
+• “EarnestPay supports KYC/AML integrations via webhook connectors.”
+• “Data encrypted in transit (TLS 1.2+) and at rest (AES‑256).”
+• “Aptos provides fast finality; see network status in app banner.”
+
+
+──────────────────────────────────────────────────────────────────────────────
+8) DOCUMENTATION & README TEMPLATES
+──────────────────────────────────────────────────────────────────────────────
+README.md (root) skeleton:
+# EarnestPay
+A modern payroll & payouts platform for companies and salary earners, secured by Aptos.
+
+## Features
+- Create and approve payroll runs
+- Disburse payouts on Aptos
+- Role‑based approvals and audit trail
+- Employee portal and notifications
+
+## Contracts
+- Package: `earnestpay`
+- Modules: `payroll`, `roles`, `registry`, `disburse`
+
+## Getting Started
+- `cp .env.example .env`
+- `docker compose up -d`
+- `aptos move publish --profile testnet`
+
+## License
+© EarnestPay. All rights reserved.
+
+/docs/
+• product-overview.md — positioning, architecture diagram
+• contracts.md — module interfaces, events, error codes
+• api.md — endpoints and examples
+• runbooks/ — on-call, incident, hotfix checklists
+
+
+──────────────────────────────────────────────────────────────────────────────
+9) CI/CD & INFRA
+──────────────────────────────────────────────────────────────────────────────
+Pipelines:
+• Update workflow file names/IDs: earnestpay-ci.yml
+• Docker images: ghcr.io/<org>/earnestpay-api:sha
+• K8s/Compose labels: app=earnestpay-api
+• Secrets & config maps renamed to EARNESTPAY_*
+
+Config flags:
+• FEATURE_LEGACY_APTOSPAYROLL_REDIRECT=true (keep for one release; 301 from old routes to new).
+
+Monitoring:
+• Update alert routes to pager “EarnestPay Primary”.
+
+
+──────────────────────────────────────────────────────────────────────────────
+10) LEGAL, POLICIES, & PUBLIC PAGES
+──────────────────────────────────────────────────────────────────────────────
+• Terms of Service, Privacy Policy, Cookies: swap names and domains.
+• Typography & copyright lines: “© EarnestPay <year>”
+• Support, Security contact, Responsible disclosure.
+• Update marketplace listings (if any) and logos.
+
+
+──────────────────────────────────────────────────────────────────────────────
+11) SEO / STORE LISTINGS / SOCIAL
+──────────────────────────────────────────────────────────────────────────────
+Metadata:
+• Title: EarnestPay — Trustworthy Payroll on Aptos
+• Description: “Run payrolls, approve disbursements, and pay employees on time—every time.”
+• OpenGraph/Twitter images regenerated with new logo and colours.
+• Social handles reserved: @EarnestPay (where possible).
+
+
+──────────────────────────────────────────────────────────────────────────────
+12) MIGRATION & CUTOVER PLAN
+──────────────────────────────────────────────────────────────────────────────
+Phase 1 — Code rename (dev):
+1. Create branch: chore/rebrand-earnestpay
+2. Apply search/replace; rename directories.
+3. Update Move.toml, module names; run `aptos move test`.
+4. Update env var prefixes; run services locally.
+5. Update UI assets & copy; run e2e tests.
+6. Update analytics events & dashboards.
+
+Phase 2 — Staging validation:
+1. Deploy staging images with new names.
+2. Run smoke tests: create payroll, approve, disburse (testnet).
+3. Validate email templates and links/domain.
+4. Verify old deep links redirect.
+
+Phase 3 — Production cutover:
+1. Freeze deployments for 30 mins window.
+2. Deploy API/Web/Workers with EARNESTPAY_* envs.
+3. Publish updated Move package if required.
+4. Run DB migrations (safe, online).
+5. Enable redirects & feature flags.
+6. Announce status page update.
+
+Phase 4 — Post‑cutover:
+1. Monitor errors, latency, failed payouts.
+2. Audit logs for auth/role issues.
+3. Send customer comms “We’re now EarnestPay”.
+
+
+──────────────────────────────────────────────────────────────────────────────
+13) TEST PLAN (CHECKLIST)
+──────────────────────────────────────────────────────────────────────────────
+Contracts
+[ ] Unit tests pass (`aptos move test`)
+[ ] Events emitted with new names (or dual‑emit period)
+[ ] Upgrade path validated on testnet
+
+Backend/API
+[ ] All endpoints reachable under new service name
+[ ] Webhooks deliver and verify signatures
+[ ] RBAC enforced for PREPARER/APPROVER/AUDITOR
+[ ] Idempotency keys preserved across rename
+
+Frontend
+[ ] All screens show EarnestPay brand
+[ ] Employee portal status flow correct
+[ ] Email links and deep links valid
+
+Infra
+[ ] CI/CD builds with new image names
+[ ] Observability dashboards updated
+[ ] Alerts routed to correct on‑call
+
+Security
+[ ] Secrets rotated
+[ ] DKIM/SPF/DMARC pass
+[ ] CSP and CORS allow the new domains
+
+
+──────────────────────────────────────────────────────────────────────────────
+14) PR & COMMIT PLAN (EXAMPLE)
+──────────────────────────────────────────────────────────────────────────────
+Commit 1: chore: introduce EarnestPay brand constants
+Commit 2: refactor: rename packages and folders to earnestpay/*
+Commit 3: refactor(move): rename package to earnestpay, keep addresses
+Commit 4: feat(api): update service ids, env vars EARNESTPAY_*
+Commit 5: feat(web): swap UI copy, logo, colours
+Commit 6: chore: analytics events ep.* and dashboards
+Commit 7: ops: docker, k8s manifests, secret paths
+Commit 8: docs: README, contracts, runbooks
+Commit 9: feat(email): new templates + domains
+Commit 10: chore: redirects & legacy flag
+Commit 11: test: e2e happy path (create→approve→disburse)
+Commit 12: release: bump version to 1.0.0 EarnestPay
+
+
+──────────────────────────────────────────────────────────────────────────────
+15) SAMPLE UX COPY (DROP‑IN)
+──────────────────────────────────────────────────────────────────────────────
+Dashboard header:
+“Welcome to EarnestPay — payroll you can trust.”
+
+Create run modal:
+Title: “Create payroll run”
+Subtitle: “Import or paste salaries, set pay date, and submit for approval.”
+Primary button: “Submit for approval”
+
+Approval banner:
+“1 approver required. Add more in Settings → Approvals.”
+
+Disbursement:
+“Disburse payouts on Aptos. You’ll see confirmations in seconds.”
+
+Employee receipt (email):
+Subject: “You’ve been paid via EarnestPay”
+Body: “<Company> has disbursed your salary via EarnestPay. View status: {{link}}.”
+
+
+──────────────────────────────────────────────────────────────────────────────
+16) RISK & ROLLBACK
+──────────────────────────────────────────────────────────────────────────────
+Main risks: missed string renames, contract selector drift, webhook signature domain mismatch, analytics gaps.
+Rollback: redeploy previous images + revert envs; keep DB migrations backward‑compatible; maintain legacy routes for 1 release.
+
+
+──────────────────────────────────────────────────────────────────────────────
+17) APPENDIX — QUICK COMMANDS
+──────────────────────────────────────────────────────────────────────────────
+# Contract tests
+aptos move test
+
+# Publish (testnet; ensure profiles configured)
+aptos move publish --profile testnet --named-addresses earnestpay=<addr>
+
+# Frontend build
+pnpm -w build  # or yarn/npm
+
+# API run (example)
+EARNESTPAY_DB_URL=... EARNESTPAY_APTOS_NODE=... pnpm start
+
+# Replace strings (audit first!)
+rg -n --hidden -S "AptosPayroll|aptos-payroll|APTOS_PAYROLL"
+
+──────────────────────────────────────────────────────────────────────────────
+END OF DOCUMENT

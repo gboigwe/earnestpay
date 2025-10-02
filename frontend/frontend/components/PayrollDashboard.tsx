@@ -667,7 +667,7 @@ export const PayrollDashboard: React.FC<PayrollDashboardProps> = ({ onBack }) =>
         <div className="bg-white border-b border-gray-200 px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">AptosPayroll Dashboard</h1>
+              <h1 className="text-2xl font-bold text-gray-900">EarnestPay Dashboard</h1>
               <p className="text-gray-500">Connected: {account?.address.toString().slice(0, 8)}...{account?.address.toString().slice(-6)}</p>
             </div>
             <Button variant="outline" onClick={onBack}>

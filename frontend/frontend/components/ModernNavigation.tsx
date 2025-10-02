@@ -127,13 +127,15 @@ export const ModernNavigation: React.FC<ModernNavigationProps> = ({
         {/* Logo */}
         <div className="flex items-center flex-shrink-0 px-4 py-6">
           <div className={`flex items-center ${isSidebarCollapsed ? 'justify-center' : 'gap-3'}`}>
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-r from-blue-500 to-purple-600">
-              <Wallet className="text-white" size={24} />
-            </div>
+            <img
+              src="/earnestpay-icon.svg"
+              alt="EarnestPay Logo"
+              className="w-10 h-10"
+            />
             {!isSidebarCollapsed && (
               <div>
-                <h1 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">AptosPayroll</h1>
-                <p className="text-xs text-gray-400">Web3 Payroll Suite</p>
+                <h1 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">EarnestPay</h1>
+                <p className="text-xs text-gray-400">Payroll you can trust</p>
               </div>
             )}
           </div>
@@ -287,10 +289,12 @@ export const ModernNavigation: React.FC<ModernNavigationProps> = ({
         {/* Mobile Header */}
         <div className="fixed top-0 left-0 right-0 bg-gray-900/95 backdrop-blur border-b border-gray-800 px-4 py-3 flex items-center justify-between z-50">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-gradient-to-r from-blue-500 to-purple-600">
-              <Wallet className="text-white" size={16} />
-            </div>
-            <h1 className="text-lg font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">AptosPayroll</h1>
+            <img
+              src="/earnestpay-icon.svg"
+              alt="EarnestPay Logo"
+              className="w-8 h-8"
+            />
+            <h1 className="text-lg font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">EarnestPay</h1>
           </div>
           
           <div className="flex items-center gap-2">
