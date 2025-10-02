@@ -412,6 +412,64 @@ export const PayrollDashboard: React.FC<PayrollDashboardProps> = ({ onBack }) =>
     </motion.div>
   );
 
+  const renderPaymentHistory = () => (
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="space-y-6"
+    >
+      <h2 className="text-2xl font-bold">Payment History</h2>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <CreditCard className="h-5 w-5" />
+              All Payments
+            </CardTitle>
+            <div className="text-sm text-gray-500">{historyLoading ? 'Loading…' : `${history.length} item(s)`}</div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {!historyLoading && history.length === 0 && (
+              <div className="text-sm text-gray-500">No payment events found.</div>
+            )}
+            {history
+              .slice((historyPage-1)*historyPageSize, historyPage*historyPageSize)
+              .map((p, idx) => {
+                const name = p.label || shortAddress(p.addr);
+                const hashShort = p.txHash ? `${p.txHash.slice(0, 10)}...` : '';
+                const time = p.timestamp ? new Date(Number(p.timestamp)/1000).toLocaleString() : '';
+                return (
+                  <div key={`${p.addr}-${p.version || idx}`} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div>
+                      <p className="font-medium">{name}</p>
+                      <p className="text-sm text-gray-500">Payment • {shortAddress(p.addr)} {hashShort && `• ${hashShort}`}</p>
+                      {time && <p className="text-xs text-gray-400">{time}</p>}
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold">{formatAptFromOctas(p.amountOctas)}</p>
+                      <p className="text-xs text-green-600">Success</p>
+                    </div>
+                  </div>
+                );
+              })}
+          </div>
+          {history.length > historyPageSize && (
+            <div className="flex items-center justify-between text-sm mt-4">
+              <div>Page {historyPage} of {Math.ceil(history.length / historyPageSize)}</div>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => setHistoryPage(p => Math.max(1, p-1))} disabled={historyPage === 1}>Prev</Button>
+                <Button variant="outline" onClick={() => setHistoryPage(p => Math.min(Math.ceil(history.length / historyPageSize), p+1))} disabled={historyPage >= Math.ceil(history.length / historyPageSize)}>Next</Button>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+
   const renderEmployeeList = () => (
     <motion.div
       variants={containerVariants}
