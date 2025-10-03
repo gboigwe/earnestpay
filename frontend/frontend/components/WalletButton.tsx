@@ -1,14 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
 import { Wallet, Copy, LogOut, ExternalLink, ChevronDown } from 'lucide-react';
-import { aptosClient } from '@/utils/aptosClient';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export function WalletButton() {
   const { account, connected, disconnect, wallets, connect } = useWallet();
   const [showDropdown, setShowDropdown] = useState(false);
   const [showWalletModal, setShowWalletModal] = useState(false);
-  const [balance, setBalance] = useState<string>('0');
   const [isLoading, setIsLoading] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -22,67 +20,6 @@ export function WalletButton() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
-  // Fetch wallet balance
-  useEffect(() => {
-    async function fetchBalance() {
-      if (!account?.address) {
-        setBalance('0');
-        return;
-      }
-      try {
-        const addressStr = typeof account.address === 'string' ? account.address : account.address.toString();
-        console.log('Fetching balance for address:', addressStr);
-
-        const resources = await aptosClient().getAccountResources({
-          accountAddress: addressStr,
-        });
-
-        console.log('Resources fetched:', resources.length);
-
-        // Try to find the APT coin store
-        const aptosCoin = resources.find(
-          (r) => r.type === '0x1::coin::CoinStore<0x1::aptos_coin::AptosCoin>'
-        );
-
-        console.log('APT CoinStore found:', !!aptosCoin);
-
-        if (aptosCoin?.data) {
-          console.log('CoinStore data:', aptosCoin.data);
-          const coinData = aptosCoin.data as any;
-
-          // Handle different possible data structures
-          let valueInOctas = 0;
-          if (coinData.coin?.value) {
-            valueInOctas = Number(coinData.coin.value);
-          } else if (coinData.value) {
-            valueInOctas = Number(coinData.value);
-          }
-
-          console.log('Balance in octas:', valueInOctas);
-          const aptBalance = valueInOctas / 1e8; // Convert from Octas to APT
-          console.log('Balance in APT:', aptBalance);
-          setBalance(aptBalance.toFixed(2));
-        } else {
-          console.log('No CoinStore found, setting balance to 0');
-          setBalance('0');
-        }
-      } catch (error) {
-        console.error('Error fetching balance:', error);
-        console.error('Error details:', JSON.stringify(error, null, 2));
-        setBalance('0');
-      }
-    }
-
-    if (connected && account) {
-      fetchBalance();
-      // Refresh balance every 10 seconds
-      const interval = setInterval(fetchBalance, 10000);
-      return () => clearInterval(interval);
-    } else {
-      setBalance('0');
-    }
-  }, [account, connected]);
 
   const shortenAddress = (addr: string) => {
     if (!addr) return '';
@@ -197,7 +134,7 @@ export function WalletButton() {
       >
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-          <span className="text-sm font-medium text-gray-300">{balance} APT</span>
+          <span className="text-sm font-medium text-gray-300">Connected</span>
         </div>
         <div className="h-4 w-px bg-white/10"></div>
         <div className="flex items-center gap-2">
@@ -241,10 +178,6 @@ export function WalletButton() {
               </div>
 
               <div className="bg-black/30 rounded-lg p-3">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs text-gray-400">Balance</span>
-                  <span className="text-lg font-bold text-white">{balance} APT</span>
-                </div>
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-gray-400">Address</span>
                   <button

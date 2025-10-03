@@ -10,11 +10,12 @@ import {
   FileText,
   Clock,
   CheckCircle,
-  User
+  User,
+  ExternalLink
 } from "lucide-react";
 import { aptosClient } from "@/utils/aptosClient";
 import { getPaymentProcessedEvents, getPaymentScheduleCreatedEvents } from "@/utils/payroll";
-import { MODULE_ADDRESS } from "@/constants";
+import { MODULE_ADDRESS, getExplorerTxnUrl } from "@/constants";
 
 interface PaymentRecord {
   amount: number;
@@ -404,21 +405,38 @@ export function EmployeePortal() {
               />
             ) : (
               <div className="space-y-3">
-                {payments.map((payment, idx) => (
-                  <div key={idx} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover-lift">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <CheckCircle className="h-4 w-4 text-green-500" />
-                        <span className="font-semibold text-gray-900">Payment Received</span>
+                {payments.map((payment, idx) => {
+                  const txnHash = payment.version ? `0x${Number(payment.version).toString(16)}` : '';
+                  return (
+                    <div key={idx} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover-lift">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <CheckCircle className="h-4 w-4 text-green-500" />
+                          <span className="font-semibold text-gray-900">Payment Received</span>
+                        </div>
+                        <p className="text-sm text-gray-500">{payment.timestamp}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <p className="text-xs text-gray-400">Tx: {payment.version}</p>
+                          {payment.version && (
+                            <a
+                              href={getExplorerTxnUrl(txnHash)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                              title="View on Explorer"
+                            >
+                              <ExternalLink className="h-3 w-3" />
+                              <span className="text-xs">View</span>
+                            </a>
+                          )}
+                        </div>
                       </div>
-                      <p className="text-sm text-gray-500">{payment.timestamp}</p>
-                      <p className="text-xs text-gray-400 mt-1">Tx: {payment.version}</p>
+                      <div className="text-right">
+                        <p className="text-lg font-bold text-green-600">+{payment.amount.toFixed(4)} APT</p>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-lg font-bold text-green-600">+{payment.amount.toFixed(4)} APT</p>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </CardContent>

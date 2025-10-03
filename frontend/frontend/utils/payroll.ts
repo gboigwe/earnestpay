@@ -437,15 +437,30 @@ export async function getCompanyInfo(companyAddress: string) {
 export async function getCompanyName(companyAddress: string): Promise<string> {
   try {
     const info = await getCompanyInfo(companyAddress);
+    console.log('Company info response:', info);
+
     // info returns: (name: vector<u8>, owner, treasury_balance, employee_count, is_active)
     const nameBytes = info?.[0];
+    console.log('Name bytes:', nameBytes);
+
     if (Array.isArray(nameBytes)) {
       // Decode bytes to string - convert to number array first
       const bytes = nameBytes.map((b: any) => Number(b));
-      return new TextDecoder().decode(new Uint8Array(bytes));
+      const decodedName = new TextDecoder().decode(new Uint8Array(bytes));
+      console.log('Decoded company name:', decodedName);
+      return decodedName || "Unknown Company";
     }
+
+    // If nameBytes is a string already, return it
+    if (typeof nameBytes === 'string') {
+      console.log('Company name (string):', nameBytes);
+      return nameBytes || "Unknown Company";
+    }
+
+    console.log('Company name format not recognized');
     return "Unknown Company";
-  } catch {
+  } catch (error) {
+    console.error('Error fetching company name:', error);
     return "Not Registered";
   }
 }
