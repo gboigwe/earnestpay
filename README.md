@@ -4,8 +4,69 @@
 
 EarnestPay is a modern payroll and payouts platform for companies and salary earners, secured by Aptos. This system enables on-chain salary disbursement in stablecoins with integrated tax calculation and compliance features.
 
-**🏆 Built for Aptos Ctrl+MOVE Hackathon 2025**  
+**🏆 Built for Aptos Ctrl+MOVE Hackathon 2025**
 **Target Categories:** Main Track ($65,000 pool) and Best Tech Implementation ($15,000)
+
+## 🎯 Problems & Solutions
+
+### Problems Being Solved
+
+1. **Traditional Payroll Inefficiencies**
+   - High processing fees and transaction costs
+   - Slow payment processing (2-5 business days)
+   - Lack of transparency in payment flows
+
+2. **Cross-border Payment Challenges**
+   - Expensive international transfers
+   - Currency conversion fees
+   - Regulatory compliance complexities across jurisdictions
+
+3. **Limited Payment Accessibility**
+   - Employees without traditional bank accounts excluded
+   - No real-time access to earned wages
+   - Delayed salary disbursements
+
+4. **Tax Compliance Complexity**
+   - Manual tax calculations prone to errors
+   - Difficult multi-jurisdiction tax management
+   - Lack of automated audit trails
+
+5. **Trust and Transparency Issues**
+   - No verifiable payment records
+   - Employers can delay or manipulate payment schedules
+   - Limited visibility into company treasury management
+
+### Our Solutions
+
+1. **On-Chain Salary Disbursement**
+   - Stablecoin payments with ~$0.00005 transaction costs
+   - Instant payment settlement on Aptos blockchain
+   - Complete transparency with immutable transaction records
+
+2. **Automated Tax Calculation & Compliance**
+   - Real-time, multi-jurisdiction tax calculation
+   - Automated withholding and compliance tracking
+   - Built-in audit trails for regulatory requirements
+
+3. **Smart Contract Automation**
+   - Scheduled automated salary payments
+   - Role-based access control (employers, HR, accountants)
+   - Multi-signature treasury management for security
+
+4. **Global Accessibility**
+   - Anyone with an Aptos wallet can receive payments
+   - No traditional banking infrastructure required
+   - Support for employees worldwide
+
+5. **Enterprise-Grade Features**
+   - Employee registry with comprehensive profiles
+   - Real-time balance tracking and payment status
+   - Scalable architecture using Aptos's Block-STM parallel execution
+
+6. **Cost Efficiency**
+   - Significantly lower transaction fees vs traditional payroll
+   - No intermediary bank fees
+   - Optimized gas usage through efficient Move contract design
 
 ## 🚀 Key Features
 
