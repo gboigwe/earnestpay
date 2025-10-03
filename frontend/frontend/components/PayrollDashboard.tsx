@@ -19,8 +19,7 @@ import { ModernNavigation } from './ModernNavigation';
 import { executeDuePayments } from '@/utils/payroll';
 import { getEmployee as getEmployeeFromCache } from '@/lib/employeeCache';
 import { CompanyStatus } from './CompanyStatus';
-import { CompanyOps } from './CompanyOps';
-import { CompanyRegistration } from './CompanyRegistration';
+import { CompanyPortal } from './CompanyPortal';
 import { toast } from './ui/use-toast';
 import { ProcessPayroll } from './ProcessPayroll';
 import { EmployeeProfileForm } from './EmployeeProfileForm';
@@ -617,26 +616,10 @@ export const PayrollDashboard: React.FC<PayrollDashboardProps> = ({ onBack }) =>
             <TaxCompliance />
           </div>
         );
-      case 'settings':
+      case 'company-portal':
         return (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold">Settings</h2>
-            <Card>
-              <CardHeader>
-                <CardTitle>Company Registration</CardTitle>
-              </CardHeader>
-              <CardContent className="p-6">
-                <CompanyRegistration />
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>Company Operations</CardTitle>
-              </CardHeader>
-              <CardContent className="p-6">
-                <CompanyOps />
-              </CardContent>
-            </Card>
+            <CompanyPortal />
           </div>
         );
       default:

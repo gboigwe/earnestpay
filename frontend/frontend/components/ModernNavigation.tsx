@@ -5,14 +5,14 @@ import {
   DollarSign,
   Calendar,
   FileText,
-  Settings,
   Menu,
   X,
   TrendingUp,
   Shield,
   ChevronDown,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Building2
 } from 'lucide-react';
 import { WalletButton } from './WalletButton';
 
@@ -79,9 +79,9 @@ export const ModernNavigation: React.FC<ModernNavigationProps> = ({
       icon: <Shield size={20} />
     },
     {
-      id: 'settings',
-      label: 'Settings',
-      icon: <Settings size={20} />
+      id: 'company-portal',
+      label: 'Company Portal',
+      icon: <Building2 size={20} />
     }
   ];
 
