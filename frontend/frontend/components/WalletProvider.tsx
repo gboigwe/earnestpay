@@ -13,10 +13,18 @@ export function WalletProvider({ children }: PropsWithChildren) {
       autoConnect={true}
       dappConfig={{ network: NETWORK, aptosApiKeys: {[NETWORK]: APTOS_API_KEY} }}
       onError={(error) => {
+        // Only show toast for actual errors, not user cancellations
+        const errorMsg = String(error || "");
+
+        if (errorMsg.includes("User rejected") || errorMsg.includes("cancelled")) {
+          // User cancelled - don't show error
+          return;
+        }
+
         toast({
           variant: "destructive",
-          title: "Error",
-          description: error || "Unknown wallet error",
+          title: "Wallet Error",
+          description: errorMsg || "An error occurred with your wallet connection",
         });
       }}
     >

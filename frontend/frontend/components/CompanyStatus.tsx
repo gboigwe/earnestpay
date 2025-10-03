@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { getCompanyEmployeeCount, getTotalSchedulesCount, getDuePaymentsCount, getTreasuryBalance } from "@/utils/payroll";
+import { getCompanyEmployeeCount, getTotalSchedulesCount, getDuePaymentsCount, getTreasuryBalance, getCompanyName } from "@/utils/payroll";
 import { StatCard } from "./ui/enhanced-card";
-import { DollarSign, Users, Calendar, Clock } from "lucide-react";
+import { DollarSign, Users, Calendar, Clock, Building2 } from "lucide-react";
 
 export function CompanyStatus() {
   const { account } = useWallet();
@@ -12,26 +12,43 @@ export function CompanyStatus() {
   const [dueSchedules, setDueSchedules] = useState<number | null>(null);
   const [employeeCount, setEmployeeCount] = useState<number | null>(null);
   const [treasury, setTreasury] = useState<number | null>(null);
+  const [companyName, setCompanyName] = useState<string>("Loading...");
   const address = (account?.address as any)?.toString?.() ?? (account?.address ? String(account.address) : "");
 
   useEffect(() => {
     let cancelled = false;
     async function load() {
-      if (!address) { setTotalSchedules(null); setDueSchedules(null); setEmployeeCount(null); return; }
+      if (!address) {
+        setTotalSchedules(null);
+        setDueSchedules(null);
+        setEmployeeCount(null);
+        setCompanyName("Connect Wallet");
+        return;
+      }
       setLoading(true);
       try {
-        const empCount = await getCompanyEmployeeCount(address as string);
-        const total = await getTotalSchedulesCount(address as string);
-        const due = await getDuePaymentsCount(address as string);
-        const bal = await getTreasuryBalance(address as string);
+        const [empCount, total, due, bal, name] = await Promise.all([
+          getCompanyEmployeeCount(address as string),
+          getTotalSchedulesCount(address as string),
+          getDuePaymentsCount(address as string),
+          getTreasuryBalance(address as string),
+          getCompanyName(address as string)
+        ]);
         if (!cancelled) {
           setEmployeeCount(Number(empCount ?? 0));
           setTotalSchedules(Number(total ?? 0));
           setDueSchedules(Number(due ?? 0));
           setTreasury(Number(bal ?? 0));
+          setCompanyName(name || "Not Registered");
         }
       } catch {
-        if (!cancelled) { setEmployeeCount(null); setTotalSchedules(null); setDueSchedules(null); setTreasury(null); }
+        if (!cancelled) {
+          setEmployeeCount(null);
+          setTotalSchedules(null);
+          setDueSchedules(null);
+          setTreasury(null);
+          setCompanyName("Not Registered");
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -50,7 +67,22 @@ export function CompanyStatus() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Company Status</CardTitle>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <Building2 className="h-5 w-5 text-blue-500" />
+              {companyName}
+            </CardTitle>
+            {address && companyName !== "Not Registered" && companyName !== "Connect Wallet" && (
+              <p className="text-xs text-gray-500 mt-1">Your Company Dashboard</p>
+            )}
+          </div>
+          {address && companyName === "Not Registered" && (
+            <div className="text-sm text-amber-600 bg-amber-50 px-3 py-1 rounded-md">
+              Register your company to get started
+            </div>
+          )}
+        </div>
       </CardHeader>
       <CardContent>
         {!address && <p className="text-sm text-gray-500">Connect wallet to view status.</p>}

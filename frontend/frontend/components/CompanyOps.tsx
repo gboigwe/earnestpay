@@ -76,7 +76,27 @@ export function CompanyOps() {
       toast({ title: "Treasury funded", description: `${amt} APT sent. Tx: ${res.transferHash?.slice?.(0,10) ?? ''}...` });
       setFundAmount("");
     } catch (e: any) {
-      toast({ title: "Failed to fund treasury", description: e?.message ?? String(e), variant: "destructive" });
+      console.error('Fund treasury error:', e);
+
+      let errorTitle = "Failed to Fund Treasury";
+      let errorMessage = "An unexpected error occurred";
+
+      // Check for simulation errors (these happen BEFORE wallet popup)
+      if (e?.message?.includes('MAX_GAS_UNITS_BELOW_MIN_TRANSACTION_GAS_UNITS')) {
+        errorTitle = '💰 Insufficient Gas Funds';
+        errorMessage = 'You need APT tokens in your wallet to pay for transaction gas fees. Please fund your wallet from the Aptos faucet first.';
+      } else if (e?.message?.includes('INSUFFICIENT_BALANCE_FOR_TRANSACTION_FEE')) {
+        errorTitle = '💰 Insufficient Balance';
+        errorMessage = 'You don\'t have enough APT to pay for gas fees. Please add funds to your wallet from the faucet.';
+      } else if (e?.message?.includes("User rejected") || e?.code === 4001) {
+        // Silent - user cancelled on purpose
+        setLoading((s) => ({ ...s, fund: false }));
+        return;
+      } else if (e?.message) {
+        errorMessage = e.message;
+      }
+
+      toast({ title: errorTitle, description: errorMessage, variant: "destructive" });
     } finally {
       setLoading((s) => ({ ...s, fund: false }));
     }
@@ -91,7 +111,27 @@ export function CompanyOps() {
       toast({ title: "Employee added" });
       setNewEmployee("");
     } catch (e: any) {
-      toast({ title: "Failed to add employee", description: e?.message ?? String(e), variant: "destructive" });
+      console.error('Add employee error:', e);
+
+      let errorTitle = "Failed to Add Employee";
+      let errorMessage = "An unexpected error occurred";
+
+      // Check for simulation errors (these happen BEFORE wallet popup)
+      if (e?.message?.includes('MAX_GAS_UNITS_BELOW_MIN_TRANSACTION_GAS_UNITS')) {
+        errorTitle = '💰 Insufficient Gas Funds';
+        errorMessage = 'You need APT tokens in your wallet to pay for transaction gas fees. Please fund your wallet from the Aptos faucet first.';
+      } else if (e?.message?.includes('INSUFFICIENT_BALANCE_FOR_TRANSACTION_FEE')) {
+        errorTitle = '💰 Insufficient Balance';
+        errorMessage = 'You don\'t have enough APT to pay for gas fees. Please add funds to your wallet from the faucet.';
+      } else if (e?.message?.includes("User rejected") || e?.code === 4001) {
+        // Silent - user cancelled on purpose
+        setLoading((s) => ({ ...s, add: false }));
+        return;
+      } else if (e?.message) {
+        errorMessage = e.message;
+      }
+
+      toast({ title: errorTitle, description: errorMessage, variant: "destructive" });
     } finally {
       setLoading((s) => ({ ...s, add: false }));
     }
@@ -110,7 +150,27 @@ export function CompanyOps() {
       setPayEmployee("");
       setPayAmount("");
     } catch (e: any) {
-      toast({ title: "Failed to process payment", description: e?.message ?? String(e), variant: "destructive" });
+      console.error('Process payment error:', e);
+
+      let errorTitle = "Failed to Process Payment";
+      let errorMessage = "An unexpected error occurred";
+
+      // Check for simulation errors (these happen BEFORE wallet popup)
+      if (e?.message?.includes('MAX_GAS_UNITS_BELOW_MIN_TRANSACTION_GAS_UNITS')) {
+        errorTitle = '💰 Insufficient Gas Funds';
+        errorMessage = 'You need APT tokens in your wallet to pay for transaction gas fees. Please fund your wallet from the Aptos faucet first.';
+      } else if (e?.message?.includes('INSUFFICIENT_BALANCE_FOR_TRANSACTION_FEE')) {
+        errorTitle = '💰 Insufficient Balance';
+        errorMessage = 'You don\'t have enough APT to pay for gas fees. Please add funds to your wallet from the faucet.';
+      } else if (e?.message?.includes("User rejected") || e?.code === 4001) {
+        // Silent - user cancelled on purpose
+        setLoading((s) => ({ ...s, pay: false }));
+        return;
+      } else if (e?.message) {
+        errorMessage = e.message;
+      }
+
+      toast({ title: errorTitle, description: errorMessage, variant: "destructive" });
     } finally {
       setLoading((s) => ({ ...s, pay: false }));
     }

@@ -122,7 +122,27 @@ export function SchedulerManager() {
       toast({ title: "Scheduler initialized" });
       await refreshCounts();
     } catch (e: any) {
-      toast({ title: "Failed to initialize", description: e?.message ?? String(e), variant: "destructive" });
+      console.error('Initialize scheduler error:', e);
+
+      let errorTitle = "Failed to Initialize";
+      let errorMessage = "An unexpected error occurred";
+
+      // Check for simulation errors (these happen BEFORE wallet popup)
+      if (e?.message?.includes('MAX_GAS_UNITS_BELOW_MIN_TRANSACTION_GAS_UNITS')) {
+        errorTitle = '💰 Insufficient Gas Funds';
+        errorMessage = 'You need APT tokens in your wallet to pay for transaction gas fees. Please fund your wallet from the Aptos faucet first.';
+      } else if (e?.message?.includes('INSUFFICIENT_BALANCE_FOR_TRANSACTION_FEE')) {
+        errorTitle = '💰 Insufficient Balance';
+        errorMessage = 'You don\'t have enough APT to pay for gas fees. Please add funds to your wallet from the faucet.';
+      } else if (e?.message?.includes("User rejected") || e?.code === 4001) {
+        // Silent - user cancelled on purpose
+        setInitLoading(false);
+        return;
+      } else if (e?.message) {
+        errorMessage = e.message;
+      }
+
+      toast({ title: errorTitle, description: errorMessage, variant: "destructive" });
     } finally {
       setInitLoading(false);
     }
@@ -137,7 +157,27 @@ export function SchedulerManager() {
       toast({ title: "Executed due payments" });
       await refreshCounts();
     } catch (e: any) {
-      toast({ title: "Failed to execute", description: e?.message ?? String(e), variant: "destructive" });
+      console.error('Execute due payments error:', e);
+
+      let errorTitle = "Failed to Execute";
+      let errorMessage = "An unexpected error occurred";
+
+      // Check for simulation errors (these happen BEFORE wallet popup)
+      if (e?.message?.includes('MAX_GAS_UNITS_BELOW_MIN_TRANSACTION_GAS_UNITS')) {
+        errorTitle = '💰 Insufficient Gas Funds';
+        errorMessage = 'You need APT tokens in your wallet to pay for transaction gas fees. Please fund your wallet from the Aptos faucet first.';
+      } else if (e?.message?.includes('INSUFFICIENT_BALANCE_FOR_TRANSACTION_FEE')) {
+        errorTitle = '💰 Insufficient Balance';
+        errorMessage = 'You don\'t have enough APT to pay for gas fees. Please add funds to your wallet from the faucet.';
+      } else if (e?.message?.includes("User rejected") || e?.code === 4001) {
+        // Silent - user cancelled on purpose
+        setExecLoading(false);
+        return;
+      } else if (e?.message) {
+        errorMessage = e.message;
+      }
+
+      toast({ title: errorTitle, description: errorMessage, variant: "destructive" });
     } finally {
       setExecLoading(false);
     }
@@ -173,7 +213,27 @@ export function SchedulerManager() {
       toast({ title: "Payment schedule created", description: `${amountNum} APT per run` });
       await refreshCounts();
     } catch (e: any) {
-      toast({ title: "Failed to create schedule", description: e?.message ?? String(e), variant: "destructive" });
+      console.error('Create payment schedule error:', e);
+
+      let errorTitle = "Failed to Create Schedule";
+      let errorMessage = "An unexpected error occurred";
+
+      // Check for simulation errors (these happen BEFORE wallet popup)
+      if (e?.message?.includes('MAX_GAS_UNITS_BELOW_MIN_TRANSACTION_GAS_UNITS')) {
+        errorTitle = '💰 Insufficient Gas Funds';
+        errorMessage = 'You need APT tokens in your wallet to pay for transaction gas fees. Please fund your wallet from the Aptos faucet first.';
+      } else if (e?.message?.includes('INSUFFICIENT_BALANCE_FOR_TRANSACTION_FEE')) {
+        errorTitle = '💰 Insufficient Balance';
+        errorMessage = 'You don\'t have enough APT to pay for gas fees. Please add funds to your wallet from the faucet.';
+      } else if (e?.message?.includes("User rejected") || e?.code === 4001) {
+        // Silent - user cancelled on purpose
+        setLoading(false);
+        return;
+      } else if (e?.message) {
+        errorMessage = e.message;
+      }
+
+      toast({ title: errorTitle, description: errorMessage, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -192,7 +252,27 @@ export function SchedulerManager() {
       await updateScheduleAmount(walletLike, scheduleId, octas);
       toast({ title: "Schedule amount updated", description: `${newAmtNum} APT` });
     } catch (e: any) {
-      toast({ title: "Failed to update amount", description: e?.message ?? String(e), variant: "destructive" });
+      console.error('Update schedule amount error:', e);
+
+      let errorTitle = "Failed to Update Amount";
+      let errorMessage = "An unexpected error occurred";
+
+      // Check for simulation errors (these happen BEFORE wallet popup)
+      if (e?.message?.includes('MAX_GAS_UNITS_BELOW_MIN_TRANSACTION_GAS_UNITS')) {
+        errorTitle = '💰 Insufficient Gas Funds';
+        errorMessage = 'You need APT tokens in your wallet to pay for transaction gas fees. Please fund your wallet from the Aptos faucet first.';
+      } else if (e?.message?.includes('INSUFFICIENT_BALANCE_FOR_TRANSACTION_FEE')) {
+        errorTitle = '💰 Insufficient Balance';
+        errorMessage = 'You don\'t have enough APT to pay for gas fees. Please add funds to your wallet from the faucet.';
+      } else if (e?.message?.includes("User rejected") || e?.code === 4001) {
+        // Silent - user cancelled on purpose
+        setLoading(false);
+        return;
+      } else if (e?.message) {
+        errorMessage = e.message;
+      }
+
+      toast({ title: errorTitle, description: errorMessage, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -209,7 +289,27 @@ export function SchedulerManager() {
       toast({ title: "Schedule deactivated" });
       await refreshCounts();
     } catch (e: any) {
-      toast({ title: "Failed to deactivate", description: e?.message ?? String(e), variant: "destructive" });
+      console.error('Deactivate schedule error:', e);
+
+      let errorTitle = "Failed to Deactivate";
+      let errorMessage = "An unexpected error occurred";
+
+      // Check for simulation errors (these happen BEFORE wallet popup)
+      if (e?.message?.includes('MAX_GAS_UNITS_BELOW_MIN_TRANSACTION_GAS_UNITS')) {
+        errorTitle = '💰 Insufficient Gas Funds';
+        errorMessage = 'You need APT tokens in your wallet to pay for transaction gas fees. Please fund your wallet from the Aptos faucet first.';
+      } else if (e?.message?.includes('INSUFFICIENT_BALANCE_FOR_TRANSACTION_FEE')) {
+        errorTitle = '💰 Insufficient Balance';
+        errorMessage = 'You don\'t have enough APT to pay for gas fees. Please add funds to your wallet from the faucet.';
+      } else if (e?.message?.includes("User rejected") || e?.code === 4001) {
+        // Silent - user cancelled on purpose
+        setLoading(false);
+        return;
+      } else if (e?.message) {
+        errorMessage = e.message;
+      }
+
+      toast({ title: errorTitle, description: errorMessage, variant: "destructive" });
     } finally {
       setLoading(false);
     }
