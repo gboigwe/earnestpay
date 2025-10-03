@@ -57,8 +57,8 @@ frontend/src/
 ### 2. Clone and Setup
 
 ```bash
-git clone https://github.com/gboigwe/payroll.git
-cd payroll
+git clone https://github.com/gboigwe/earnestpay.git
+cd earnestpay
 
 # Install frontend dependencies
 cd payroll/frontend
