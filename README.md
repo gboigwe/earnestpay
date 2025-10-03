@@ -118,26 +118,14 @@ frontend/src/
 - Aptos CLI (installed and configured)
 - Supported Aptos wallet (Petra, Martian, etc.)
 
-## 🚀 Quick Start
-
-### 1. Setup Development Environment
-
-```bash
-# Install Aptos CLI (if not already installed)
-curl -fsSL "https://aptos.dev/scripts/install_cli.py" | python3
-
-# Verify installation
-aptos --version
-```
-
 ### 2. Clone and Setup
 
 ```bash
-git clone <repository>
-cd aptos_hackathon
+git clone https://github.com/gboigwe/earnestpay.git
+cd earnestpay
 
 # Install frontend dependencies
-cd aptos_hackathon/frontend
+cd payroll/frontend
 npm install
 ```
 
@@ -150,7 +138,7 @@ cd ..
 # Compile Move contracts
 aptos move compile
 
-# Run tests (optional - some tests require proper blockchain setup)
+# Run tests
 aptos move test
 ```
 
@@ -158,11 +146,11 @@ aptos move test
 
 ```bash
 # Start development server
-cd aptos_hackathon/frontend
-npm start
+cd payroll/frontend
+npm run dev
 ```
 
-The application will be available at `http://localhost:3000`
+The application will be available at `http://localhost:5173`
 
 ## 🎯 MVP Demonstration
 
@@ -183,7 +171,6 @@ The application will be available at `http://localhost:3000`
 
 ## 🔒 Security Features
 
-- **Multi-signature Support**: Treasury operations can require multiple approvals
 - **Role-based Access Control**: Different permissions for employers, HR, and accountants
 - **Audit Trails**: Complete transaction history on-chain
 - **Resource Safety**: Move language prevents common financial vulnerabilities
@@ -202,19 +189,6 @@ The application will be available at `http://localhost:3000`
 4. **User Experience**: Intuitive interfaces for all stakeholders
 5. **Blockchain Benefits**: Transparency, immutability, and global accessibility
 
-## 🧪 Testing
-
-### Smart Contract Tests
-```bash
-aptos move test
-```
-
-### Frontend Testing
-```bash
-cd aptos_hackathon/frontend
-npm test
-```
-
 ## 📈 Future Roadmap
 
 ### Phase 2 Features
@@ -229,37 +203,12 @@ npm test
 - **Benefits Management**: Health insurance and retirement plans
 - **Global Expansion**: Support for international payroll
 
-## 🤝 Contributing
-
-This project was built for the Aptos Ctrl+MOVE Hackathon. For contributions and feedback:
-
-1. Review the codebase and architecture
-2. Test the MVP functionality
-3. Provide feedback on user experience
-4. Suggest improvements for security and scalability
-
 ## 📜 License
 
-Built for hackathon purposes. See individual components for specific licensing.
+This project is licensed under the [MIT License](./LICENSE). 
 
-## 🏆 Hackathon Submission
+## 🏆 Contract Deployment Details
 
-### Technical Innovation
-- **Novel Use of Move**: Advanced resource management for payroll operations
-- **Parallel Execution Optimization**: Designed for Aptos's unique capabilities
-- **Comprehensive Solution**: End-to-end payroll management system
-
-### Business Impact
-- **Real-world Problem**: Addresses actual pain points in payroll management
-- **Market Ready**: Enterprise-scalable architecture
-- **Cost Effective**: Significant cost savings over traditional systems
-
-### User Experience
-- **Intuitive Design**: Easy-to-use interfaces for all user types
-- **Mobile Responsive**: Works across all device types
-- **Accessibility**: Designed for users of all technical levels
-
-Deployment successful!
 📝 Contract deployed at: 0x4f5ccbe1c0d287233e5d0bdf4d884c2558dbfa43816f96c4286fbab9f0047e44
 
 📋 Your contract modules:
@@ -267,8 +216,6 @@ Deployment successful!
   - 0x4f5ccbe1c0d287233e5d0bdf4d884c2558dbfa43816f96c4286fbab9f0047e44::employee_registry
   - 0x4f5ccbe1c0d287233e5d0bdf4d884c2558dbfa43816f96c4286fbab9f0047e44::payment_scheduler
   - 0x4f5ccbe1c0d287233e5d0bdf4d884c2558dbfa43816f96c4286fbab9f0047e44::tax_calculator
-
-🎉 Ready to use!
 ---
 
 **Built with ❤️ for the Aptos ecosystem and the future of decentralized finance**
