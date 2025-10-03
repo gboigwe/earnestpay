@@ -6,10 +6,11 @@ import { Input } from "./ui/input";
 import { toast } from "./ui/use-toast";
 import { ConfirmationDialog } from "./ui/confirmation-dialog";
 import { EmptyState } from "./ui/empty-state";
-import { Users } from "lucide-react";
+import { Users, ExternalLink } from "lucide-react";
 import { listCompanyEmployees, getEmployeeSalary, processPayment, getTreasuryBalance, getPaymentScheduleCreatedEvents, getPaymentScheduleUpdatedEvents, getPaymentScheduleDeactivatedEvents, getPaymentProcessedEvents, getEmployeeRole } from "@/utils/payroll";
 import { listEmployees as listCachedEmployees } from "@/lib/employeeCache";
 import { useCompanyRegistration } from "@/hooks/useCompanyRegistration";
+import { getExplorerTxnUrl } from "@/constants";
 
 export function ProcessPayroll() {
   const { account, signAndSubmitTransaction } = useWallet();
@@ -616,6 +617,7 @@ export function ProcessPayroll() {
             {events.map((ev, i) => {
               const apt = (Number(ev.amountOctas||0)/1e8)||0;
               const ts = ev.tsMicros ? new Date(Number(ev.tsMicros)/1000).toLocaleString() : '';
+              const txnHash = ev.version ? `0x${Number(ev.version).toString(16)}` : '';
               return (
                 <div key={i} className="p-2 text-sm flex items-center justify-between">
                   <div className="flex-1">
@@ -624,6 +626,17 @@ export function ProcessPayroll() {
                   </div>
                   <div className="text-xs text-gray-600 mr-3">{ts}</div>
                   <div className="text-xs px-2 py-1 rounded bg-gray-100 text-gray-800 whitespace-nowrap">{apt.toFixed(4)} APT</div>
+                  {ev.version && (
+                    <a
+                      href={getExplorerTxnUrl(txnHash)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="ml-2 text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                      title="View on Explorer"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                    </a>
+                  )}
                 </div>
               );
             })}

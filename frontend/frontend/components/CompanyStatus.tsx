@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Skeleton } from "./ui/skeleton";
 import { getCompanyEmployeeCount, getTotalSchedulesCount, getDuePaymentsCount, getTreasuryBalance, getCompanyName } from "@/utils/payroll";
 import { StatCard } from "./ui/enhanced-card";
-import { DollarSign, Users, Calendar, Clock, Building2 } from "lucide-react";
+import { DollarSign, Users, Calendar, Clock, Building2, ExternalLink } from "lucide-react";
+import { getExplorerAccountUrl } from "@/constants";
 
 export function CompanyStatus() {
   const { account } = useWallet();
@@ -70,10 +71,23 @@ export function CompanyStatus() {
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="flex items-center gap-2">
-              <Building2 className="h-5 w-5 text-blue-500" />
-              {companyName}
-            </CardTitle>
+            <div className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2">
+                <Building2 className="h-5 w-5 text-blue-500" />
+                {companyName}
+              </CardTitle>
+              {address && companyName !== "Not Registered" && companyName !== "Connect Wallet" && (
+                <a
+                  href={getExplorerAccountUrl(address)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                  title="View Company on Explorer"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                </a>
+              )}
+            </div>
             {address && companyName !== "Not Registered" && companyName !== "Connect Wallet" && (
               <p className="text-xs text-gray-500 mt-1">Your Company Dashboard</p>
             )}
