@@ -46,6 +46,11 @@ export const ModernNavigation: React.FC<ModernNavigationProps> = ({
       icon: <TrendingUp size={20} />
     },
     {
+      id: 'employee-portal',
+      label: 'Employee Portal',
+      icon: <Users size={20} />
+    },
+    {
       id: 'employees',
       label: 'Employees',
       icon: <Users size={20} />,

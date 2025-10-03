@@ -26,6 +26,7 @@ import { ProcessPayroll } from './ProcessPayroll';
 import { EmployeeProfileForm } from './EmployeeProfileForm';
 import { SchedulerManager } from './SchedulerManager';
 import { TaxCompliance } from './TaxCompliance';
+import { EmployeePortal } from './EmployeePortal';
 import { getEmployeeProfileCreatedEvents, getPaymentProcessedEvents } from '@/utils/payroll';
 
 // Recent on-chain transactions (PaymentProcessed events)
@@ -603,6 +604,12 @@ export const PayrollDashboard: React.FC<PayrollDashboardProps> = ({ onBack }) =>
             </Card>
           </div>
         );
+      case 'employee-portal':
+        return (
+          <div className="space-y-6">
+            <EmployeePortal />
+          </div>
+        );
       case 'compliance':
         return (
           <div className="space-y-6">
@@ -639,10 +646,9 @@ export const PayrollDashboard: React.FC<PayrollDashboardProps> = ({ onBack }) =>
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <ModernNavigation 
+      <ModernNavigation
         activeTab={activeTab}
         onTabChange={setActiveTab}
-        notifications={3}
         onSidebarToggle={setIsSidebarCollapsed}
       />
       
