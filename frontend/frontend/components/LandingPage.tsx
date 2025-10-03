@@ -120,7 +120,7 @@ const LandingPage: React.FC<{ onGetStarted: () => void }> = ({ onGetStarted }) =
             <div className="hidden md:flex items-center gap-8">
               <a href="#protocol" className="text-gray-300 hover:text-white transition-colors">Protocol</a>
               <a href="#tokenomics" className="text-gray-300 hover:text-white transition-colors">Tokenomics</a>
-              <a href="#docs" className="text-gray-300 hover:text-white transition-colors">Docs</a>
+              <a href="https://github.com/gboigwe/earnestpay" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white transition-colors">Docs</a>
               <div className="flex items-center gap-2 text-sm mr-4">
                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
                 <span className="text-green-400 font-medium">Testnet</span>
@@ -150,7 +150,7 @@ const LandingPage: React.FC<{ onGetStarted: () => void }> = ({ onGetStarted }) =
               <div className="space-y-2">
                 <a href="#protocol" className="block px-3 py-2 text-gray-300 hover:text-white">Protocol</a>
                 <a href="#tokenomics" className="block px-3 py-2 text-gray-300 hover:text-white">Tokenomics</a>
-                <a href="#docs" className="block px-3 py-2 text-gray-300 hover:text-white">Docs</a>
+                <a href="https://github.com/gboigwe/earnestpay" target="_blank" rel="noopener noreferrer" className="block px-3 py-2 text-gray-300 hover:text-white">Docs</a>
                 <div className="px-3 py-2">
                   <Button
                     onClick={handleGetStarted}
@@ -470,6 +470,7 @@ const LandingPage: React.FC<{ onGetStarted: () => void }> = ({ onGetStarted }) =
             <Button
               size="lg"
               className="bg-white/10 backdrop-blur-sm border-2 border-white text-white hover:bg-white hover:text-blue-600 px-8 py-6 text-lg transition-all font-semibold"
+              onClick={() => window.open('https://github.com/gboigwe/earnestpay', '_blank', 'noopener,noreferrer')}
             >
               View Documentation
             </Button>
