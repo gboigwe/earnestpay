@@ -47,7 +47,7 @@ export function CompanyOps() {
         // Fallback to cached employees if on-chain list is empty
         if (!merged.length) {
           try {
-            const cached = listCachedEmployees();
+            const cached = listCachedEmployees(company);
             merged = (cached || []).map((c: any) => ({ address: c.address, firstName: c.firstName, lastName: c.lastName }));
           } catch {}
         }
@@ -187,9 +187,14 @@ export function CompanyOps() {
         <CardHeader>
           <CardTitle>Fund Treasury</CardTitle>
         </CardHeader>
-        <CardContent className="flex gap-3">
-          <Input type="number" placeholder="Amount (APT, e.g. 0.01)" step="0.00000001" value={fundAmount} onChange={(e) => setFundAmount(e.target.value)} disabled={!registered || regLoading} />
-          <Button onClick={onFund} disabled={!!loading.fund || !registered || regLoading}>Fund</Button>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
+            <div className="md:col-span-3">
+              <label className="block text-xs text-gray-500 mb-1">Amount (APT)</label>
+              <Input type="number" placeholder="e.g. 0.01" step="0.00000001" value={fundAmount} onChange={(e) => setFundAmount(e.target.value)} disabled={!registered || regLoading} />
+            </div>
+            <Button onClick={onFund} disabled={!!loading.fund || !registered || regLoading}>Fund</Button>
+          </div>
         </CardContent>
       </Card>
 
@@ -197,26 +202,28 @@ export function CompanyOps() {
         <CardHeader>
           <CardTitle>Add Employee (payroll_manager)</CardTitle>
         </CardHeader>
-        <CardContent className="flex gap-3">
-          <div className="flex-1">
-            <label className="block text-xs text-gray-500 mb-1">{employees.length ? 'Select employee to add' : 'Enter employee address to add'}</label>
-            {employees.length ? (
-              <select
-                className="w-full border rounded-md h-10 px-3 bg-white text-gray-900"
-                value={newEmployee}
-                onChange={(e) => setNewEmployee(e.target.value)}
-                disabled={!registered || regLoading}
-              >
-                <option value="">Select employee</option>
-                {employees.map((e) => (
-                  <option key={e.address} value={e.address}>{e.label}</option>
-                ))}
-              </select>
-            ) : (
-              <Input placeholder="0x... employee address" value={newEmployee} onChange={(e) => setNewEmployee(e.target.value)} disabled={!registered || regLoading} />
-            )}
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
+            <div className="md:col-span-3">
+              <label className="block text-xs text-gray-500 mb-1">{employees.length ? 'Select employee to add' : 'Enter employee address to add'}</label>
+              {employees.length ? (
+                <select
+                  className="w-full border rounded-md h-10 px-3 bg-white text-gray-900"
+                  value={newEmployee}
+                  onChange={(e) => setNewEmployee(e.target.value)}
+                  disabled={!registered || regLoading}
+                >
+                  <option value="">Select employee</option>
+                  {employees.map((e) => (
+                    <option key={e.address} value={e.address}>{e.label}</option>
+                  ))}
+                </select>
+              ) : (
+                <Input placeholder="0x... employee address" value={newEmployee} onChange={(e) => setNewEmployee(e.target.value)} disabled={!registered || regLoading} />
+              )}
+            </div>
+            <Button variant="outline" onClick={onAddEmployee} disabled={!!loading.add || !registered || regLoading}>Add</Button>
           </div>
-          <Button variant="outline" onClick={onAddEmployee} disabled={!!loading.add || !registered || regLoading}>Add</Button>
         </CardContent>
       </Card>
 
@@ -224,27 +231,32 @@ export function CompanyOps() {
         <CardHeader>
           <CardTitle>Process Payment (one-off)</CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <div>
-            <label className="block text-xs text-gray-500 mb-1">{employees.length ? 'Select employee' : 'Enter employee address'}</label>
-            {employees.length ? (
-              <select
-                className="w-full border rounded-md h-10 px-3 bg-white text-gray-900"
-                value={payEmployee}
-                onChange={(e) => setPayEmployee(e.target.value)}
-                disabled={!registered || regLoading}
-              >
-                <option value="">Select employee</option>
-                {employees.map((e) => (
-                  <option key={e.address} value={e.address}>{e.label}</option>
-                ))}
-              </select>
-            ) : (
-              <Input placeholder="0x... employee address" value={payEmployee} onChange={(e) => setPayEmployee(e.target.value)} disabled={!registered || regLoading} />
-            )}
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
+            <div className="md:col-span-2">
+              <label className="block text-xs text-gray-500 mb-1">{employees.length ? 'Select employee' : 'Enter employee address'}</label>
+              {employees.length ? (
+                <select
+                  className="w-full border rounded-md h-10 px-3 bg-white text-gray-900"
+                  value={payEmployee}
+                  onChange={(e) => setPayEmployee(e.target.value)}
+                  disabled={!registered || regLoading}
+                >
+                  <option value="">Select employee</option>
+                  {employees.map((e) => (
+                    <option key={e.address} value={e.address}>{e.label}</option>
+                  ))}
+                </select>
+              ) : (
+                <Input placeholder="0x... employee address" value={payEmployee} onChange={(e) => setPayEmployee(e.target.value)} disabled={!registered || regLoading} />
+              )}
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Amount (APT)</label>
+              <Input type="number" placeholder="e.g. 0.05" step="0.00000001" value={payAmount} onChange={(e) => setPayAmount(e.target.value)} disabled={!registered || regLoading} />
+            </div>
+            <Button onClick={onProcessPayment} disabled={!!loading.pay || !registered || regLoading}>Process</Button>
           </div>
-          <Input type="number" placeholder="Amount (APT, e.g. 0.05)" step="0.00000001" value={payAmount} onChange={(e) => setPayAmount(e.target.value)} disabled={!registered || regLoading} />
-          <Button onClick={onProcessPayment} disabled={!!loading.pay || !registered || regLoading}>Process</Button>
         </CardContent>
       </Card>
     </div>

@@ -162,7 +162,7 @@ export function ProcessPayroll() {
         // Fallback: merge cached employees if still empty
         if (!list?.length) {
           try {
-            const cached = listCachedEmployees();
+            const cached = listCachedEmployees(companyAddress);
             list = (cached || []).map((c: any) => ({ address: c.address, firstName: c.firstName, lastName: c.lastName }));
           } catch {}
         }
@@ -270,12 +270,31 @@ export function ProcessPayroll() {
         }
       } else {
         const map: Record<string, number> = {};
+        const cachedEmployees = listCachedEmployees(companyAddress);
         for (const e of employees) {
           try {
             const sal = await getEmployeeSalary(e.address);
-            map[e.address] = Number(sal ?? 0);
+            const salOctas = Number(sal ?? 0);
+            // If blockchain salary is 0, try to use cached salary as fallback
+            if (salOctas === 0) {
+              const cached = cachedEmployees.find((c) => c.address.toLowerCase() === e.address.toLowerCase());
+              if (cached?.monthlySalary) {
+                // Cached salary is in APT, convert to octas
+                map[e.address] = Math.round(cached.monthlySalary * 1e8);
+              } else {
+                map[e.address] = 0;
+              }
+            } else {
+              map[e.address] = salOctas;
+            }
           } catch {
-            map[e.address] = 0;
+            // Try cached fallback on error too
+            const cached = cachedEmployees.find((c) => c.address.toLowerCase() === e.address.toLowerCase());
+            if (cached?.monthlySalary) {
+              map[e.address] = Math.round(cached.monthlySalary * 1e8);
+            } else {
+              map[e.address] = 0;
+            }
           }
         }
         if (!cancelled) setSalaries(map);
@@ -411,9 +430,9 @@ export function ProcessPayroll() {
               Company not registered. Please register your company in Settings → Company Registration before processing payroll.
             </div>
           )}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Employee</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Employee *</label>
             <select
               className="w-full border rounded-md h-10 px-3 bg-white text-gray-900"
               value={employee}
@@ -427,24 +446,26 @@ export function ProcessPayroll() {
             </select>
           </div>
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Amount (APT)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Amount (APT) *
+              <span className="block text-xs font-normal text-gray-500 mt-0.5">Defaults to employee salary if available</span>
+            </label>
             <Input type="number" step="0.00000001" placeholder="e.g. 2.5" value={amountAPT} onChange={(ev) => setAmountAPT(ev.target.value)} disabled={!registered || regLoading} />
-            <p className="text-xs text-gray-500 mt-1">Defaults to employee salary if available.</p>
           </div>
-          <div className="flex items-end">
-            <Button onClick={onProcess} disabled={disabled} className="w-full">Process</Button>
+          <div>
+            <Button onClick={onProcess} disabled={disabled} className="w-full h-10">Process</Button>
           </div>
         </div>
 
         {/* Batch controls */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <div className="text-sm font-medium">Batch Process {useScheduled ? 'Scheduled Amounts' : 'Salaries'}</div>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setEmpRefreshTick(x => x+1)} disabled={!registered || regLoading || batchProcessing}>{empLoading ? 'Refreshing…' : 'Refresh Employees'}</Button>
-              <Button variant="outline" onClick={() => setSalRefreshTick(x => x+1)} disabled={!registered || regLoading || batchProcessing}>{salLoading ? 'Refreshing…' : 'Refresh Amounts'}</Button>
-              <Button variant="outline" onClick={() => toggleAll(true)} disabled={!registered || regLoading || batchProcessing}>Select All</Button>
-              <Button variant="outline" onClick={() => toggleAll(false)} disabled={!registered || regLoading || batchProcessing}>Clear All</Button>
+        <div className="space-y-3">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="text-sm font-medium text-gray-700">Batch Process {useScheduled ? 'Scheduled Amounts' : 'Salaries'}</div>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" size="sm" onClick={() => setEmpRefreshTick(x => x+1)} disabled={!registered || regLoading || batchProcessing}>{empLoading ? 'Refreshing…' : 'Refresh Employees'}</Button>
+              <Button variant="outline" size="sm" onClick={() => setSalRefreshTick(x => x+1)} disabled={!registered || regLoading || batchProcessing}>{salLoading ? 'Refreshing…' : 'Refresh Amounts'}</Button>
+              <Button variant="outline" size="sm" onClick={() => toggleAll(true)} disabled={!registered || regLoading || batchProcessing}>Select All</Button>
+              <Button variant="outline" size="sm" onClick={() => toggleAll(false)} disabled={!registered || regLoading || batchProcessing}>Clear All</Button>
             </div>
           </div>
           <div className="flex items-center gap-2 text-sm">

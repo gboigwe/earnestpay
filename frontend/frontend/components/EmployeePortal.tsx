@@ -164,49 +164,72 @@ export function EmployeePortal() {
 
   async function loadUpcomingSchedules() {
     try {
-      // Get all schedule creation events
-      const pairs = await getPaymentScheduleCreatedEvents(employeeAddress, 100);
+      // Get payment history to find company addresses that have paid this employee
+      const paymentPairs = await getPaymentProcessedEvents(employeeAddress, 100);
+      const companyAddresses = new Set<string>();
 
-      const schedules: UpcomingSchedule[] = (pairs as any[])
-        .map(({ event }) => {
-          const eventData = event?.data || {};
-          const employeeAddr = String(eventData.employee_address || eventData.employee || '');
+      (paymentPairs as any[]).forEach(({ event }) => {
+        const eventData = event?.data || {};
+        const company = String(eventData.company || '');
+        if (company) companyAddresses.add(company);
+      });
 
-          // Only include schedules for this employee
-          if (employeeAddr.toLowerCase() !== employeeAddress.toLowerCase()) {
-            return null;
-          }
+      // If no companies found, employee hasn't been paid yet, so no schedules to show
+      if (companyAddresses.size === 0) {
+        setUpcomingSchedules([]);
+        return;
+      }
 
-          const scheduleId = Number(eventData.schedule_id || 0);
-          const amount = Number(eventData.amount || 0) / 1e8;
-          const frequencySeconds = Number(eventData.frequency || 0);
-          const nextRun = Number(eventData.next_run_time || 0);
+      // Fetch schedule events from each company that has paid this employee
+      const allSchedules: UpcomingSchedule[] = [];
+      for (const companyAddr of companyAddresses) {
+        try {
+          const pairs = await getPaymentScheduleCreatedEvents(companyAddr, 100);
 
-          // Convert frequency to readable format
-          let frequency = 'Unknown';
-          if (frequencySeconds === 604800) frequency = 'Weekly';
-          else if (frequencySeconds === 1209600) frequency = 'Bi-weekly';
-          else if (frequencySeconds === 2592000) frequency = 'Monthly';
-          else frequency = `Every ${Math.floor(frequencySeconds / 86400)} days`;
+          const companySchedules: UpcomingSchedule[] = (pairs as any[])
+            .map(({ event }) => {
+              const eventData = event?.data || {};
+              const employeeAddr = String(eventData.employee_address || eventData.employee || '');
 
-          // Convert next run time to date
-          const nextPaymentDate = nextRun
-            ? new Date(nextRun * 1000).toLocaleString()
-            : 'Not scheduled';
+              // Only include schedules for this employee
+              if (employeeAddr.toLowerCase() !== employeeAddress.toLowerCase()) {
+                return null;
+              }
 
-          const companyAddress = String(eventData.company || 'Unknown');
+              const scheduleId = Number(eventData.schedule_id || 0);
+              const amount = Number(eventData.amount || 0) / 1e8;
+              const frequencySeconds = Number(eventData.frequency || 0);
+              const nextRun = Number(eventData.next_run_time || 0);
 
-          return {
-            scheduleId,
-            amount,
-            frequency,
-            nextPaymentDate,
-            companyAddress
-          };
-        })
-        .filter((s): s is UpcomingSchedule => s !== null);
+              // Convert frequency to readable format
+              let frequency = 'Unknown';
+              if (frequencySeconds === 604800) frequency = 'Weekly';
+              else if (frequencySeconds === 1209600) frequency = 'Bi-weekly';
+              else if (frequencySeconds === 2592000) frequency = 'Monthly';
+              else frequency = `Every ${Math.floor(frequencySeconds / 86400)} days`;
 
-      setUpcomingSchedules(schedules);
+              // Convert next run time to date
+              const nextPaymentDate = nextRun
+                ? new Date(nextRun * 1000).toLocaleString()
+                : 'Not scheduled';
+
+              return {
+                scheduleId,
+                amount,
+                frequency,
+                nextPaymentDate,
+                companyAddress: companyAddr
+              };
+            })
+            .filter((s): s is UpcomingSchedule => s !== null);
+
+          allSchedules.push(...companySchedules);
+        } catch (error) {
+          console.error(`Error loading schedules from company ${companyAddr}:`, error);
+        }
+      }
+
+      setUpcomingSchedules(allSchedules);
     } catch (error) {
       console.error('Error loading upcoming schedules:', error);
       setUpcomingSchedules([]);

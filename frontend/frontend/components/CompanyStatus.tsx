@@ -60,9 +60,9 @@ export function CompanyStatus() {
   }, [address]);
 
   function formatAmount(n: any): string {
-    const v = Number(n);
-    if (!isFinite(v)) return '₳0';
-    return `₳${Math.trunc(v).toLocaleString()}`;
+    const v = Number(n) / 1e8; // Convert from octas to APT
+    if (!isFinite(v)) return '0 APT';
+    return `${v.toFixed(4)} APT`;
   }
 
   return (
