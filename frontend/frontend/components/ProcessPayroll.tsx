@@ -342,7 +342,27 @@ export function ProcessPayroll() {
       setAmountAPT("");
       setEmployee("");
     } catch (e: any) {
-      toast({ title: "Failed to process payroll", description: e?.message ?? String(e), variant: "destructive" });
+      console.error('Process payroll error:', e);
+
+      let errorTitle = "Failed to Process Payroll";
+      let errorMessage = "An unexpected error occurred";
+
+      // Check for simulation errors (these happen BEFORE wallet popup)
+      if (e?.message?.includes('MAX_GAS_UNITS_BELOW_MIN_TRANSACTION_GAS_UNITS')) {
+        errorTitle = '💰 Insufficient Gas Funds';
+        errorMessage = 'You need APT tokens in your wallet to pay for transaction gas fees. Please fund your wallet from the Aptos faucet first.';
+      } else if (e?.message?.includes('INSUFFICIENT_BALANCE_FOR_TRANSACTION_FEE')) {
+        errorTitle = '💰 Insufficient Balance';
+        errorMessage = 'You don\'t have enough APT to pay for gas fees. Please add funds to your wallet from the faucet.';
+      } else if (e?.message?.includes("User rejected") || e?.code === 4001) {
+        // Silent - user cancelled on purpose
+        setLoading(false);
+        return;
+      } else if (e?.message) {
+        errorMessage = e.message;
+      }
+
+      toast({ title: errorTitle, description: errorMessage, variant: "destructive" });
     } finally {
       setLoading(false);
     }

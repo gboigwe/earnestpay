@@ -434,6 +434,22 @@ export async function getCompanyInfo(companyAddress: string) {
   });
 }
 
+export async function getCompanyName(companyAddress: string): Promise<string> {
+  try {
+    const info = await getCompanyInfo(companyAddress);
+    // info returns: (name: vector<u8>, owner, treasury_balance, employee_count, is_active)
+    const nameBytes = info?.[0];
+    if (Array.isArray(nameBytes)) {
+      // Decode bytes to string - convert to number array first
+      const bytes = nameBytes.map((b: any) => Number(b));
+      return new TextDecoder().decode(new Uint8Array(bytes));
+    }
+    return "Unknown Company";
+  } catch {
+    return "Not Registered";
+  }
+}
+
 export async function isCompanyRegistered(companyAddress: string): Promise<boolean> {
   try {
     const res = await getCompanyInfo(companyAddress);

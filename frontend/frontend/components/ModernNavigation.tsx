@@ -1,24 +1,21 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Users, 
-  DollarSign, 
-  Calendar, 
-  FileText, 
-  Settings, 
+import {
+  Users,
+  DollarSign,
+  Calendar,
+  FileText,
+  Settings,
   Bell,
   Menu,
   X,
-  Wallet,
   TrendingUp,
   Shield,
   ChevronDown,
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
-import { useWallet } from '@aptos-labs/wallet-adapter-react';
-import { Button } from './ui/button';
-import { toast } from './ui/use-toast';
+import { WalletButton } from './WalletButton';
 
 interface NavigationItem {
   id: string;
@@ -44,12 +41,6 @@ export const ModernNavigation: React.FC<ModernNavigationProps> = ({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [expandedSubmenu, setExpandedSubmenu] = useState<string | null>(null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-
-  const { 
-    account, 
-    connected, 
-    disconnect
-  } = useWallet();
 
   const navigationItems: NavigationItem[] = [
     {
@@ -97,49 +88,47 @@ export const ModernNavigation: React.FC<ModernNavigationProps> = ({
     setExpandedSubmenu(expandedSubmenu === itemId ? null : itemId);
   };
 
-  const formatWalletAddress = (address: any) => {
-    const addrStr = address.toString();
-    return `${addrStr.slice(0, 6)}...${addrStr.slice(-4)}`;
-  };
-
   const handleSidebarToggle = () => {
     const newCollapsedState = !isSidebarCollapsed;
     setIsSidebarCollapsed(newCollapsedState);
     onSidebarToggle?.(newCollapsedState);
   };
 
-  const handleDisconnect = async () => {
-    try {
-      await disconnect();
-      toast({
-        title: "Wallet Disconnected",
-        description: "Successfully disconnected from wallet",
-      });
-    } catch (error) {
-      console.error('Disconnection failed:', error);
-    }
-  };
-
   return (
     <>
-      {/* Desktop Navigation */}
-      <div className={`fixed left-0 top-0 h-full bg-gray-900/95 backdrop-blur border-r border-gray-800 flex flex-col z-40 transition-all duration-300 ${isSidebarCollapsed ? 'w-16' : 'w-64'} hidden lg:flex`}>
-        {/* Logo */}
-        <div className="flex items-center flex-shrink-0 px-4 py-6">
-          <div className={`flex items-center ${isSidebarCollapsed ? 'justify-center' : 'gap-3'}`}>
-            <img
-              src="/earnestpay-icon.svg"
-              alt="EarnestPay Logo"
-              className="w-10 h-10"
-            />
-            {!isSidebarCollapsed && (
-              <div>
-                <h1 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">EarnestPay</h1>
-                <p className="text-xs text-gray-400">Payroll you can trust</p>
-              </div>
-            )}
+      {/* Top Header Bar - Desktop */}
+      <div className="fixed top-0 left-0 right-0 h-16 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border-b border-white/10 z-50 hidden lg:flex items-center justify-between px-6">
+        <div className="flex items-center gap-4">
+          <img
+            src="/earnestpay-icon.svg"
+            alt="EarnestPay Logo"
+            className="w-8 h-8"
+          />
+          <div>
+            <h1 className="text-lg font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+              EarnestPay Dashboard
+            </h1>
           </div>
         </div>
+
+        {/* Right side - Wallet Button */}
+        <div className="flex items-center gap-4">
+          {notifications > 0 && (
+            <div className="relative">
+              <Bell className="h-5 w-5 text-gray-400 hover:text-white cursor-pointer transition-colors" />
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                {notifications}
+              </span>
+            </div>
+          )}
+          <WalletButton />
+        </div>
+      </div>
+
+      {/* Desktop Sidebar Navigation */}
+      <div className={`fixed left-0 top-16 h-[calc(100vh-4rem)] bg-gray-900/95 backdrop-blur border-r border-gray-800 flex flex-col z-40 transition-all duration-300 ${isSidebarCollapsed ? 'w-16' : 'w-64'} hidden lg:flex`}>
+        {/* Sidebar content starts with padding */}
+        <div className="py-4"></div>
 
         {/* Collapse Button */}
         <div className="flex justify-center px-4 mb-4">
@@ -149,44 +138,6 @@ export const ModernNavigation: React.FC<ModernNavigationProps> = ({
           >
             {isSidebarCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
           </button>
-        </div>
-
-        {/* Wallet Connection */}
-        <div className="px-4 mb-6">
-          {connected && account ? (
-            <div className={`bg-gray-800/50 rounded-lg p-3 ${isSidebarCollapsed ? 'flex justify-center' : ''}`}>
-              <div className={`flex items-center ${isSidebarCollapsed ? 'flex-col gap-1' : 'gap-2'}`}>
-                <Wallet size={16} className="text-blue-400" />
-                {!isSidebarCollapsed && (
-                  <>
-                    <span className="text-sm text-gray-300">
-                      {formatWalletAddress(account.address)}
-                    </span>
-                    <div className="w-2 h-2 bg-green-400 rounded-full ml-auto"></div>
-                  </>
-                )}
-              </div>
-              {!isSidebarCollapsed && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleDisconnect}
-                  className="mt-2 w-full text-gray-400 border-gray-700 hover:bg-gray-800"
-                >
-                  Disconnect
-                </Button>
-              )}
-            </div>
-          ) : (
-            <div className={`${isSidebarCollapsed ? 'flex justify-center' : ''}`}>
-              <div className="bg-gray-800/50 rounded-lg p-3 text-center">
-                <Wallet size={16} className="text-gray-400 mx-auto mb-2" />
-                {!isSidebarCollapsed && (
-                  <span className="text-xs text-gray-400">Not Connected</span>
-                )}
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Navigation Items */}
@@ -287,7 +238,7 @@ export const ModernNavigation: React.FC<ModernNavigationProps> = ({
       {/* Mobile Navigation */}
       <div className="block lg:hidden">
         {/* Mobile Header */}
-        <div className="fixed top-0 left-0 right-0 bg-gray-900/95 backdrop-blur border-b border-gray-800 px-4 py-3 flex items-center justify-between z-50">
+        <div className="fixed top-0 left-0 right-0 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border-b border-white/10 px-4 py-3 flex items-center justify-between z-50">
           <div className="flex items-center gap-3">
             <img
               src="/earnestpay-icon.svg"
@@ -296,8 +247,8 @@ export const ModernNavigation: React.FC<ModernNavigationProps> = ({
             />
             <h1 className="text-lg font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">EarnestPay</h1>
           </div>
-          
-          <div className="flex items-center gap-2">
+
+          <div className="flex items-center gap-3">
             {notifications > 0 && (
               <div className="relative">
                 <Bell size={20} className="text-gray-400" />
@@ -306,9 +257,12 @@ export const ModernNavigation: React.FC<ModernNavigationProps> = ({
                 </span>
               </div>
             )}
+            <div className="hidden sm:block">
+              <WalletButton />
+            </div>
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-2 rounded-lg hover:bg-gray-800 transition-colors"
+              className="p-2 rounded-lg hover:bg-gray-800 transition-colors text-white"
             >
               {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
@@ -326,21 +280,10 @@ export const ModernNavigation: React.FC<ModernNavigationProps> = ({
               className="fixed top-16 left-0 right-0 bg-gray-900/95 backdrop-blur border-b border-gray-800 overflow-hidden z-40"
             >
               <div className="p-4 space-y-2">
-                {/* Mobile Wallet Connection */}
-                {connected && account ? (
-                  <div className="bg-gray-800/50 rounded-lg p-3 mb-4 flex items-center gap-2">
-                    <Wallet size={16} className="text-blue-400" />
-                    <span className="text-sm text-gray-300">
-                      {formatWalletAddress(account.address)}
-                    </span>
-                    <div className="w-2 h-2 bg-green-400 rounded-full ml-auto"></div>
-                  </div>
-                ) : (
-                  <div className="bg-gray-800/50 rounded-lg p-3 mb-4 text-center">
-                    <Wallet size={16} className="text-gray-400 mx-auto mb-1" />
-                    <span className="text-xs text-gray-400">Not Connected</span>
-                  </div>
-                )}
+                {/* Mobile Wallet Connection - show on very small screens */}
+                <div className="block sm:hidden mb-4">
+                  <WalletButton />
+                </div>
 
                 {/* Mobile Navigation Items */}
                 {navigationItems.map((item) => (

@@ -130,11 +130,41 @@ export function EmployeeProfileForm({ onCreated }: EmployeeProfileFormProps) {
         monthlySalary: parsedApt, // store APT for display
         roleCode: role,
       });
-      toast({ title: "Employee profile created (event emitted)" });
+      toast({
+        title: "✅ Employee Profile Created!",
+        description: `${firstName} ${lastName} has been added to your company registry.`
+      });
       onCreated?.();
     } catch (e: any) {
-      const msg = e?.message || e?.vm_status || String(e);
-      toast({ title: "Failed to create employee profile", description: msg, variant: "destructive" });
+      console.error('Create employee profile error:', e);
+
+      let errorTitle = "Failed to Create Profile";
+      let errorMessage = "An unexpected error occurred";
+
+      // Check for simulation errors (these happen BEFORE wallet popup)
+      if (e?.message?.includes('MAX_GAS_UNITS_BELOW_MIN_TRANSACTION_GAS_UNITS')) {
+        errorTitle = '💰 Insufficient Gas Funds';
+        errorMessage = 'You need APT tokens in your wallet to pay for transaction gas fees. Please fund your wallet from the Aptos faucet first.';
+      } else if (e?.message?.includes('INSUFFICIENT_BALANCE_FOR_TRANSACTION_FEE')) {
+        errorTitle = '💰 Insufficient Balance';
+        errorMessage = 'You don\'t have enough APT to pay for gas fees. Please add funds to your wallet from the faucet.';
+      } else if (e?.message?.includes("User rejected") || e?.code === 4001) {
+        // Silent - user cancelled on purpose
+        setLoading(false);
+        return;
+      } else if (e?.message?.includes("Insufficient")) {
+        errorTitle = "Insufficient Funds";
+        errorMessage = "You don't have enough APT to pay for transaction fees.";
+      } else if (e?.message?.includes("already exists") || e?.message?.includes("RESOURCE_ALREADY_EXISTS")) {
+        errorTitle = "Employee Already Exists";
+        errorMessage = "This employee address is already registered in your company.";
+      } else if (e?.message) {
+        errorMessage = e.message;
+      } else if (e?.vm_status) {
+        errorMessage = `Blockchain error: ${e.vm_status}`;
+      }
+
+      toast({ title: errorTitle, description: errorMessage, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -151,7 +181,27 @@ export function EmployeeProfileForm({ onCreated }: EmployeeProfileFormProps) {
       await updateEmployeeSalary(walletLike, employeeAddress, monthlyOctas);
       toast({ title: "Salary update attempted", description: `${parsedApt} APT / month` });
     } catch (e: any) {
-      toast({ title: "Failed to update salary", description: e?.message ?? String(e), variant: "destructive" });
+      console.error('Update salary error:', e);
+
+      let errorTitle = "Failed to Update Salary";
+      let errorMessage = "An unexpected error occurred";
+
+      // Check for simulation errors (these happen BEFORE wallet popup)
+      if (e?.message?.includes('MAX_GAS_UNITS_BELOW_MIN_TRANSACTION_GAS_UNITS')) {
+        errorTitle = '💰 Insufficient Gas Funds';
+        errorMessage = 'You need APT tokens in your wallet to pay for transaction gas fees. Please fund your wallet from the Aptos faucet first.';
+      } else if (e?.message?.includes('INSUFFICIENT_BALANCE_FOR_TRANSACTION_FEE')) {
+        errorTitle = '💰 Insufficient Balance';
+        errorMessage = 'You don\'t have enough APT to pay for gas fees. Please add funds to your wallet from the faucet.';
+      } else if (e?.message?.includes("User rejected") || e?.code === 4001) {
+        // Silent - user cancelled on purpose
+        setLoading(false);
+        return;
+      } else if (e?.message) {
+        errorMessage = e.message;
+      }
+
+      toast({ title: errorTitle, description: errorMessage, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -165,7 +215,27 @@ export function EmployeeProfileForm({ onCreated }: EmployeeProfileFormProps) {
       await deactivateEmployee(walletLike, employeeAddress);
       toast({ title: "Deactivate employee attempted" });
     } catch (e: any) {
-      toast({ title: "Failed to deactivate", description: e?.message ?? String(e), variant: "destructive" });
+      console.error('Deactivate employee error:', e);
+
+      let errorTitle = "Failed to Deactivate";
+      let errorMessage = "An unexpected error occurred";
+
+      // Check for simulation errors (these happen BEFORE wallet popup)
+      if (e?.message?.includes('MAX_GAS_UNITS_BELOW_MIN_TRANSACTION_GAS_UNITS')) {
+        errorTitle = '💰 Insufficient Gas Funds';
+        errorMessage = 'You need APT tokens in your wallet to pay for transaction gas fees. Please fund your wallet from the Aptos faucet first.';
+      } else if (e?.message?.includes('INSUFFICIENT_BALANCE_FOR_TRANSACTION_FEE')) {
+        errorTitle = '💰 Insufficient Balance';
+        errorMessage = 'You don\'t have enough APT to pay for gas fees. Please add funds to your wallet from the faucet.';
+      } else if (e?.message?.includes("User rejected") || e?.code === 4001) {
+        // Silent - user cancelled on purpose
+        setLoading(false);
+        return;
+      } else if (e?.message) {
+        errorMessage = e.message;
+      }
+
+      toast({ title: errorTitle, description: errorMessage, variant: "destructive" });
     } finally {
       setLoading(false);
     }

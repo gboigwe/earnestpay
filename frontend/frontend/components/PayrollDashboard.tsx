@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  DollarSign, 
-  Users, 
-  Calendar, 
-  TrendingUp, 
+import {
+  DollarSign,
+  Users,
+  TrendingUp,
   Plus,
   Download,
   Eye,
@@ -15,10 +14,8 @@ import {
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
-import { StatCard } from './ui/enhanced-card';
 import { GradientButton, FloatingActionButton } from './ui/enhanced-button';
 import { ModernNavigation } from './ModernNavigation';
-import { PayrollTrendChart, DepartmentSpendingChart } from './charts/PayrollChart';
 import { executeDuePayments } from '@/utils/payroll';
 import { getEmployee as getEmployeeFromCache } from '@/lib/employeeCache';
 import { CompanyStatus } from './CompanyStatus';
@@ -28,24 +25,8 @@ import { toast } from './ui/use-toast';
 import { ProcessPayroll } from './ProcessPayroll';
 import { EmployeeProfileForm } from './EmployeeProfileForm';
 import { SchedulerManager } from './SchedulerManager';
+import { TaxCompliance } from './TaxCompliance';
 import { getEmployeeProfileCreatedEvents, getPaymentProcessedEvents } from '@/utils/payroll';
-
-// Mock data for the dashboard
-const mockPayrollData = [
-  { name: 'Jan', value: 45000 },
-  { name: 'Feb', value: 48000 },
-  { name: 'Mar', value: 52000 },
-  { name: 'Apr', value: 49000 },
-  { name: 'May', value: 55000 },
-  { name: 'Jun', value: 58000 }
-];
-
-const mockDepartmentSpending = [
-  { name: 'Engineering', value: 125000 },
-  { name: 'Product', value: 85000 },
-  { name: 'Marketing', value: 45000 },
-  { name: 'Sales', value: 30500 }
-];
 
 // Recent on-chain transactions (PaymentProcessed events)
 type RecentPayment = { addr: string; label: string; amountOctas: number; txHash?: string; version?: string; timestamp?: string };
@@ -268,42 +249,29 @@ export const PayrollDashboard: React.FC<PayrollDashboardProps> = ({ onBack }) =>
       animate="visible"
       className="space-y-6"
     >
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard
-          title="Total Payroll"
-          value="₳285.5K"
-          subtitle="+12% from last month"
-          icon={<DollarSign className="h-6 w-6" />}
-          trend={{ value: 12, isPositive: true }}
-          gradient="from-blue-500 to-blue-600"
-        />
-        
-        <StatCard
-          title="Active Employees"
-          value="148"
-          subtitle="+5 new this month"
-          icon={<Users className="h-6 w-6" />}
-          trend={{ value: 3.4, isPositive: true }}
-          gradient="from-green-500 to-green-600"
-        />
-        
-        <StatCard
-          title="Avg. Salary"
-          value="₳95.2K"
-          subtitle="+8% YoY increase"
-          icon={<TrendingUp className="h-6 w-6" />}
-          trend={{ value: 8, isPositive: true }}
-          gradient="from-purple-500 to-purple-600"
-        />
-        
-        <StatCard
-          title="Next Payroll"
-          value="5 Days"
-          subtitle="December 15, 2024"
-          icon={<Calendar className="h-6 w-6" />}
-          gradient="from-orange-500 to-orange-600"
-        />
+      {/* Stats Grid - Simplified, real data shown in CompanyStatus below */}
+      <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg p-6 border border-blue-100 dark:border-blue-800">
+        <div className="flex items-center gap-3 mb-3">
+          <Shield className="h-8 w-8 text-blue-500" />
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Welcome to Your Payroll Dashboard</h2>
+            <p className="text-sm text-gray-600 dark:text-gray-300">Manage your company's payroll on Aptos blockchain</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+          <div className="flex items-center gap-2 text-gray-700 dark:text-gray-200">
+            <div className="w-2 h-2 rounded-full bg-green-500"></div>
+            <span>Secure blockchain payments</span>
+          </div>
+          <div className="flex items-center gap-2 text-gray-700 dark:text-gray-200">
+            <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+            <span>Real-time transaction tracking</span>
+          </div>
+          <div className="flex items-center gap-2 text-gray-700 dark:text-gray-200">
+            <div className="w-2 h-2 rounded-full bg-purple-500"></div>
+            <span>One wallet = One company</span>
+          </div>
+        </div>
       </div>
 
       {/* On-chain Company Status (full width of content area) */}
@@ -313,16 +281,40 @@ export const PayrollDashboard: React.FC<PayrollDashboardProps> = ({ onBack }) =>
         </div>
       </motion.div>
 
-      {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <motion.div variants={itemVariants}>
-          <PayrollTrendChart data={mockPayrollData} />
-        </motion.div>
-        
-        <motion.div variants={itemVariants}>
-          <DepartmentSpendingChart data={mockDepartmentSpending} />
-        </motion.div>
-      </div>
+      {/* Charts Section - Disabled until real data aggregation */}
+      {false && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <motion.div variants={itemVariants}>
+            <Card>
+              <CardHeader><CardTitle>Payroll Trends</CardTitle></CardHeader>
+              <CardContent>
+                <div className="h-64 flex items-center justify-center text-gray-400">
+                  <div className="text-center">
+                    <TrendingUp className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                    <p>Analytics coming soon</p>
+                    <p className="text-xs mt-1">Process payments to see trends</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div variants={itemVariants}>
+            <Card>
+              <CardHeader><CardTitle>Department Spending</CardTitle></CardHeader>
+              <CardContent>
+                <div className="h-64 flex items-center justify-center text-gray-400">
+                  <div className="text-center">
+                    <Users className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                    <p>Analytics coming soon</p>
+                    <p className="text-xs mt-1">Add employees to see breakdown</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+      )}
 
       {/* Recent Transactions */}
       <motion.div variants={itemVariants}>
@@ -614,12 +606,8 @@ export const PayrollDashboard: React.FC<PayrollDashboardProps> = ({ onBack }) =>
       case 'compliance':
         return (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold">Tax & Compliance</h2>
-            <Card>
-              <CardContent className="p-6">
-                <p className="text-gray-500">Compliance dashboard would go here...</p>
-              </CardContent>
-            </Card>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Tax & Compliance</h2>
+            <TaxCompliance />
           </div>
         );
       case 'settings':
