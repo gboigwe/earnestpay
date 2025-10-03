@@ -129,6 +129,7 @@ export function EmployeeProfileForm({ onCreated }: EmployeeProfileFormProps) {
         email,
         monthlySalary: parsedApt, // store APT for display
         roleCode: role,
+        companyAddress: String(account.address), // Add company context
       });
       toast({
         title: "✅ Employee Profile Created!",

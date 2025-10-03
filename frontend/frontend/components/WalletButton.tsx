@@ -31,19 +31,45 @@ export function WalletButton() {
         return;
       }
       try {
+        const addressStr = typeof account.address === 'string' ? account.address : account.address.toString();
+        console.log('Fetching balance for address:', addressStr);
+
         const resources = await aptosClient().getAccountResources({
-          accountAddress: account.address,
+          accountAddress: addressStr,
         });
+
+        console.log('Resources fetched:', resources.length);
+
+        // Try to find the APT coin store
         const aptosCoin = resources.find(
           (r) => r.type === '0x1::coin::CoinStore<0x1::aptos_coin::AptosCoin>'
         );
+
+        console.log('APT CoinStore found:', !!aptosCoin);
+
         if (aptosCoin?.data) {
-          const coinData = aptosCoin.data as { coin: { value: string } };
-          const aptBalance = Number(coinData.coin.value) / 1e8; // Convert from Octas to APT
+          console.log('CoinStore data:', aptosCoin.data);
+          const coinData = aptosCoin.data as any;
+
+          // Handle different possible data structures
+          let valueInOctas = 0;
+          if (coinData.coin?.value) {
+            valueInOctas = Number(coinData.coin.value);
+          } else if (coinData.value) {
+            valueInOctas = Number(coinData.value);
+          }
+
+          console.log('Balance in octas:', valueInOctas);
+          const aptBalance = valueInOctas / 1e8; // Convert from Octas to APT
+          console.log('Balance in APT:', aptBalance);
           setBalance(aptBalance.toFixed(2));
+        } else {
+          console.log('No CoinStore found, setting balance to 0');
+          setBalance('0');
         }
       } catch (error) {
         console.error('Error fetching balance:', error);
+        console.error('Error details:', JSON.stringify(error, null, 2));
         setBalance('0');
       }
     }
@@ -53,6 +79,8 @@ export function WalletButton() {
       // Refresh balance every 10 seconds
       const interval = setInterval(fetchBalance, 10000);
       return () => clearInterval(interval);
+    } else {
+      setBalance('0');
     }
   }, [account, connected]);
 

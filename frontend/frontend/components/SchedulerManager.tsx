@@ -327,9 +327,9 @@ export function SchedulerManager() {
           <CardTitle>Create Payment Schedule</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs text-gray-600 mb-1">Employee</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Employee *</label>
               <div className="flex gap-2">
                 <select
                   className="flex-1 border rounded-md h-10 px-3 bg-white text-gray-900"
@@ -358,19 +358,24 @@ export function SchedulerManager() {
               </div>
               <p className="text-xs text-gray-500 mt-1">Select the employee to create a schedule for.</p>
             </div>
-            <select
-              className="w-full border rounded-md h-10 px-3 bg-white text-gray-900"
-              value={paymentType}
-              onChange={(e) => setPaymentType(Number(e.target.value))}
-              disabled={!registered || regLoading}
-            >
-              <option value={-1}>Select payment type</option>
-              <option value={0}>Salary</option>
-              <option value={1}>Bonus</option>
-              <option value={2}>Overtime</option>
-            </select>
+
             <div>
-              <label className="block text-xs text-gray-600 mb-1">Payment Frequency</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Payment Type *</label>
+              <select
+                className="w-full border rounded-md h-10 px-3 bg-white text-gray-900"
+                value={paymentType}
+                onChange={(e) => setPaymentType(Number(e.target.value))}
+                disabled={!registered || regLoading}
+              >
+                <option value={-1}>Select payment type</option>
+                <option value={0}>Salary</option>
+                <option value={1}>Bonus</option>
+                <option value={2}>Overtime</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Payment Frequency *</label>
               <select
                 className="w-full border rounded-md h-10 px-3 bg-white text-gray-900"
                 value={frequency}
@@ -382,13 +387,17 @@ export function SchedulerManager() {
                 <option value={2592000}>Monthly (~30d)</option>
               </select>
             </div>
+
             <div>
-              <Input type="number" inputMode="decimal" step="0.00000001" placeholder="Amount (APT, e.g. 2.5)" value={amount} onChange={(e) => setAmount(e.target.value)} disabled={!registered || regLoading || amountLocked} />
+              <label className="block text-sm font-medium text-gray-700 mb-2">Amount (APT) *</label>
+              <Input type="number" inputMode="decimal" step="0.00000001" placeholder="e.g. 2.5" value={amount} onChange={(e) => setAmount(e.target.value)} disabled={!registered || regLoading || amountLocked} />
               <p className="text-xs text-gray-500 mt-1">
                 {amountLocked ? 'Auto-filled from employee monthly salary (APT).' : 'Enter amount in APT. It will be converted to Octas on-chain.'}
               </p>
             </div>
-            <div>
+
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Start Date & Time *</label>
               <Input type="datetime-local" value={startDateIso} onChange={(e) => setStartDateIso(e.target.value)} disabled={!registered || regLoading} />
               <p className="text-xs text-gray-500 mt-1">Start date/time in your local timezone.</p>
             </div>
@@ -405,14 +414,16 @@ export function SchedulerManager() {
         <CardHeader>
           <CardTitle>Manage Schedule</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Input type="number" placeholder="Schedule ID (numeric)" value={scheduleIdStr} onChange={(e) => setScheduleIdStr(e.target.value)} disabled={!registered || regLoading} />
+              <label className="block text-sm font-medium text-gray-700 mb-2">Schedule ID *</label>
+              <Input type="number" placeholder="e.g. 1" value={scheduleIdStr} onChange={(e) => setScheduleIdStr(e.target.value)} disabled={!registered || regLoading} />
               <p className="text-xs text-gray-500 mt-1">Enter the schedule ID you want to modify.</p>
             </div>
             <div>
-              <Input type="number" inputMode="decimal" step="0.00000001" placeholder="New amount (APT, e.g. 2.5)" value={newAmount} onChange={(e) => setNewAmount(e.target.value)} disabled={!registered || regLoading} />
+              <label className="block text-sm font-medium text-gray-700 mb-2">New Amount (APT) *</label>
+              <Input type="number" inputMode="decimal" step="0.00000001" placeholder="e.g. 2.5" value={newAmount} onChange={(e) => setNewAmount(e.target.value)} disabled={!registered || regLoading} />
               <p className="text-xs text-gray-500 mt-1">Amount is in APT. It will be converted to Octas on-chain.</p>
             </div>
           </div>
@@ -427,10 +438,11 @@ export function SchedulerManager() {
         <CardHeader>
           <CardTitle>View Schedule</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div>
-              <Input type="number" placeholder="Schedule ID to view (numeric)" value={viewScheduleIdStr} onChange={(e) => setViewScheduleIdStr(e.target.value)} disabled={!registered || regLoading} />
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Schedule ID</label>
+              <Input type="number" placeholder="e.g. 1" value={viewScheduleIdStr} onChange={(e) => setViewScheduleIdStr(e.target.value)} disabled={!registered || regLoading} />
               <p className="text-xs text-gray-500 mt-1">Enter a schedule ID to fetch its details.</p>
             </div>
             <Button
