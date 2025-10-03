@@ -6,7 +6,6 @@ import {
   Calendar,
   FileText,
   Settings,
-  Bell,
   Menu,
   X,
   TrendingUp,
@@ -28,14 +27,12 @@ interface NavigationItem {
 interface ModernNavigationProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
-  notifications?: number;
   onSidebarToggle?: (collapsed: boolean) => void;
 }
 
 export const ModernNavigation: React.FC<ModernNavigationProps> = ({
   activeTab,
   onTabChange,
-  notifications = 0,
   onSidebarToggle
 }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -74,8 +71,7 @@ export const ModernNavigation: React.FC<ModernNavigationProps> = ({
     {
       id: 'compliance',
       label: 'Tax & Compliance',
-      icon: <Shield size={20} />,
-      badge: 2
+      icon: <Shield size={20} />
     },
     {
       id: 'settings',
@@ -113,14 +109,6 @@ export const ModernNavigation: React.FC<ModernNavigationProps> = ({
 
         {/* Right side - Wallet Button */}
         <div className="flex items-center gap-4">
-          {notifications > 0 && (
-            <div className="relative">
-              <Bell className="h-5 w-5 text-gray-400 hover:text-white cursor-pointer transition-colors" />
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                {notifications}
-              </span>
-            </div>
-          )}
           <WalletButton />
         </div>
       </div>
@@ -215,24 +203,6 @@ export const ModernNavigation: React.FC<ModernNavigationProps> = ({
           ))}
         </nav>
 
-        {/* Notifications */}
-        <div className="px-4 mt-auto pb-6">
-          <div className={`bg-gray-800/50 rounded-lg p-3 ${isSidebarCollapsed ? 'flex justify-center' : ''}`}>
-            <div className={`flex items-center ${isSidebarCollapsed ? 'flex-col gap-1' : 'justify-between'}`}>
-              <div className={`flex items-center ${isSidebarCollapsed ? 'justify-center' : 'gap-2'}`}>
-                <Bell size={16} className="text-gray-400" />
-                {!isSidebarCollapsed && (
-                  <span className="text-sm text-gray-300">Notifications</span>
-                )}
-              </div>
-              {notifications > 0 && (
-                <span className="bg-blue-500 text-white text-xs rounded-full px-2 py-0.5">
-                  {notifications}
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Mobile Navigation */}
@@ -249,14 +219,6 @@ export const ModernNavigation: React.FC<ModernNavigationProps> = ({
           </div>
 
           <div className="flex items-center gap-3">
-            {notifications > 0 && (
-              <div className="relative">
-                <Bell size={20} className="text-gray-400" />
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1">
-                  {notifications}
-                </span>
-              </div>
-            )}
             <div className="hidden sm:block">
               <WalletButton />
             </div>

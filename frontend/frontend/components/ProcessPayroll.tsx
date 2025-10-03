@@ -4,6 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { toast } from "./ui/use-toast";
+import { ConfirmationDialog } from "./ui/confirmation-dialog";
+import { EmptyState } from "./ui/empty-state";
+import { Users } from "lucide-react";
 import { listCompanyEmployees, getEmployeeSalary, processPayment, getTreasuryBalance, getPaymentScheduleCreatedEvents, getPaymentScheduleUpdatedEvents, getPaymentScheduleDeactivatedEvents, getPaymentProcessedEvents, getEmployeeRole } from "@/utils/payroll";
 import { listEmployees as listCachedEmployees } from "@/lib/employeeCache";
 import { useCompanyRegistration } from "@/hooks/useCompanyRegistration";
@@ -34,6 +37,21 @@ export function ProcessPayroll() {
   const canBatch = (userRole === 2 || userRole === 4); // HR=2, Admin=4
   const [page, setPage] = useState<number>(1);
   const pageSize = 10;
+
+  // Confirmation dialog state
+  const [confirmDialog, setConfirmDialog] = useState<{
+    open: boolean;
+    title: string;
+    description: string;
+    amount: string;
+    onConfirm: () => void;
+  }>({
+    open: false,
+    title: '',
+    description: '',
+    amount: '',
+    onConfirm: () => {}
+  });
 
   function shortAddress(addr: string) {
     const a = (addr || "").toString();
@@ -334,51 +352,65 @@ export function ProcessPayroll() {
     if (!employee) return toast({ title: "Select an employee", variant: "destructive" });
     const apt = Number(amountAPT);
     if (!apt || apt <= 0) return toast({ title: "Enter a positive amount (APT)", variant: "destructive" });
-    const octas = Math.round(apt * 1e8);
-    setLoading(true);
-    try {
-      await processPayment(walletLike, employee, octas);
-      toast({ title: "Payroll processed", description: `${apt} APT sent to employee` });
-      setAmountAPT("");
-      setEmployee("");
-    } catch (e: any) {
-      console.error('Process payroll error:', e);
 
-      let errorTitle = "Failed to Process Payroll";
-      let errorMessage = "An unexpected error occurred";
+    const employeeLabel = employees.find(e => e.address === employee)?.label || shortAddress(employee);
 
-      // Check for simulation errors (these happen BEFORE wallet popup)
-      if (e?.message?.includes('MAX_GAS_UNITS_BELOW_MIN_TRANSACTION_GAS_UNITS')) {
-        errorTitle = '💰 Insufficient Gas Funds';
-        errorMessage = 'You need APT tokens in your wallet to pay for transaction gas fees. Please fund your wallet from the Aptos faucet first.';
-      } else if (e?.message?.includes('INSUFFICIENT_BALANCE_FOR_TRANSACTION_FEE')) {
-        errorTitle = '💰 Insufficient Balance';
-        errorMessage = 'You don\'t have enough APT to pay for gas fees. Please add funds to your wallet from the faucet.';
-      } else if (e?.message?.includes("User rejected") || e?.code === 4001) {
-        // Silent - user cancelled on purpose
-        setLoading(false);
-        return;
-      } else if (e?.message) {
-        errorMessage = e.message;
+    // Show confirmation dialog
+    setConfirmDialog({
+      open: true,
+      title: 'Confirm Payment',
+      description: `You are about to send a payment to ${employeeLabel}. This action cannot be undone.`,
+      amount: `${apt} APT`,
+      onConfirm: async () => {
+        setConfirmDialog(prev => ({ ...prev, open: false }));
+        const octas = Math.round(apt * 1e8);
+        setLoading(true);
+        try {
+          await processPayment(walletLike, employee, octas);
+          toast({ title: "✅ Payment Successful", description: `${apt} APT sent to ${employeeLabel}` });
+          setAmountAPT("");
+          setEmployee("");
+        } catch (e: any) {
+          console.error('Process payroll error:', e);
+
+          let errorTitle = "Failed to Process Payroll";
+          let errorMessage = "An unexpected error occurred";
+
+          // Check for simulation errors (these happen BEFORE wallet popup)
+          if (e?.message?.includes('MAX_GAS_UNITS_BELOW_MIN_TRANSACTION_GAS_UNITS')) {
+            errorTitle = '💰 Insufficient Gas Funds';
+            errorMessage = 'You need APT tokens in your wallet to pay for transaction gas fees. Please fund your wallet from the Aptos faucet first.';
+          } else if (e?.message?.includes('INSUFFICIENT_BALANCE_FOR_TRANSACTION_FEE')) {
+            errorTitle = '💰 Insufficient Balance';
+            errorMessage = 'You don\'t have enough APT to pay for gas fees. Please add funds to your wallet from the faucet.';
+          } else if (e?.message?.includes("User rejected") || e?.code === 4001) {
+            // Silent - user cancelled on purpose
+            setLoading(false);
+            return;
+          } else if (e?.message) {
+            errorMessage = e.message;
+          }
+
+          toast({ title: errorTitle, description: errorMessage, variant: "destructive" });
+        } finally {
+          setLoading(false);
+        }
       }
-
-      toast({ title: errorTitle, description: errorMessage, variant: "destructive" });
-    } finally {
-      setLoading(false);
-    }
+    });
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Process Payroll</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        {!registered && (
-          <div className="p-3 rounded border border-yellow-300 bg-yellow-50 text-yellow-800 text-sm">
-            Company not registered. Please register your company in Settings → Company Registration before processing payroll.
-          </div>
-        )}
+    <>
+      <Card>
+        <CardHeader>
+          <CardTitle>Process Payroll</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {!registered && (
+            <div className="p-3 rounded border border-yellow-300 bg-yellow-50 text-yellow-800 text-sm">
+              Company not registered. Please register your company in Settings → Company Registration before processing payroll.
+            </div>
+          )}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div>
             <label className="block text-xs text-gray-500 mb-1">Employee</label>
@@ -441,20 +473,26 @@ export function ProcessPayroll() {
               const amtOctas = salaries[e.address] || 0;
               const amtApt = (amtOctas / 1e8) || 0;
               return (
-                <label key={e.address} className="flex items-center gap-3 p-2 text-sm">
+                <label key={e.address} className="flex items-center gap-3 p-2 text-sm hover:bg-gray-50 cursor-pointer transition-colors">
                   <input type="checkbox" className="h-4 w-4" checked={!!selected[e.address]} onChange={() => toggleOne(e.address)} disabled={!registered || regLoading || batchProcessing} />
                   <span className="flex-1">
                     <div className="font-medium">{e.label}</div>
                     <div className="text-xs text-gray-400">{shortAddress(e.address)}</div>
                   </span>
-                  <span className="text-xs px-2 py-1 rounded bg-gray-100 text-gray-800 whitespace-nowrap" title="Computed amount">
+                  <span className="text-xs px-2 py-1 rounded bg-emerald-50 text-emerald-700 font-medium whitespace-nowrap" title="Computed amount">
                     {amtApt.toFixed(4)} APT
                   </span>
                 </label>
               );
             })}
-            {employees.length === 0 && (
-              <div className="p-3 text-sm text-gray-500">No employees found.</div>
+            {employees.length === 0 && registered && (
+              <EmptyState
+                icon={Users}
+                title="No Employees Yet"
+                description="Add employees to your company registry to process payroll payments"
+                actionLabel="Add Employee"
+                onAction={() => {}}
+              />
             )}
           </div>
           {/* Pagination controls */}
@@ -572,5 +610,19 @@ export function ProcessPayroll() {
         </div>
       </CardContent>
     </Card>
+
+    {/* Confirmation Dialog */}
+    <ConfirmationDialog
+      open={confirmDialog.open}
+      onOpenChange={(open) => setConfirmDialog(prev => ({ ...prev, open }))}
+      title={confirmDialog.title}
+      description={confirmDialog.description}
+      amount={confirmDialog.amount}
+      onConfirm={confirmDialog.onConfirm}
+      confirmLabel="Send Payment"
+      variant="default"
+      loading={loading}
+    />
+    </>
   );
 }

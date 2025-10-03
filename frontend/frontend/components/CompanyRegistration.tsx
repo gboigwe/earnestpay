@@ -102,32 +102,70 @@ export function CompanyRegistration() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       {!account && (
-        <div className="p-3 rounded border border-amber-300 bg-amber-50 text-amber-800 text-sm mb-2">
-          Please connect your wallet to register your company on the blockchain.
+        <div className="p-4 rounded-lg border border-blue-200 bg-blue-50 text-blue-800 text-sm flex items-start gap-3">
+          <div className="mt-0.5">
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+            </svg>
+          </div>
+          <div>
+            <h4 className="font-semibold mb-1">Wallet Connection Required</h4>
+            <p>Connect your wallet to register your company on the Aptos blockchain. Your wallet address will become your unique company identifier.</p>
+          </div>
         </div>
       )}
+
       <div>
-        <label className="block text-sm font-medium mb-1">Company Name</label>
+        <label className="block text-sm font-semibold text-gray-700 mb-2">
+          Company Name <span className="text-red-500">*</span>
+        </label>
         <Input
-          placeholder="e.g. MyCompany Inc"
+          placeholder="Enter your company name (e.g. Acme Corp)"
           value={companyName}
           onChange={(e) => setCompanyName(e.target.value)}
+          className="text-base py-5"
         />
-        <p className="text-xs text-gray-500 mt-1">Enter your company name. You can register it after connecting your wallet.</p>
+        <p className="text-xs text-gray-500 mt-2 flex items-start gap-1">
+          <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+          </svg>
+          <span>This will be stored on-chain and cannot be changed later. Choose carefully!</span>
+        </p>
       </div>
-      <Button onClick={onRegister} disabled={!account || submitting || alreadyRegistered === true} className="w-full">
-        {alreadyRegistered === true ? "Company Already Registered" : submitting ? "Registering..." : "Register Company"}
+
+      <Button
+        onClick={onRegister}
+        disabled={!account || submitting || alreadyRegistered === true || !companyName.trim()}
+        className="w-full gradient-primary text-white font-semibold py-6 text-base hover-lift"
+      >
+        {alreadyRegistered === true ? "✓ Company Already Registered" : submitting ? "Registering on Blockchain..." : "Register Company"}
       </Button>
+
       {alreadyRegistered === false && (
-        <p className="text-xs text-green-600">No company found at your address. You can register one.</p>
+        <div className="p-3 rounded-lg bg-green-50 border border-green-200 text-green-700 text-sm flex items-center gap-2">
+          <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+          </svg>
+          <span>No company registered yet. You're all set to create one!</span>
+        </div>
       )}
+
       {alreadyRegistered === true && (
-        <p className="text-xs text-blue-600">A company is already registered at your address.</p>
+        <div className="p-3 rounded-lg bg-blue-50 border border-blue-200 text-blue-700 text-sm flex items-center gap-2">
+          <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+          </svg>
+          <span>Company already registered on this wallet address</span>
+        </div>
       )}
+
       {txHash && (
-        <p className="text-sm text-gray-500 break-all">Transaction: {txHash}</p>
+        <div className="p-3 rounded-lg bg-gray-50 border border-gray-200">
+          <p className="text-xs text-gray-500 mb-1">Transaction Hash</p>
+          <p className="text-sm font-mono text-gray-700 break-all">{txHash}</p>
+        </div>
       )}
     </div>
   );

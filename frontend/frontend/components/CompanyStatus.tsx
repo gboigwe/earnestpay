@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Skeleton } from "./ui/skeleton";
 import { getCompanyEmployeeCount, getTotalSchedulesCount, getDuePaymentsCount, getTreasuryBalance, getCompanyName } from "@/utils/payroll";
 import { StatCard } from "./ui/enhanced-card";
 import { DollarSign, Users, Calendar, Clock, Building2 } from "lucide-react";
@@ -85,8 +86,25 @@ export function CompanyStatus() {
         </div>
       </CardHeader>
       <CardContent>
-        {!address && <p className="text-sm text-gray-500">Connect wallet to view status.</p>}
-        {address && loading && <p className="text-sm text-gray-500">Loading on-chain data...</p>}
+        {!address && (
+          <div className="text-center py-8">
+            <p className="text-sm text-gray-500 mb-2">Connect your wallet to view company status</p>
+            <p className="text-xs text-gray-400">Your wallet address will be your company identifier</p>
+          </div>
+        )}
+
+        {address && loading && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="space-y-3">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-8 w-32" />
+                <Skeleton className="h-3 w-full" />
+              </div>
+            ))}
+          </div>
+        )}
+
         {address && !loading && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <StatCard
@@ -94,28 +112,28 @@ export function CompanyStatus() {
               value={formatAmount(treasury ?? 0)}
               subtitle="On-chain company treasury"
               icon={<DollarSign className="h-6 w-6" />}
-              gradient="from-blue-500 to-blue-600"
+              gradient="from-cyan-500 to-blue-600"
             />
             <StatCard
               title="Employees"
               value={`${employeeCount ?? '-'}`}
               subtitle="Registered in employee registry"
               icon={<Users className="h-6 w-6" />}
-              gradient="from-green-500 to-green-600"
+              gradient="from-green-500 to-emerald-600"
             />
             <StatCard
               title="Total Schedules"
               value={`${totalSchedules ?? '-'}`}
               subtitle="Active payment schedules"
               icon={<Calendar className="h-6 w-6" />}
-              gradient="from-purple-500 to-purple-600"
+              gradient="from-purple-500 to-indigo-600"
             />
             <StatCard
               title="Due Payments"
               value={`${dueSchedules ?? '-'}`}
               subtitle="Payments ready to execute"
               icon={<Clock className="h-6 w-6" />}
-              gradient="from-orange-500 to-orange-600"
+              gradient="from-amber-500 to-orange-600"
             />
           </div>
         )}
