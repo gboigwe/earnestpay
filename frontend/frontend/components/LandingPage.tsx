@@ -15,62 +15,24 @@ import {
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
 import { toast } from './ui/use-toast';
 import { Button } from './ui/button';
+import { EnhancedWalletModal } from './EnhancedWalletModal';
 
 const LandingPage: React.FC<{ onGetStarted: () => void }> = ({ onGetStarted }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isConnecting, setIsConnecting] = useState(false);
   const [showWalletModal, setShowWalletModal] = useState(false);
-  const { connect, wallets, connected } = useWallet();
+  const { connected } = useWallet();
 
   const handleGetStarted = async () => {
     if (!connected) {
-      if (!wallets || wallets.length === 0) {
-        toast({
-          title: "No Wallets Found",
-          description: "Please install an Aptos wallet like Petra to continue.",
-          variant: "destructive",
-        });
-        return;
-      }
       setShowWalletModal(true);
     } else {
       onGetStarted();
     }
   };
 
-  const handleWalletSelect = async (walletName: string) => {
-    setShowWalletModal(false);
-    setIsConnecting(true);
-    
-    try {
-      await connect(walletName);
-      
-      toast({
-        title: "Wallet Connected",
-        description: `Successfully connected to ${walletName}`,
-      });
-      onGetStarted();
-    } catch (error: any) {
-      console.error('Wallet connection failed:', error);
-      
-      let errorMessage = 'Failed to connect wallet. Please try again.';
-      if (error.message?.includes('User rejected')) {
-        errorMessage = 'Connection cancelled by user.';
-      } else if (error.message?.includes('not installed')) {
-        errorMessage = `Please install ${walletName} wallet extension.`;
-      }
-      
-      toast({
-        title: "Connection Error",
-        description: errorMessage,
-        variant: "destructive",
-      });
-    } finally {
-      setIsConnecting(false);
-    }
+  const handleWalletSuccess = () => {
+    onGetStarted();
   };
-
-  const isLoading = isConnecting;
 
   const features = [
     {
@@ -127,7 +89,6 @@ const LandingPage: React.FC<{ onGetStarted: () => void }> = ({ onGetStarted }) =
               </div>
               <Button
                 onClick={handleGetStarted}
-                disabled={isLoading}
                 className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white"
               >
                 <Wallet className="mr-2" size={16} />
@@ -154,7 +115,6 @@ const LandingPage: React.FC<{ onGetStarted: () => void }> = ({ onGetStarted }) =
                 <div className="px-3 py-2">
                   <Button
                     onClick={handleGetStarted}
-                    disabled={isLoading}
                     className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
                   >
                     <Wallet className="mr-2" size={16} />
@@ -184,12 +144,11 @@ const LandingPage: React.FC<{ onGetStarted: () => void }> = ({ onGetStarted }) =
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button
               onClick={handleGetStarted}
-              disabled={isLoading}
               size="lg"
               className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-8 py-4 text-lg"
             >
               <Wallet className="mr-3" size={20} />
-              {isLoading ? 'Connecting...' : connected ? 'Launch Dashboard' : 'Connect Wallet'}
+              {connected ? 'Launch Dashboard' : 'Connect Wallet'}
             </Button>
             <Button variant="outline" size="lg" className="px-8 py-4 text-lg border-2 border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-gray-900 transition-all">
               View Protocol
@@ -460,12 +419,11 @@ const LandingPage: React.FC<{ onGetStarted: () => void }> = ({ onGetStarted }) =
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button
               onClick={handleGetStarted}
-              disabled={isLoading}
               size="lg"
               className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-6 text-lg font-semibold"
             >
               <Wallet className="mr-3" size={24} />
-              {isLoading ? 'Connecting...' : connected ? 'Launch Dashboard' : 'Get Started Free'}
+              {connected ? 'Launch Dashboard' : 'Get Started Free'}
             </Button>
             <Button
               size="lg"
@@ -481,49 +439,12 @@ const LandingPage: React.FC<{ onGetStarted: () => void }> = ({ onGetStarted }) =
         </div>
       </section>
 
-      {/* Wallet Selection Modal */}
-      {showWalletModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-gray-900 rounded-2xl p-8 max-w-md w-full border border-gray-800">
-            <div className="text-center mb-6">
-              <h3 className="text-2xl font-bold text-white mb-2">Connect Your Wallet</h3>
-              <p className="text-gray-400">Choose your preferred Aptos wallet to continue</p>
-            </div>
-            
-            <div className="space-y-3">
-              {wallets?.map((wallet, index) => (
-                <button
-                  key={`${wallet.name}-${index}`}
-                  onClick={() => handleWalletSelect(wallet.name)}
-                  disabled={isConnecting}
-                  className="w-full flex items-center gap-4 p-4 rounded-xl border border-gray-700 hover:border-blue-500/50 hover:bg-gray-800/50 transition-all"
-                >
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
-                    <Wallet className="text-white" size={24} />
-                  </div>
-                  <div className="text-left flex-1">
-                    <div className="text-white font-semibold">{wallet.name}</div>
-                    <div className="text-gray-400 text-sm">
-                      {wallet.name === 'Petra' && 'Most Popular'}
-                      {wallet.name === 'Martian' && 'Developer Friendly'}
-                      {wallet.name === 'Pontem' && 'DeFi Focused'}
-                      {!['Petra', 'Martian', 'Pontem'].includes(wallet.name) && 'Aptos Wallet'}
-                    </div>
-                  </div>
-                  <ArrowRight className="text-gray-400" size={20} />
-                </button>
-              ))}
-            </div>
-            
-            <button
-              onClick={() => setShowWalletModal(false)}
-              className="w-full mt-6 p-3 text-gray-400 hover:text-white transition-colors"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Enhanced Wallet Modal */}
+      <EnhancedWalletModal
+        isOpen={showWalletModal}
+        onClose={() => setShowWalletModal(false)}
+        onSuccess={handleWalletSuccess}
+      />
     </div>
   );
 };
