@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-  ArrowRight,
   Shield,
   DollarSign,
   Menu,
@@ -13,7 +12,6 @@ import {
   CheckCircle
 } from 'lucide-react';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
-import { toast } from './ui/use-toast';
 import { Button } from './ui/button';
 import { EnhancedWalletModal } from './EnhancedWalletModal';
 

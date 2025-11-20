@@ -7,7 +7,6 @@ import {
   ExternalLink,
   Smartphone,
   Monitor,
-  ChevronRight,
   Info
 } from 'lucide-react';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';

@@ -3,6 +3,7 @@ import { createAppKit } from '@reown/appkit/react';
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
 import { mainnet, arbitrum, base, polygon } from '@reown/appkit/networks';
 import { WagmiProvider } from 'wagmi';
+import type { AppKitNetwork } from '@reown/appkit/networks';
 
 // Get Reown project ID from environment
 // Sign up at https://cloud.reown.com to get your project ID
@@ -17,7 +18,7 @@ const metadata = {
 };
 
 // Configure supported EVM networks for future cross-chain features
-const networks = [mainnet, arbitrum, base, polygon];
+const networks: [AppKitNetwork, ...AppKitNetwork[]] = [mainnet, arbitrum, base, polygon];
 
 // Create Wagmi adapter for EVM chains
 const wagmiAdapter = new WagmiAdapter({
