@@ -15,6 +15,7 @@ import {
   Building2
 } from 'lucide-react';
 import { WalletButton } from './WalletButton';
+import { ChainSelector } from './ChainSelector';
 
 interface NavigationItem {
   id: string;
@@ -112,8 +113,9 @@ export const ModernNavigation: React.FC<ModernNavigationProps> = ({
           </div>
         </div>
 
-        {/* Right side - Wallet Button */}
+        {/* Right side - Chain Selector + Wallet Button */}
         <div className="flex items-center gap-4">
+          <ChainSelector />
           <WalletButton />
         </div>
       </div>
@@ -224,7 +226,8 @@ export const ModernNavigation: React.FC<ModernNavigationProps> = ({
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="hidden sm:block">
+            <div className="hidden sm:flex items-center gap-3">
+              <ChainSelector />
               <WalletButton />
             </div>
             <button
@@ -247,8 +250,9 @@ export const ModernNavigation: React.FC<ModernNavigationProps> = ({
               className="fixed top-16 left-0 right-0 bg-gray-900/95 backdrop-blur border-b border-gray-800 overflow-hidden z-40"
             >
               <div className="p-4 space-y-2">
-                {/* Mobile Wallet Connection - show on very small screens */}
-                <div className="block sm:hidden mb-4">
+                {/* Mobile Chain Selector + Wallet Connection - show on very small screens */}
+                <div className="block sm:hidden mb-4 space-y-3">
+                  <ChainSelector />
                   <WalletButton />
                 </div>
 
