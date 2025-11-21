@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ChevronDown, Check } from 'lucide-react';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
+import { useChain, ChainType } from '@/contexts/ChainContext';
 
 /**
  * ChainSelector Component
@@ -79,16 +80,18 @@ const CHAINS: Chain[] = [
 
 export const ChainSelector = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedChain, setSelectedChain] = useState<Chain>(CHAINS[0]);
+  const { selectedChain: selectedChainId, setSelectedChain } = useChain();
   const { connected } = useWallet();
+
+  // Find the selected chain object
+  const selectedChain = CHAINS.find(c => c.id === selectedChainId) || CHAINS[0];
 
   const handleChainSelect = (chain: Chain) => {
     if (!chain.enabled) {
       return;
     }
-    setSelectedChain(chain);
+    setSelectedChain(chain.id as ChainType);
     setIsOpen(false);
-    // Future: Trigger chain switch logic here
   };
 
   // Check if Reown is configured
