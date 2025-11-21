@@ -118,6 +118,30 @@ frontend/src/
 - Aptos CLI (installed and configured)
 - Supported Aptos wallet (Petra, Martian, etc.)
 
+## 🌐 Multi-Chain Support
+
+EarnestPay now supports multiple blockchains with a unified wallet experience:
+
+- ✅ **Aptos** - Primary blockchain (fully functional)
+- 🔜 **Ethereum, Arbitrum, Base, Polygon** - Ready for activation
+
+### Quick Setup for EVM Chains (Optional)
+
+1. Visit [https://cloud.reown.com](https://cloud.reown.com) and sign up
+2. Create a new project named "EarnestPay"
+3. Copy your Project ID
+4. Add to `frontend/.env`:
+   ```bash
+   VITE_REOWN_PROJECT_ID=your_project_id_here
+   ```
+5. **Important**: Configure Allowed Origins in Reown dashboard:
+   - `http://localhost:5173` (development)
+   - `https://your-production-domain.com` (production)
+
+**Security**: See [REOWN_SECURITY.md](./REOWN_SECURITY.md) for detailed security information.
+
+**Details**: See [WALLET_FEATURES.md](./WALLET_FEATURES.md) for comprehensive multi-chain documentation.
+
 ### 2. Clone and Setup
 
 ```bash
