@@ -14,7 +14,7 @@ import {
   ChevronRight,
   Building2
 } from 'lucide-react';
-import { WalletButton } from './WalletButton';
+import { UnifiedWalletButton } from './UnifiedWalletButton';
 import { ChainSelector } from './ChainSelector';
 
 interface NavigationItem {
@@ -116,7 +116,7 @@ export const ModernNavigation: React.FC<ModernNavigationProps> = ({
         {/* Right side - Chain Selector + Wallet Button */}
         <div className="flex items-center gap-4">
           <ChainSelector />
-          <WalletButton />
+          <UnifiedWalletButton />
         </div>
       </div>
 
@@ -228,7 +228,7 @@ export const ModernNavigation: React.FC<ModernNavigationProps> = ({
           <div className="flex items-center gap-3">
             <div className="hidden sm:flex items-center gap-3">
               <ChainSelector />
-              <WalletButton />
+              <UnifiedWalletButton />
             </div>
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -253,7 +253,7 @@ export const ModernNavigation: React.FC<ModernNavigationProps> = ({
                 {/* Mobile Chain Selector + Wallet Connection - show on very small screens */}
                 <div className="block sm:hidden mb-4 space-y-3">
                   <ChainSelector />
-                  <WalletButton />
+                  <UnifiedWalletButton />
                 </div>
 
                 {/* Mobile Navigation Items */}
