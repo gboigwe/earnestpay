@@ -16,6 +16,8 @@ import {
 import { aptosClient } from "@/utils/aptosClient";
 import { getPaymentProcessedEvents, getPaymentScheduleCreatedEvents } from "@/utils/payroll";
 import { MODULE_ADDRESS, getExplorerTxnUrl } from "@/constants";
+import { ChainSelector } from "./ChainSelector";
+import { WalletButton } from "./WalletButton";
 
 interface PaymentRecord {
   amount: number;
@@ -311,6 +313,10 @@ export function EmployeePortal() {
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Employee Portal</h2>
           <p className="text-sm text-gray-500 mt-1">View your payment history and tax documents</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <ChainSelector />
+          <WalletButton />
         </div>
       </div>
 
