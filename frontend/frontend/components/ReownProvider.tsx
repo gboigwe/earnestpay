@@ -2,7 +2,7 @@ import { PropsWithChildren } from "react";
 import { createAppKit } from '@reown/appkit/react';
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
 import { mainnet, arbitrum, base, polygon } from '@reown/appkit/networks';
-import { WagmiProvider, createConfig, http } from 'wagmi';
+import { WagmiProvider, createConfig, http, type Config } from 'wagmi';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { AppKitNetwork } from '@reown/appkit/networks';
 
@@ -25,7 +25,7 @@ const metadata = {
 const networks: [AppKitNetwork, ...AppKitNetwork[]] = [mainnet, arbitrum, base, polygon];
 
 // Create Wagmi config (either with WagmiAdapter or minimal fallback)
-let wagmiConfig;
+let wagmiConfig: Config;
 
 if (projectId) {
   // Create Wagmi adapter for EVM chains with Reown
