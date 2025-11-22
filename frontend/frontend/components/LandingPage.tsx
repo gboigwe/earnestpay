@@ -389,12 +389,12 @@ const LandingPage: React.FC<{ onGetStarted: () => void }> = ({ onGetStarted }) =
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button
-              onClick={handleGetStarted}
+              onClick={onGetStarted}
               size="lg"
               className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-6 text-lg font-semibold"
             >
               <Wallet className="mr-3" size={24} />
-              {connected ? 'Launch Dashboard' : 'Get Started Free'}
+              Get Started Free
             </Button>
             <Button
               size="lg"

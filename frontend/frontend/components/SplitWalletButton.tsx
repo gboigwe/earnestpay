@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import { Wallet, ChevronDown } from 'lucide-react';
-import { useWallet as useAptosWallet } from '@aptos-labs/wallet-adapter-react';
-import { useAccount as useEVMAccount } from 'wagmi';
 import { useAppKit } from '@reown/appkit/react';
 import { EnhancedWalletModal } from './EnhancedWalletModal';
 
