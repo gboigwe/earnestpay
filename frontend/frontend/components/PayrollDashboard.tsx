@@ -27,6 +27,7 @@ import { SchedulerManager } from './SchedulerManager';
 import { TaxCompliance } from './TaxCompliance';
 import { EmployeePortal } from './EmployeePortal';
 import { getEmployeeProfileCreatedEvents, getPaymentProcessedEvents } from '@/utils/payroll';
+import { WalletBalanceWidget } from './WalletBalanceWidget';
 
 // Recent on-chain transactions (PaymentProcessed events)
 type RecentPayment = { addr: string; label: string; amountOctas: number; txHash?: string; version?: string; timestamp?: string };
@@ -274,10 +275,13 @@ export const PayrollDashboard: React.FC<PayrollDashboardProps> = ({ onBack }) =>
         </div>
       </div>
 
-      {/* On-chain Company Status (full width of content area) */}
-      <motion.div variants={itemVariants}>
+      {/* On-chain Company Status and Wallet Balances */}
+      <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="w-full">
           <CompanyStatus />
+        </div>
+        <div className="w-full">
+          <WalletBalanceWidget />
         </div>
       </motion.div>
 
