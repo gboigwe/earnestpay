@@ -2,8 +2,12 @@ import { PropsWithChildren } from "react";
 import { createAppKit } from '@reown/appkit/react';
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
 import { mainnet, arbitrum, base, polygon } from '@reown/appkit/networks';
-import { WagmiProvider } from 'wagmi';
+import { WagmiProvider, createConfig, http } from 'wagmi';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { AppKitNetwork } from '@reown/appkit/networks';
+
+// Create QueryClient for Wagmi
+const queryClient = new QueryClient();
 
 // Get Reown project ID from environment
 // Sign up at https://cloud.reown.com to get your project ID
@@ -20,15 +24,20 @@ const metadata = {
 // Configure supported EVM networks for future cross-chain features
 const networks: [AppKitNetwork, ...AppKitNetwork[]] = [mainnet, arbitrum, base, polygon];
 
-// Create Wagmi adapter for EVM chains
-const wagmiAdapter = new WagmiAdapter({
-  networks,
-  projectId,
-  ssr: false
-});
+// Create Wagmi config (either with WagmiAdapter or minimal fallback)
+let wagmiConfig;
 
-// Only create AppKit if project ID is provided
 if (projectId) {
+  // Create Wagmi adapter for EVM chains with Reown
+  const wagmiAdapter = new WagmiAdapter({
+    networks,
+    projectId,
+    ssr: false
+  });
+
+  wagmiConfig = wagmiAdapter.wagmiConfig;
+
+  // Create AppKit
   createAppKit({
     adapters: [wagmiAdapter],
     networks,
@@ -37,6 +46,17 @@ if (projectId) {
     features: {
       analytics: true // Enable analytics for usage tracking
     }
+  });
+} else {
+  // Minimal wagmi config without Reown for hooks to work
+  wagmiConfig = createConfig({
+    chains: [mainnet, arbitrum, base, polygon],
+    transports: {
+      [mainnet.id]: http(),
+      [arbitrum.id]: http(),
+      [base.id]: http(),
+      [polygon.id]: http(),
+    },
   });
 }
 
@@ -58,15 +78,12 @@ if (projectId) {
  * 4. The provider will automatically activate
  */
 export function ReownProvider({ children }: PropsWithChildren) {
-  // If no project ID, just pass through children without Reown functionality
-  if (!projectId) {
-    return <>{children}</>;
-  }
-
-  // Provide Wagmi context for EVM chain interactions
+  // Always provide Wagmi context for EVM chain interactions
   return (
-    <WagmiProvider config={wagmiAdapter.wagmiConfig}>
-      {children}
-    </WagmiProvider>
+    <QueryClientProvider client={queryClient}>
+      <WagmiProvider config={wagmiConfig}>
+        {children}
+      </WagmiProvider>
+    </QueryClientProvider>
   );
 }
