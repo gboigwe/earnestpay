@@ -7,6 +7,20 @@ EarnestPay is a modern payroll and payouts platform for companies and salary ear
 **🏆 Built for Aptos Ctrl+MOVE Hackathon 2025**
 **Target Categories:** Main Track ($65,000 pool) and Best Tech Implementation ($15,000)
 
+## 🌐 Multi-Chain Support
+
+EarnestPay supports multiple blockchains for flexible payroll solutions:
+
+### Supported Chains
+- **Aptos** - Primary blockchain (active)
+- **Ethereum** - EVM compatibility (coming soon)
+- **Arbitrum** - Low-cost L2 (coming soon)
+- **Base** - Coinbase's L2 (coming soon)
+- **Polygon** - Fast and low-cost (coming soon)
+
+[🚀 Get Started with Multi-Chain](./docs/MULTI_CHAIN_SETUP.md)
+[🏗️ View Architecture](./docs/ARCHITECTURE.md)
+
 ## 🎯 Problems & Solutions
 
 ### Problems Being Solved
