@@ -11,26 +11,11 @@ import {
   Coins,
   CheckCircle
 } from 'lucide-react';
-import { useWallet } from '@aptos-labs/wallet-adapter-react';
 import { Button } from './ui/button';
-import { EnhancedWalletModal } from './EnhancedWalletModal';
+import { SplitWalletButton } from './SplitWalletButton';
 
 const LandingPage: React.FC<{ onGetStarted: () => void }> = ({ onGetStarted }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [showWalletModal, setShowWalletModal] = useState(false);
-  const { connected } = useWallet();
-
-  const handleGetStarted = async () => {
-    if (!connected) {
-      setShowWalletModal(true);
-    } else {
-      onGetStarted();
-    }
-  };
-
-  const handleWalletSuccess = () => {
-    onGetStarted();
-  };
 
   const features = [
     {
@@ -85,13 +70,7 @@ const LandingPage: React.FC<{ onGetStarted: () => void }> = ({ onGetStarted }) =
                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
                 <span className="text-green-400 font-medium">Testnet</span>
               </div>
-              <Button
-                onClick={handleGetStarted}
-                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white"
-              >
-                <Wallet className="mr-2" size={16} />
-                Launch App
-              </Button>
+              <SplitWalletButton />
             </div>
 
             {/* Mobile Menu Button */}
@@ -111,13 +90,7 @@ const LandingPage: React.FC<{ onGetStarted: () => void }> = ({ onGetStarted }) =
                 <a href="#tokenomics" className="block px-3 py-2 text-gray-300 hover:text-white">Tokenomics</a>
                 <a href="https://github.com/gboigwe/earnestpay" target="_blank" rel="noopener noreferrer" className="block px-3 py-2 text-gray-300 hover:text-white">Docs</a>
                 <div className="px-3 py-2">
-                  <Button
-                    onClick={handleGetStarted}
-                    className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
-                  >
-                    <Wallet className="mr-2" size={16} />
-                    Launch App
-                  </Button>
+                  <SplitWalletButton />
                 </div>
               </div>
             </div>
@@ -141,12 +114,12 @@ const LandingPage: React.FC<{ onGetStarted: () => void }> = ({ onGetStarted }) =
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button
-              onClick={handleGetStarted}
+              onClick={onGetStarted}
               size="lg"
               className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-8 py-4 text-lg"
             >
               <Wallet className="mr-3" size={20} />
-              {connected ? 'Launch Dashboard' : 'Connect Wallet'}
+              Launch Dashboard
             </Button>
             <Button variant="outline" size="lg" className="px-8 py-4 text-lg border-2 border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-gray-900 transition-all">
               View Protocol
@@ -436,13 +409,6 @@ const LandingPage: React.FC<{ onGetStarted: () => void }> = ({ onGetStarted }) =
           </p>
         </div>
       </section>
-
-      {/* Enhanced Wallet Modal */}
-      <EnhancedWalletModal
-        isOpen={showWalletModal}
-        onClose={() => setShowWalletModal(false)}
-        onSuccess={handleWalletSuccess}
-      />
     </div>
   );
 };
