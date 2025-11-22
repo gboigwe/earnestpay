@@ -11,19 +11,22 @@ import { Toaster } from "@/components/ui/toaster.tsx";
 import { MultiChainWalletProvider } from "@/components/MultiChainWalletProvider.tsx";
 import { WrongNetworkAlert } from "@/components/WrongNetworkAlert";
 import { ChainProvider } from "@/contexts/ChainContext";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 const queryClient = new QueryClient();
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <ChainProvider>
+    <ErrorBoundary>
       <MultiChainWalletProvider>
-        <QueryClientProvider client={queryClient}>
-          <App />
-          <WrongNetworkAlert />
-          <Toaster />
-        </QueryClientProvider>
+        <ChainProvider>
+          <QueryClientProvider client={queryClient}>
+            <App />
+            <WrongNetworkAlert />
+            <Toaster />
+          </QueryClientProvider>
+        </ChainProvider>
       </MultiChainWalletProvider>
-    </ChainProvider>
+    </ErrorBoundary>
   </React.StrictMode>,
 );

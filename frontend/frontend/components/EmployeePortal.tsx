@@ -17,7 +17,7 @@ import { aptosClient } from "@/utils/aptosClient";
 import { getPaymentProcessedEvents, getPaymentScheduleCreatedEvents } from "@/utils/payroll";
 import { MODULE_ADDRESS, getExplorerTxnUrl } from "@/constants";
 import { ChainSelector } from "./ChainSelector";
-import { UnifiedWalletButton } from "./UnifiedWalletButton";
+import { SplitWalletButton } from "./SplitWalletButton";
 
 interface PaymentRecord {
   amount: number;
@@ -316,7 +316,7 @@ export function EmployeePortal() {
         </div>
         <div className="flex items-center gap-3">
           <ChainSelector />
-          <UnifiedWalletButton />
+          <SplitWalletButton />
         </div>
       </div>
 

@@ -40,10 +40,19 @@ export const ChainProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     return 'aptos';
   });
 
-  // Track wallet connections
-  const { connected: aptosConnected, account: aptosAccount, disconnect: aptosDisconnect } = useAptosWallet();
-  const { address: evmAddress, isConnected: evmConnected } = useEVMAccount();
-  const { disconnect: evmDisconnect } = useEVMDisconnect();
+  // Track wallet connections with safe defaults
+  const aptosWallet = useAptosWallet();
+  const evmAccount = useEVMAccount();
+  const evmDisconnectHook = useEVMDisconnect();
+
+  // Use nullish coalescing to provide safe defaults
+  const aptosConnected = aptosWallet.connected ?? false;
+  const aptosAccount = aptosWallet.account ?? undefined;
+  const aptosDisconnect = aptosWallet.disconnect ?? (() => {});
+
+  const evmConnected = evmAccount.isConnected ?? false;
+  const evmAddress = evmAccount.address ?? undefined;
+  const evmDisconnect = evmDisconnectHook.disconnect ?? (() => {});
 
   const walletConnections: WalletConnectionState = {
     aptos: {
@@ -74,9 +83,9 @@ export const ChainProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       const newIsAptos = chain === 'aptos';
       const newIsEVM = ['ethereum', 'arbitrum', 'base', 'polygon'].includes(chain);
 
-      if (newIsAptos && evmConnected) {
+      if (newIsAptos && evmConnected && evmDisconnect) {
         evmDisconnect();
-      } else if (newIsEVM && aptosConnected) {
+      } else if (newIsEVM && aptosConnected && aptosDisconnect) {
         aptosDisconnect();
       }
     }
