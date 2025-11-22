@@ -2,9 +2,10 @@ import { useState } from "react";
 // Internal Components
 import LandingPage from "@/components/LandingPage";
 import { PayrollDashboard } from "@/components/PayrollDashboard";
+import TransactionHistory from "@/components/TransactionHistory";
 
 function App() {
-  const [currentView, setCurrentView] = useState<'landing' | 'dashboard'>('landing');
+  const [currentView, setCurrentView] = useState<'landing' | 'dashboard' | 'transactions'>('landing');
 
   const handleGetStarted = () => {
     setCurrentView('dashboard');
@@ -14,12 +15,24 @@ function App() {
     setCurrentView('landing');
   };
 
-  // Show the appropriate view based on user choice
-  if (currentView === 'landing') {
-    return <LandingPage onGetStarted={handleGetStarted} />;
-  }
+  const handleViewTransactions = () => {
+    setCurrentView('transactions');
+  };
 
-  return <PayrollDashboard onBack={handleBackToLanding} />;
+  const handleBackToDashboard = () => {
+    setCurrentView('dashboard');
+  };
+
+  // Show the appropriate view based on user choice
+  switch (currentView) {
+    case 'landing':
+      return <LandingPage onGetStarted={handleGetStarted} />;
+    case 'transactions':
+      return <TransactionHistory onBack={handleBackToDashboard} />;
+    case 'dashboard':
+    default:
+      return <PayrollDashboard onBack={handleBackToLanding} onViewTransactions={handleViewTransactions} />;
+  }
 }
 
 export default App;

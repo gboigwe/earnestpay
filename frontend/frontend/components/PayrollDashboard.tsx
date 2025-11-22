@@ -36,9 +36,10 @@ type RecentPayment = { addr: string; label: string; amountOctas: number; txHash?
 
 interface PayrollDashboardProps {
   onBack: () => void;
+  onViewTransactions: () => void;
 }
 
-export const PayrollDashboard: React.FC<PayrollDashboardProps> = ({ onBack }) => {
+export const PayrollDashboard: React.FC<PayrollDashboardProps> = ({ onBack, onViewTransactions }) => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const { account, signAndSubmitTransaction } = useWallet();
@@ -651,9 +652,14 @@ export const PayrollDashboard: React.FC<PayrollDashboardProps> = ({ onBack }) =>
               <h1 className="text-2xl font-bold text-gray-900">EarnestPay Dashboard</h1>
               <p className="text-gray-500">Connected: {account?.address.toString().slice(0, 8)}...{account?.address.toString().slice(-6)}</p>
             </div>
-            <Button variant="outline" onClick={onBack}>
-              Back to Landing
-            </Button>
+            <div className="space-x-2">
+              <Button variant="outline" size="sm" onClick={onViewTransactions}>
+                View All Transactions
+              </Button>
+              <Button variant="ghost" size="sm" onClick={onBack}>
+                Back to Home
+              </Button>
+            </div>
           </div>
         </div>
         
