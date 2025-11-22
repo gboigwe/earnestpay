@@ -40,18 +40,19 @@ export const ChainProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     return 'aptos';
   });
 
-  // Track wallet connections - use optional chaining to prevent errors on first load
+  // Track wallet connections with safe defaults
   const aptosWallet = useAptosWallet();
   const evmAccount = useEVMAccount();
   const evmDisconnectHook = useEVMDisconnect();
 
-  const aptosConnected = aptosWallet?.connected || false;
-  const aptosAccount = aptosWallet?.account;
-  const aptosDisconnect = aptosWallet?.disconnect;
+  // Use nullish coalescing to provide safe defaults
+  const aptosConnected = aptosWallet.connected ?? false;
+  const aptosAccount = aptosWallet.account ?? undefined;
+  const aptosDisconnect = aptosWallet.disconnect ?? (() => {});
 
-  const evmConnected = evmAccount?.isConnected || false;
-  const evmAddress = evmAccount?.address;
-  const evmDisconnect = evmDisconnectHook?.disconnect;
+  const evmConnected = evmAccount.isConnected ?? false;
+  const evmAddress = evmAccount.address ?? undefined;
+  const evmDisconnect = evmDisconnectHook.disconnect ?? (() => {});
 
   const walletConnections: WalletConnectionState = {
     aptos: {
