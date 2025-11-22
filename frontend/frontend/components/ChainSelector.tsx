@@ -1,30 +1,17 @@
 import { useState } from 'react';
-import { ChevronDown, Check } from 'lucide-react';
+import { ChevronDown, Check, AlertCircle } from 'lucide-react';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
+import { useSwitchChain, useChainId } from 'wagmi';
+import { mainnet, arbitrum, base, polygon } from 'wagmi/chains';
 import { useChain, ChainType } from '@/contexts/ChainContext';
+import { toast } from './ui/use-toast';
 
 /**
- * ChainSelector Component
+ * ChainSelector Component with EVM Network Switching
  *
- * Allows users to switch between different blockchain networks.
- * Currently supports:
- * - Aptos (active)
- * - Ethereum, Arbitrum, Base, Polygon (future - requires Reown setup)
- *
- * Usage:
- * This component is READY but not yet integrated into the UI.
- * When you implement cross-chain features, add this to your navigation:
- *
- * ```tsx
- * import { ChainSelector } from '@/components/ChainSelector';
- *
- * <ChainSelector />
- * ```
- *
- * The component will:
- * 1. Show current active chain (Aptos by default)
- * 2. Allow switching to EVM chains (when Reown is configured)
- * 3. Display wallet connection status per chain
+ * Allows users to switch between:
+ * - Aptos blockchain
+ * - EVM networks (Ethereum, Arbitrum, Base, Polygon)
  */
 
 type Chain = {
@@ -33,7 +20,8 @@ type Chain = {
   icon: string;
   type: 'aptos' | 'evm';
   enabled: boolean;
-  comingSoon?: boolean;
+  chainId?: number;
+  color?: string;
 };
 
 const CHAINS: Chain[] = [
@@ -43,76 +31,142 @@ const CHAINS: Chain[] = [
     icon: '🟣',
     type: 'aptos',
     enabled: true,
+    color: '#00D1B2',
   },
   {
     id: 'ethereum',
     name: 'Ethereum',
     icon: '⟠',
     type: 'evm',
-    enabled: false,
-    comingSoon: true,
+    enabled: true,
+    chainId: mainnet.id,
+    color: '#627EEA',
   },
   {
     id: 'arbitrum',
     name: 'Arbitrum',
     icon: '🔷',
     type: 'evm',
-    enabled: false,
-    comingSoon: true,
+    enabled: true,
+    chainId: arbitrum.id,
+    color: '#28A0F0',
   },
   {
     id: 'base',
     name: 'Base',
     icon: '🔵',
     type: 'evm',
-    enabled: false,
-    comingSoon: true,
+    enabled: true,
+    chainId: base.id,
+    color: '#0052FF',
   },
   {
     id: 'polygon',
     name: 'Polygon',
-    icon: '🟣',
+    icon: '🟪',
     type: 'evm',
-    enabled: false,
-    comingSoon: true,
+    enabled: true,
+    chainId: polygon.id,
+    color: '#8247E5',
   },
 ];
 
 export const ChainSelector = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isSwitching, setIsSwitching] = useState(false);
+
   const { selectedChain: selectedChainId, setSelectedChain } = useChain();
-  const { connected } = useWallet();
+  const { connected: aptosConnected } = useWallet();
 
-  // Find the selected chain object
-  const selectedChain = CHAINS.find(c => c.id === selectedChainId) || CHAINS[0];
-
-  const handleChainSelect = (chain: Chain) => {
-    if (!chain.enabled) {
-      return;
-    }
-    setSelectedChain(chain.id as ChainType);
-    setIsOpen(false);
-  };
+  // EVM network switching
+  const { switchChain: switchEVMChain } = useSwitchChain();
+  const currentEVMChainId = useChainId();
 
   // Check if Reown is configured
   const reownProjectId = import.meta.env.VITE_REOWN_PROJECT_ID;
   const evmEnabled = !!reownProjectId;
 
+  // Find the selected chain object
+  const selectedChain = CHAINS.find(c => c.id === selectedChainId) || CHAINS[0];
+
+  const handleChainSelect = async (chain: Chain) => {
+    if (!chain.enabled) {
+      return;
+    }
+
+    // If selecting an EVM chain, switch the network
+    if (chain.type === 'evm' && chain.chainId && evmEnabled) {
+      if (!switchEVMChain) {
+        toast({
+          title: "Wallet Not Connected",
+          description: "Please connect an EVM wallet first to switch networks.",
+          variant: "destructive",
+        });
+        setIsOpen(false);
+        return;
+      }
+
+      setIsSwitching(true);
+      try {
+        await switchEVMChain({ chainId: chain.chainId });
+
+        // Update the context after successful switch
+        setSelectedChain(chain.id as ChainType);
+
+        toast({
+          title: "Network Switched",
+          description: `Successfully switched to ${chain.name}`,
+        });
+      } catch (error: any) {
+        console.error('Network switch error:', error);
+
+        let errorMessage = 'Failed to switch network. Please try again.';
+
+        if (error.code === 4902) {
+          errorMessage = `Please add ${chain.name} network to your wallet first.`;
+        } else if (error.message?.includes('User rejected')) {
+          errorMessage = 'Network switch cancelled by user.';
+        }
+
+        toast({
+          title: "Network Switch Failed",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      } finally {
+        setIsSwitching(false);
+      }
+    } else {
+      // Aptos chain or EVM when Reown not configured
+      setSelectedChain(chain.id as ChainType);
+    }
+
+    setIsOpen(false);
+  };
+
   return (
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg border border-gray-700 transition-colors"
+        disabled={isSwitching}
+        className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg border border-gray-700 transition-colors disabled:opacity-50"
       >
         <span className="text-xl">{selectedChain.icon}</span>
         <span className="text-white font-medium">{selectedChain.name}</span>
-        {connected && selectedChain.type === 'aptos' && (
+        {selectedChain.type === 'aptos' && aptosConnected && (
           <span className="w-2 h-2 bg-green-400 rounded-full" title="Connected" />
         )}
-        <ChevronDown
-          className={`text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
-          size={16}
-        />
+        {selectedChain.type === 'evm' && currentEVMChainId === selectedChain.chainId && (
+          <span className="w-2 h-2 bg-green-400 rounded-full" title="Connected" />
+        )}
+        {isSwitching ? (
+          <div className="w-4 h-4 border-2 border-gray-400 border-t-white rounded-full animate-spin" />
+        ) : (
+          <ChevronDown
+            className={`text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+            size={16}
+          />
+        )}
       </button>
 
       {isOpen && (
@@ -131,14 +185,15 @@ export const ChainSelector = () => {
 
             <div className="p-2">
               {CHAINS.map((chain) => {
-                const isSelected = chain.id === selectedChain.id;
-                const isDisabled = !chain.enabled && !evmEnabled;
+                const isSelected = chain.id === selectedChainId;
+                const isCurrentEVMNetwork = chain.type === 'evm' && chain.chainId === currentEVMChainId;
+                const isDisabled = chain.type === 'evm' && !evmEnabled;
 
                 return (
                   <button
                     key={chain.id}
                     onClick={() => handleChainSelect(chain)}
-                    disabled={isDisabled}
+                    disabled={isDisabled || isSwitching}
                     className={`
                       w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors
                       ${isSelected ? 'bg-blue-500/10 border border-blue-500/30' : 'hover:bg-gray-800'}
@@ -149,13 +204,13 @@ export const ChainSelector = () => {
                     <div className="flex-1 text-left">
                       <div className="flex items-center gap-2">
                         <span className="text-white font-medium">{chain.name}</span>
-                        {chain.comingSoon && (
-                          <span className="text-xs px-2 py-0.5 bg-purple-500/20 text-purple-400 rounded-full">
-                            Coming Soon
+                        {isCurrentEVMNetwork && (
+                          <span className="text-xs px-2 py-0.5 bg-green-500/20 text-green-400 rounded-full">
+                            Active
                           </span>
                         )}
                       </div>
-                      {isDisabled && chain.type === 'evm' && (
+                      {isDisabled && (
                         <p className="text-xs text-gray-500 mt-0.5">
                           Configure Reown to enable
                         </p>
@@ -171,10 +226,13 @@ export const ChainSelector = () => {
 
             {!evmEnabled && (
               <div className="p-3 border-t border-gray-800 bg-gray-800/50">
-                <p className="text-xs text-gray-400 mb-2">
-                  To enable EVM chains:
-                </p>
-                <ol className="text-xs text-gray-500 space-y-1 list-decimal list-inside">
+                <div className="flex items-start gap-2 mb-2">
+                  <AlertCircle size={16} className="text-yellow-400 mt-0.5" />
+                  <p className="text-xs text-gray-400">
+                    To enable EVM networks:
+                  </p>
+                </div>
+                <ol className="text-xs text-gray-500 space-y-1 list-decimal list-inside ml-4">
                   <li>Sign up at <span className="text-blue-400">cloud.reown.com</span></li>
                   <li>Add project ID to .env file</li>
                   <li>Restart development server</li>
