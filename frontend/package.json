@@ -14,7 +14,11 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "_fmt": "prettier 'frontend/**/*.ts'",
-    "fmt": "npm run _fmt -- --write"
+    "fmt": "npm run _fmt -- --write",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@aptos-labs/ts-sdk": "^5.0.0",
@@ -47,17 +51,23 @@
     "wagmi": "^3.0.1"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
     "@types/node": "^20.14.1",
     "@types/react": "^18.2.66",
     "@types/react-dom": "^18.2.22",
     "@typescript-eslint/eslint-plugin": "^7.2.0",
     "@typescript-eslint/parser": "^7.2.0",
     "@vitejs/plugin-react": "^4.2.1",
+    "@vitest/coverage-v8": "^4.0.13",
+    "@vitest/ui": "^4.0.13",
     "autoprefixer": "^10.4.19",
     "dotenv": "16.3.1",
     "eslint": "^8.57.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.6",
+    "jsdom": "^27.2.0",
     "postcss": "^8.4.38",
     "prettier": "^3.3.2",
     "tailwindcss": "^3.4.3",
@@ -65,6 +75,7 @@
     "typescript": "^5.2.2",
     "vercel": "^35.2.4",
     "vite": "^5.2.0",
-    "vite-plugin-notifier": "^0.1.5"
+    "vite-plugin-notifier": "^0.1.5",
+    "vitest": "^4.0.13"
   }
 }
