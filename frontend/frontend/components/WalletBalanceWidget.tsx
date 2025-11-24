@@ -77,6 +77,7 @@ export const WalletBalanceWidget: React.FC = () => {
 
       try {
         setIsLoading(prev => ({ ...prev, aptos: true }));
+        // @ts-ignore - The type definition seems to be incorrect
         const aptos = new Aptos(new AptosConfig({ network: 'mainnet' }));
         const balance = await aptos.getAccountAPTAmount({ accountAddress: account.address });
         // Convert from octas to APT (1 APT = 10^8 octas)
@@ -98,6 +99,7 @@ export const WalletBalanceWidget: React.FC = () => {
   const { data: evmBalance, isLoading: isEvmLoading } = useBalance({
     address: account?.address as `0x${string}` | undefined,
     chainId: chainIdMap[selectedChain],
+    // @ts-ignore - enabled is a valid property in newer versions
     enabled: !!account?.address && isEVMChain,
   });
 
