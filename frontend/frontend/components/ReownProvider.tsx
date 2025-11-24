@@ -1,40 +1,70 @@
-import { PropsWithChildren } from "react";
+import { PropsWithChildren, useMemo } from "react";
 import { mainnet, arbitrum, base, polygon } from '@reown/appkit/networks';
-import { WagmiProvider, createConfig, http, type Config } from 'wagmi';
+import { WagmiProvider, createConfig, http } from 'wagmi';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { type State, createSyncStoragePersister } from '@tanstack/query-sync-storage-persist';
 
-// Create QueryClient for Wagmi
-const queryClient = new QueryClient();
+// Create a new QueryClient instance with default options
+const createQueryClient = () => {
+  return new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: 5 * 60 * 1000, // 5 minutes
+        gcTime: 10 * 60 * 1000, // 10 minutes
+        refetchOnWindowFocus: false,
+        retry: 2,
+      },
+    },
+  });
+};
 
-// Get Reown project ID from environment
-const projectId = import.meta.env.VITE_REOWN_PROJECT_ID || '';
+// Create the query client instance
+let browserQueryClient: QueryClient | undefined;
 
-// Create minimal wagmi config for hooks to work
-const wagmiConfig = createConfig({
-  chains: [mainnet, arbitrum, base, polygon],
-  transports: {
-    [mainnet.id]: http(),
-    [arbitrum.id]: http(),
-    [base.id]: http(),
-    [polygon.id]: http(),
-  },
-});
+const getQueryClient = () => {
+  if (typeof window === 'undefined') {
+    // Server: always create a new QueryClient
+    return createQueryClient();
+  }
+  // Browser: create the singleton instance
+  if (!browserQueryClient) {
+    browserQueryClient = createQueryClient();
+  }
+  return browserQueryClient;
+};
+
+// Create Wagmi config with proper typing
+const createWagmiConfig = () => {
+  return createConfig({
+    chains: [mainnet, arbitrum, base, polygon],
+    transports: {
+      [mainnet.id]: http(),
+      [arbitrum.id]: http(),
+      [base.id]: http(),
+      [polygon.id]: http(),
+    },
+  });
+};
 
 /**
  * ReownProvider Component
  * 
- * Provides Wagmi context for EVM chain support.
- * AppKit initialization has been moved to main.tsx to prevent duplicate initialization.
- * 
- * This component only provides the Wagmi provider context for EVM wallet connections.
+ * Provides Wagmi and React Query context for the application.
+ * Uses proper typing and handles client-side state persistence.
  */
 export function ReownProvider({ children }: PropsWithChildren) {
-  // Always provide Wagmi context for EVM chain interactions
+  const queryClient = useMemo(() => getQueryClient(), []);
+  const config = useMemo(() => createWagmiConfig(), []);
+
   return (
     <QueryClientProvider client={queryClient}>
-      <WagmiProvider config={wagmiConfig}>
+      <WagmiProvider config={config}>
         {children}
       </WagmiProvider>
+      {process.env.NODE_ENV === 'development' && (
+        <ReactQueryDevtools initialIsOpen={false} position="bottom-right" />
+      )}
     </QueryClientProvider>
   );
 }
