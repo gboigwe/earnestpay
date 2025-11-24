@@ -18,6 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from './ui/dialog';
+import { useMultiChainErrorHandler } from '@/hooks/useMultiChainErrorHandler.tsx';
 
 interface WalletInfo {
   name: string;
@@ -84,6 +85,9 @@ export const EnhancedWalletModal: React.FC<EnhancedWalletModalProps> = ({
   const [showMobileQR, setShowMobileQR] = useState<string | null>(null);
   const [showWalletInfo, setShowWalletInfo] = useState(false);
 
+  // Multi-chain error handling
+  const { handleWalletError } = useMultiChainErrorHandler();
+
   const handleWalletSelect = async (walletName: string) => {
     setIsConnecting(true);
 
@@ -98,20 +102,12 @@ export const EnhancedWalletModal: React.FC<EnhancedWalletModalProps> = ({
       onSuccess?.();
       onClose();
     } catch (error: any) {
-      console.error('Wallet connection failed:', error);
-
-      let errorMessage = 'Failed to connect wallet. Please try again.';
-      if (error.message?.includes('User rejected')) {
-        errorMessage = 'Connection cancelled by user.';
-      } else if (error.message?.includes('not installed')) {
-        errorMessage = `Please install ${walletName} wallet extension.`;
-      }
-
-      toast({
-        title: "Connection Error",
-        description: errorMessage,
-        variant: "destructive",
-      });
+      // Use multi-chain error handler with retry action
+      handleWalletError(
+        error,
+        'aptos',
+        () => handleWalletSelect(walletName) // Retry action
+      );
     } finally {
       setIsConnecting(false);
     }
