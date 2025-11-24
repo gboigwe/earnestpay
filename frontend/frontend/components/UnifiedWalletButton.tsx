@@ -7,7 +7,7 @@ import { useChain } from '@/contexts/ChainContext';
 import { EnhancedWalletModal } from './EnhancedWalletModal';
 import { EVMWalletModal } from './EVMWalletModal';
 import { toast } from './ui/use-toast';
-import { reconnect } from '@wagmi/core';
+// reconnect import removed as it's not used
 
 // Helper to check if we're in a browser environment
 const isBrowser = typeof window !== 'undefined';
@@ -23,10 +23,7 @@ const isBrowser = typeof window !== 'undefined';
  * - Provides disconnect and copy address functionality
  */
 
-const truncateAddress = (address: string, chars = 4): string => {
-  if (!address) return '';
-  return `${address.slice(0, chars + 2)}...${address.slice(-chars)}`;
-};
+// truncateAddress moved to utils.ts
 
 const getExplorerUrl = (address: string, chain: string): string => {
   switch (chain) {
@@ -65,13 +62,13 @@ export const UnifiedWalletButton: React.FC = () => {
       try {
         const storedSession = localStorage.getItem('walletconnect');
         if (storedSession && !evmConnected) {
-          const session = JSON.parse(storedSession);
           const walletConnectConnector = connectors.find(
             (c) => c.id === 'walletConnect' || c.name === 'WalletConnect'
           );
           
           if (walletConnectConnector) {
-            await reconnect();
+            // Skip reconnection for now as it requires config
+            // await reconnect(config);
           } else {
             // Clear invalid session if connector not found
             localStorage.removeItem('walletconnect');
@@ -98,7 +95,6 @@ export const UnifiedWalletButton: React.FC = () => {
       </button>
     );
   }
-  const { disconnect: evmDisconnect } = useDisconnect();
 
   // Modal states
   const [showAptosModal, setShowAptosModal] = useState(false);
@@ -107,7 +103,7 @@ export const UnifiedWalletButton: React.FC = () => {
 
   // Determine which wallet is connected for the current chain
   const isConnectedToCurrentChain = isAptosChain ? aptosConnected : evmConnected;
-  const currentAddress = isAptosChain ? aptosAccount?.address?.toString() : evmAddress;
+  const currentAddress = isAptosChain ? aptosAccount?.address?.toString() : evmAddress || '';
 
   // Check if connected to both chains
   const isBothConnected = aptosConnected && evmConnected;

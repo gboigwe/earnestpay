@@ -6,7 +6,7 @@ type EnsDisplayProps = {
   address: string;
   className?: string;
   showAddress?: boolean;
-  avatarSize?: 'sm' | 'md' | 'lg';
+  avatarSize?: 'xs' | 'sm' | 'md' | 'lg';
 };
 
 export const EnsDisplay: React.FC<EnsDisplayProps> = ({
@@ -26,6 +26,7 @@ export const EnsDisplay: React.FC<EnsDisplayProps> = ({
   });
 
   const sizeClasses = {
+    xs: 'w-3 h-3',
     sm: 'w-4 h-4',
     md: 'w-6 h-6',
     lg: 'w-8 h-8',
