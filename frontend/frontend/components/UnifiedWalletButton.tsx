@@ -1,11 +1,15 @@
-import React, { useState } from 'react';
-import { Wallet, Copy, ExternalLink, LogOut, ChevronDown } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Wallet, Copy, ExternalLink, LogOut, ChevronDown, Loader2 } from 'lucide-react';
 import { useWallet as useAptosWallet } from '@aptos-labs/wallet-adapter-react';
-import { useAccount as useEVMAccount, useDisconnect } from 'wagmi';
+import { useAccount as useEVMAccount, useDisconnect, useConnect } from 'wagmi';
 import { useChain } from '@/contexts/ChainContext';
 import { EnhancedWalletModal } from './EnhancedWalletModal';
 import { EVMWalletModal } from './EVMWalletModal';
 import { toast } from './ui/use-toast';
+import { reconnect } from '@wagmi/core';
+
+// Helper to check if we're in a browser environment
+const isBrowser = typeof window !== 'undefined';
 
 /**
  * UnifiedWalletButton Component
@@ -42,12 +46,57 @@ const getExplorerUrl = (address: string, chain: string): string => {
 
 export const UnifiedWalletButton: React.FC = () => {
   const { selectedChain, isAptosChain, isEVMChain } = useChain();
+  const [isLoading, setIsLoading] = useState(true);
+  const { connect, connectors } = useConnect();
 
   // Aptos wallet state
   const { connected: aptosConnected, account: aptosAccount, disconnect: aptosDisconnect } = useAptosWallet();
 
   // EVM wallet state
   const { address: evmAddress, isConnected: evmConnected } = useEVMAccount();
+  const { disconnect: evmDisconnect } = useDisconnect();
+
+  // Handle session restoration on mount
+  useEffect(() => {
+    const restoreSession = async () => {
+      if (!isBrowser) return;
+      
+      try {
+        const storedSession = localStorage.getItem('walletconnect');
+        if (storedSession && !evmConnected) {
+          const session = JSON.parse(storedSession);
+          const walletConnectConnector = connectors.find(
+            (c) => c.id === 'walletConnect' || c.name === 'WalletConnect'
+          );
+          
+          if (walletConnectConnector) {
+            await reconnect();
+          } else {
+            // Clear invalid session if connector not found
+            localStorage.removeItem('walletconnect');
+          }
+        }
+      } catch (error) {
+        console.error('Failed to restore WalletConnect session:', error);
+        // Clear corrupted session
+        localStorage.removeItem('walletconnect');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    restoreSession();
+  }, [connect, evmConnected, connectors]);
+
+  // Show loading state while restoring session
+  if (isLoading) {
+    return (
+      <button className="flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+        Restoring session...
+      </button>
+    );
+  }
   const { disconnect: evmDisconnect } = useDisconnect();
 
   // Modal states
