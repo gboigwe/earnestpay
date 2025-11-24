@@ -19,6 +19,7 @@ import {
   DialogTitle,
 } from './ui/dialog';
 import { useMultiChainErrorHandler } from '@/hooks/useMultiChainErrorHandler.tsx';
+import { motion } from 'framer-motion';
 
 interface WalletInfo {
   name: string;
@@ -157,41 +158,74 @@ export const EnhancedWalletModal: React.FC<EnhancedWalletModalProps> = ({
                   {availableWallets.map((wallet, index) => {
                     const info = getWalletInfo(wallet.name);
                     return (
-                      <div key={`${wallet.name}-${index}`} className="space-y-2">
-                        <button
+                      <motion.div
+                        key={`${wallet.name}-${index}`}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1, duration: 0.3 }}
+                      >
+                        <motion.button
                           onClick={() => handleWalletSelect(wallet.name)}
                           disabled={isConnecting}
                           className="w-full flex items-center gap-4 p-4 rounded-xl border border-gray-700 hover:border-blue-500/50 hover:bg-gray-800/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
+                          whileHover={{ scale: 1.02, y: -2 }}
+                          whileTap={{ scale: 0.98 }}
+                          transition={{ type: "spring", stiffness: 400, damping: 17 }}
                         >
-                          <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-2xl">
+                          <motion.div
+                            className="w-12 h-12 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-2xl"
+                            whileHover={{ rotate: [0, -5, 5, -5, 0], transition: { duration: 0.5 } }}
+                          >
                             {info.icon}
-                          </div>
+                          </motion.div>
                           <div className="text-left flex-1">
                             <div className="text-white font-semibold flex items-center gap-2">
                               {wallet.name}
-                              <span className="text-xs px-2 py-0.5 bg-green-500/20 text-green-400 rounded-full">
-                                Installed
-                              </span>
+                              {isConnecting ? (
+                                <motion.span
+                                  className="text-xs px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded-full"
+                                  animate={{ opacity: [0.5, 1, 0.5] }}
+                                  transition={{ duration: 1.5, repeat: Infinity }}
+                                >
+                                  Connecting...
+                                </motion.span>
+                              ) : (
+                                <motion.span
+                                  className="text-xs px-2 py-0.5 bg-green-500/20 text-green-400 rounded-full"
+                                  initial={{ scale: 0 }}
+                                  animate={{ scale: 1 }}
+                                  transition={{ delay: index * 0.1 + 0.2, type: "spring" }}
+                                >
+                                  Installed
+                                </motion.span>
+                              )}
                             </div>
                             <div className="text-gray-400 text-sm">{info.description}</div>
                           </div>
                           <div className="flex items-center gap-2">
                             {info.mobileSupport && (
-                              <button
+                              <motion.button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleMobileConnect(wallet.name);
                                 }}
                                 className="p-2 rounded-lg hover:bg-gray-700 transition-colors"
                                 title="Connect via mobile"
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
                               >
                                 <Smartphone size={18} className="text-gray-400" />
-                              </button>
+                              </motion.button>
                             )}
-                            <ArrowRight className="text-gray-400 group-hover:text-blue-400 transition-colors" size={20} />
+                            <motion.div
+                              animate={{ x: [0, 5, 0] }}
+                              transition={{ duration: 1.5, repeat: Infinity }}
+                            >
+                              <ArrowRight className="text-gray-400 group-hover:text-blue-400 transition-colors" size={20} />
+                            </motion.div>
                           </div>
-                        </button>
-                      </div>
+                        </motion.button>
+                      </motion.div>
                     );
                   })}
                 </div>
