@@ -9,7 +9,7 @@ export const useTransactionHistory = (limit = 20) => {
   const { account } = useWallet();
   const { address: evmAddress } = useAccount();
   const { selectedChain } = useChain();
-  const publicClient = usePublicClient();
+  const publicClient = usePublicClient()!;
 
   const [transactions, setTransactions] = useState<UnifiedTransaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -19,7 +19,7 @@ export const useTransactionHistory = (limit = 20) => {
     if (!account?.address) return [];
     
     try {
-      const events = await getPaymentProcessedEvents(account.address, limit);
+      const events = await getPaymentProcessedEvents(account.address.toString(), limit);
       return events.map(event => formatAptosTransaction(event));
     } catch (err) {
       console.error('Error fetching Aptos transactions:', err);

@@ -31,7 +31,8 @@ const metadata = {
 };
 
 // Configure supported EVM networks
-const networks = [mainnet, arbitrum, base, polygon];
+// Type assertion to satisfy the tuple type requirement
+const networks = [mainnet, arbitrum, base, polygon] as unknown as [any, ...any[]];
 
 // Create a wrapper component that initializes AppKit
 function AppKitWrapper({ children }: { children: React.ReactNode }) {
@@ -89,7 +90,7 @@ function AppKitWrapper({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AppKitProvider value={appKit}>
+    <AppKitProvider {...appKit}>
       {children}
     </AppKitProvider>
   );
