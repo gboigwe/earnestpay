@@ -5,6 +5,8 @@ import { useSwitchChain, useChainId } from 'wagmi';
 import { mainnet, arbitrum, base, polygon } from 'wagmi/chains';
 import { useChain, ChainType } from '@/contexts/ChainContext';
 import { toast } from './ui/use-toast';
+import { useMultiChainErrorHandler } from '@/hooks/useMultiChainErrorHandler.tsx';
+import { NetworkSwitchError } from '@/errors/MultiChainErrors';
 
 /**
  * ChainSelector Component with EVM Network Switching
@@ -82,6 +84,9 @@ export const ChainSelector = () => {
   const { switchChain: switchEVMChain } = useSwitchChain();
   const currentEVMChainId = useChainId();
 
+  // Multi-chain error handling
+  const { handleNetworkError } = useMultiChainErrorHandler();
+
   // Check if Reown is configured
   const reownProjectId = import.meta.env.VITE_REOWN_PROJECT_ID;
   const evmEnabled = !!reownProjectId;
@@ -97,11 +102,20 @@ export const ChainSelector = () => {
     // If selecting an EVM chain, switch the network
     if (chain.type === 'evm' && chain.chainId && evmEnabled) {
       if (!switchEVMChain) {
-        toast({
-          title: "Wallet Not Connected",
-          description: "Please connect an EVM wallet first to switch networks.",
-          variant: "destructive",
-        });
+        // Create a custom error for wallet not connected
+        const error = new NetworkSwitchError(
+          'EVM wallet not connected',
+          'Please connect an EVM wallet first to switch networks.',
+          selectedChainId,
+          chain.id as ChainType
+        );
+
+        handleNetworkError(
+          error,
+          selectedChainId,
+          chain.id as ChainType
+        );
+
         setIsOpen(false);
         return;
       }
@@ -118,21 +132,13 @@ export const ChainSelector = () => {
           description: `Successfully switched to ${chain.name}`,
         });
       } catch (error: any) {
-        console.error('Network switch error:', error);
-
-        let errorMessage = 'Failed to switch network. Please try again.';
-
-        if (error.code === 4902) {
-          errorMessage = `Please add ${chain.name} network to your wallet first.`;
-        } else if (error.message?.includes('User rejected')) {
-          errorMessage = 'Network switch cancelled by user.';
-        }
-
-        toast({
-          title: "Network Switch Failed",
-          description: errorMessage,
-          variant: "destructive",
-        });
+        // Use the multi-chain error handler with retry action
+        handleNetworkError(
+          error,
+          selectedChainId,
+          chain.id as ChainType,
+          () => handleChainSelect(chain) // Retry action
+        );
       } finally {
         setIsSwitching(false);
       }
