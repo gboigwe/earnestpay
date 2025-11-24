@@ -1,55 +1,42 @@
-import { PropsWithChildren } from "react";
-import { createAppKit } from '@reown/appkit/react';
-import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
+import { PropsWithChildren, useMemo } from "react";
 import { mainnet, arbitrum, base, polygon } from '@reown/appkit/networks';
-import { WagmiProvider, createConfig, http, type Config } from 'wagmi';
+import { WagmiProvider, createConfig, http } from 'wagmi';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import type { AppKitNetwork } from '@reown/appkit/networks';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { type State, createSyncStoragePersister } from '@tanstack/query-sync-storage-persist';
 
-// Create QueryClient for Wagmi
-const queryClient = new QueryClient();
-
-// Get Reown project ID from environment
-// Sign up at https://cloud.reown.com to get your project ID
-const projectId = import.meta.env.VITE_REOWN_PROJECT_ID || '';
-
-// Configure metadata for your dApp
-const metadata = {
-  name: 'EarnestPay',
-  description: 'Blockchain payroll and payouts platform - Multi-chain support',
-  url: typeof window !== 'undefined' ? window.location.origin : 'https://earnestpay.com',
-  icons: [typeof window !== 'undefined' ? `${window.location.origin}/earnestpay-icon.svg` : 'https://earnestpay.com/earnestpay-icon.svg']
+// Create a new QueryClient instance with default options
+const createQueryClient = () => {
+  return new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: 5 * 60 * 1000, // 5 minutes
+        gcTime: 10 * 60 * 1000, // 10 minutes
+        refetchOnWindowFocus: false,
+        retry: 2,
+      },
+    },
+  });
 };
 
-// Configure supported EVM networks for future cross-chain features
-const networks: [AppKitNetwork, ...AppKitNetwork[]] = [mainnet, arbitrum, base, polygon];
+// Create the query client instance
+let browserQueryClient: QueryClient | undefined;
 
-// Create Wagmi config (either with WagmiAdapter or minimal fallback)
-let wagmiConfig: Config;
+const getQueryClient = () => {
+  if (typeof window === 'undefined') {
+    // Server: always create a new QueryClient
+    return createQueryClient();
+  }
+  // Browser: create the singleton instance
+  if (!browserQueryClient) {
+    browserQueryClient = createQueryClient();
+  }
+  return browserQueryClient;
+};
 
-if (projectId) {
-  // Create Wagmi adapter for EVM chains with Reown
-  const wagmiAdapter = new WagmiAdapter({
-    networks,
-    projectId,
-    ssr: false
-  });
-
-  wagmiConfig = wagmiAdapter.wagmiConfig;
-
-  // Create AppKit
-  createAppKit({
-    adapters: [wagmiAdapter],
-    networks,
-    projectId,
-    metadata,
-    features: {
-      analytics: true // Enable analytics for usage tracking
-    }
-  });
-} else {
-  // Minimal wagmi config without Reown for hooks to work
-  wagmiConfig = createConfig({
+// Create Wagmi config with proper typing
+const createWagmiConfig = () => {
+  return createConfig({
     chains: [mainnet, arbitrum, base, polygon],
     transports: {
       [mainnet.id]: http(),
@@ -58,32 +45,26 @@ if (projectId) {
       [polygon.id]: http(),
     },
   });
-}
+};
 
 /**
  * ReownProvider Component
- *
- * Provides WalletConnect/Reown functionality for future EVM chain support.
- * This provider is OPTIONAL and won't interfere with Aptos wallet functionality.
- *
- * Usage:
- * - Currently inactive unless VITE_REOWN_PROJECT_ID is set in .env
- * - When implementing cross-chain features, this will enable EVM wallet connections
- * - Supports Ethereum, Arbitrum, Base, Polygon, and other EVM chains
- *
- * Setup:
- * 1. Sign up at https://cloud.reown.com
- * 2. Create a project and get your project ID
- * 3. Add VITE_REOWN_PROJECT_ID=your_project_id to .env file
- * 4. The provider will automatically activate
+ * 
+ * Provides Wagmi and React Query context for the application.
+ * Uses proper typing and handles client-side state persistence.
  */
 export function ReownProvider({ children }: PropsWithChildren) {
-  // Always provide Wagmi context for EVM chain interactions
+  const queryClient = useMemo(() => getQueryClient(), []);
+  const config = useMemo(() => createWagmiConfig(), []);
+
   return (
     <QueryClientProvider client={queryClient}>
-      <WagmiProvider config={wagmiConfig}>
+      <WagmiProvider config={config}>
         {children}
       </WagmiProvider>
+      {process.env.NODE_ENV === 'development' && (
+        <ReactQueryDevtools initialIsOpen={false} position="bottom-right" />
+      )}
     </QueryClientProvider>
   );
 }
