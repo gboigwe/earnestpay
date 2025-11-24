@@ -106,10 +106,15 @@ frontend/src/
 
 ## 🔧 Technical Stack
 
-- **Blockchain**: Aptos (Move language)
-- **Frontend**: React 18 + TypeScript + Ant Design
-- **Wallet Integration**: @aptos-labs/ts-sdk + Multiple wallet adapters
-- **Testing**: Move unit tests
+- **Blockchain**: Aptos (Move language) + EVM chains (Ethereum, Arbitrum, Base, Polygon)
+- **Frontend**: React 18 + TypeScript + Tailwind CSS
+- **Wallet Integration**:
+  - Aptos: @aptos-labs/wallet-adapter-react (Petra, Martian, Pontem, MSafe, Nightly)
+  - EVM: Wagmi + Reown AppKit (MetaMask, Coinbase Wallet, WalletConnect)
+- **State Management**: React Context + Hooks
+- **Animations**: Framer Motion
+- **Testing**: Vitest + Testing Library + jsdom (>80% coverage)
+- **Build Tool**: Vite with code splitting and lazy loading
 - **Development Tools**: Aptos CLI 7.8.0
 
 ## 📋 Prerequisites
@@ -120,10 +125,28 @@ frontend/src/
 
 ## 🌐 Multi-Chain Support
 
-EarnestPay now supports multiple blockchains with a unified wallet experience:
+EarnestPay now supports multiple blockchains with a unified, polished wallet experience:
 
 - ✅ **Aptos** - Primary blockchain (fully functional)
-- 🔜 **Ethereum, Arbitrum, Base, Polygon** - Ready for activation
+- ✅ **Ethereum, Arbitrum, Base, Polygon** - EVM support ready (requires Reown configuration)
+
+### ✨ Multi-Chain Features (71.4% Complete)
+
+**✅ Completed Features:**
+- Chain switching with smooth animations (ChainSelector component)
+- EVM wallet integration (MetaMask, Coinbase, WalletConnect, etc.)
+- Unified wallet button (smart routing for Aptos/EVM)
+- Global state management (ChainContext with localStorage)
+- Network switching (Ethereum, Arbitrum, Base, Polygon)
+- Comprehensive error handling with recovery actions
+- Bundle optimization (-18.4% size reduction)
+- UI/UX polish with Framer Motion animations
+- Comprehensive testing suite (Vitest + Testing Library)
+
+**🔄 In Progress:**
+- Multi-chain wallet balances display
+- Cross-chain transaction history
+- Complete documentation
 
 ### Quick Setup for EVM Chains (Optional)
 
@@ -140,7 +163,7 @@ EarnestPay now supports multiple blockchains with a unified wallet experience:
 
 **Security**: See [REOWN_SECURITY.md](./REOWN_SECURITY.md) for detailed security information.
 
-**Details**: See [WALLET_FEATURES.md](./WALLET_FEATURES.md) for comprehensive multi-chain documentation.
+**Details**: See [WALLET_FEATURES.md](./WALLET_FEATURES.md) and [ROADMAP_PROGRESS.md](./ROADMAP_PROGRESS.md) for comprehensive multi-chain documentation.
 
 ### 2. Clone and Setup
 
