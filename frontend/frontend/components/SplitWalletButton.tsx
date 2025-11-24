@@ -1,7 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, lazy, Suspense } from 'react';
 import { Wallet, ChevronDown } from 'lucide-react';
 import { useAppKit } from '@reown/appkit/react';
-import { EnhancedWalletModal } from './EnhancedWalletModal';
+
+/**
+ * Lazy load EnhancedWalletModal to reduce initial bundle
+ * Only loads when user clicks to connect Aptos wallet
+ */
+const EnhancedWalletModal = lazy(() =>
+  import('./EnhancedWalletModal').then(module => ({
+    default: module.EnhancedWalletModal
+  }))
+);
 
 /**
  * SplitWalletButton Component
@@ -9,6 +18,10 @@ import { EnhancedWalletModal } from './EnhancedWalletModal';
  * Provides separate connection options for:
  * - Aptos wallets (Petra, Martian, Pontem, etc.)
  * - EVM wallets via Reown (MetaMask, WalletConnect, Coinbase, etc.)
+ *
+ * Performance:
+ * - Uses lazy loading for wallet modals
+ * - Only loads code when user initiates connection
  */
 
 export const SplitWalletButton: React.FC = () => {
@@ -125,12 +138,18 @@ export const SplitWalletButton: React.FC = () => {
         )}
       </div>
 
-      {/* Aptos Wallet Modal */}
-      <EnhancedWalletModal
-        isOpen={showAptosModal}
-        onClose={() => setShowAptosModal(false)}
-        onSuccess={() => setShowAptosModal(false)}
-      />
+      {/* Aptos Wallet Modal - Lazy Loaded */}
+      {showAptosModal && (
+        <Suspense fallback={<div className="fixed inset-0 bg-black/50 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+        </div>}>
+          <EnhancedWalletModal
+            isOpen={showAptosModal}
+            onClose={() => setShowAptosModal(false)}
+            onSuccess={() => setShowAptosModal(false)}
+          />
+        </Suspense>
+      )}
     </>
   );
 };
