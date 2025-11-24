@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persist';
 import { reconnect } from '@wagmi/core';
+import { NotificationProvider } from '@/contexts/NotificationContext';
 
 type WalletConnectSession = {
   name: string;
@@ -147,15 +148,17 @@ export function ReownProvider({ children }: PropsWithChildren) {
   const config = useMemo(() => createWagmiConfig(), []);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <WagmiProvider config={config}>
-        <SessionManager>
-          {children}
-        </SessionManager>
-      </WagmiProvider>
-      {process.env.NODE_ENV === 'development' && (
-        <ReactQueryDevtools initialIsOpen={false} position="bottom-right" />
-      )}
-    </QueryClientProvider>
+    <NotificationProvider>
+      <QueryClientProvider client={queryClient}>
+        <WagmiProvider config={config}>
+          <SessionManager>
+            {children}
+          </SessionManager>
+        </WagmiProvider>
+        {process.env.NODE_ENV === 'development' && (
+          <ReactQueryDevtools initialIsOpen={false} position="bottom-right" />
+        )}
+      </QueryClientProvider>
+    </NotificationProvider>
   );
 }
