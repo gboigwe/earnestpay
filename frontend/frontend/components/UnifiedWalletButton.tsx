@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Wallet, Copy, ExternalLink, LogOut, ChevronDown, Loader2 } from 'lucide-react';
+import { EnsDisplay } from './EnsDisplay';
 import { useWallet as useAptosWallet } from '@aptos-labs/wallet-adapter-react';
 import { useAccount as useEVMAccount, useDisconnect, useConnect } from 'wagmi';
 import { useChain } from '@/contexts/ChainContext';
@@ -199,7 +200,12 @@ export const UnifiedWalletButton: React.FC = () => {
           className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-lg transition-colors text-white"
         >
           <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-          <span className="font-mono text-sm">{truncateAddress(currentAddress || '')}</span>
+          <EnsDisplay 
+    address={currentAddress || ''} 
+    showAddress={true}
+    avatarSize="sm"
+    className="font-mono text-sm"
+  />
           <ChevronDown
             className={`text-gray-400 transition-transform ${showDropdown ? 'rotate-180' : ''}`}
             size={16}
@@ -221,8 +227,12 @@ export const UnifiedWalletButton: React.FC = () => {
                 <div className="text-xs text-gray-400 mb-1">
                   {isAptosChain ? 'Aptos Network' : `${selectedChain.charAt(0).toUpperCase() + selectedChain.slice(1)} Network`}
                 </div>
-                <div className="font-mono text-sm text-white break-all">
-                  {currentAddress}
+                <div className="text-sm text-white break-all">
+                  <EnsDisplay 
+                    address={currentAddress || ''} 
+                    showAddress={true}
+                    avatarSize="sm"
+                  />
                 </div>
               </div>
 
@@ -236,12 +246,22 @@ export const UnifiedWalletButton: React.FC = () => {
                   <div className="mt-2 space-y-1">
                     {aptosConnected && (
                       <div className="text-xs text-gray-400">
-                        Aptos: {truncateAddress(aptosAccount?.address?.toString() || '', 6)}
+                        Aptos: <EnsDisplay 
+                          address={aptosAccount?.address?.toString() || ''} 
+                          showAddress={true}
+                          avatarSize="xs"
+                          className="inline-flex"
+                        />
                       </div>
                     )}
                     {evmConnected && (
                       <div className="text-xs text-gray-400">
-                        EVM: {truncateAddress(evmAddress || '', 6)}
+                        EVM: <EnsDisplay 
+                          address={evmAddress || ''} 
+                          showAddress={true}
+                          avatarSize="xs"
+                          className="inline-flex"
+                        />
                       </div>
                     )}
                   </div>
