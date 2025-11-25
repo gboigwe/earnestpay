@@ -1,16 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
-import { AptosClient } from 'aptos';
-import { aptosClient } from '@/utils/aptosClient';
-
-type GasEstimate = {
-  gas_estimate: number;
-  gas_unit_price: number;
-  gas_fee: number; // gas_estimate * gas_unit_price
-  max_gas: number;
-  min_gas_price: number;
-  max_gas_price: number;
-};
+import { Aptos, AptosConfig, Network, AccountAddress } from '@aptos-labs/ts-sdk';
 
 type TransactionCost = {
   gasFee: number; // in APT
@@ -45,18 +35,34 @@ export function useTransactionCost() {
     return () => clearInterval(interval);
   }, []);
 
-  const estimateGas = async (transaction: any): Promise<TransactionCost> => {
+  const estimateGas = async (transaction: {
+    sender: string;
+    payload: any;
+    maxGasAmount?: string | number;
+  }): Promise<TransactionCost> => {
     setLoading(true);
     setError(null);
 
     try {
-      // Get gas estimation from the node
-      const client = aptosClient(network?.name.toLowerCase() || 'testnet');
-      const gasEstimate = await client.estimateGasPrice();
+      // Initialize Aptos client with the correct network
+      const config = new AptosConfig({ network: Network.TESTNET });
+      const client = new Aptos(config);
+      
+      // Get gas price estimation
+      const gasPrice = await client.estimateGasPrice();
       
       // Simulate the transaction to get gas used
-      const txnRequest = await client.generateTransaction(transaction.sender, transaction.payload);
-      const simulation = await client.simulateTransaction(transaction.sender, txnRequest.payload, {
+      const senderAddress = AccountAddress.fromString(transaction.sender);
+      const simulation = await client.transaction.simulate.simple({
+        signerPublicKey: senderAddress, // Using signerPublicKey instead of sender
+        transaction: {
+          sender: senderAddress,
+          data: transaction.payload,
+          options: {
+            maxGasAmount: transaction.maxGasAmount?.toString() || '100000',
+          },
+        },
+        withEffects: true,
         estimateGasUnitPrice: true,
         estimateMaxGasAmount: true,
       });
@@ -66,8 +72,8 @@ export function useTransactionCost() {
       }
 
       const gasUsed = Number(simulation[0].gas_used);
-      const gasPrice = Number(gasEstimate.gas_estimate);
-      const gasFee = (gasUsed * gasPrice) / 1e8; // Convert to APT
+      const gasPriceValue = Number(gasPrice.gas_estimate);
+      const gasFee = (gasUsed * gasPriceValue) / 1e8; // Convert to APT
 
       return {
         gasFee,
