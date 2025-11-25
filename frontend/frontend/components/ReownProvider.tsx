@@ -3,6 +3,7 @@ import { mainnet, arbitrum, base, polygon } from '@reown/appkit/networks';
 import { WagmiProvider, createConfig, http } from 'wagmi';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { NotificationProvider } from '@/contexts/NotificationContext';
+import { useWalletEvents } from '@/hooks/useWalletEvents';
 
 // Create the query client instance with persistence
 let browserQueryClient: QueryClient | undefined;
@@ -41,6 +42,34 @@ const createWagmiConfig = () => {
   });
 };
 
+// Component to handle wallet events
+const WalletEventManager = ({ children }: { children: React.ReactNode }) => {
+  useWalletEvents({
+    onConnect: (data) => {
+      console.log('Wallet connected:', data);
+      // Additional connection handling can be added here
+    },
+    onDisconnect: () => {
+      console.log('Wallet disconnected');
+      // Additional disconnection handling can be added here
+    },
+    onNetworkChange: (network) => {
+      console.log('Network changed:', network);
+      // Handle network changes (e.g., update UI, fetch new chain data)
+    },
+    onAccountChange: (account) => {
+      console.log('Account changed:', account);
+      // Handle account changes (e.g., update user context)
+    },
+    onError: (error) => {
+      console.error('Wallet error:', error);
+      // Handle errors (e.g., show error toast)
+    },
+  });
+
+  return <>{children}</>;
+};
+
 // Component to handle session restoration
 const SessionManager = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
@@ -60,9 +89,11 @@ export function ReownProvider({ children }: PropsWithChildren) {
     <QueryClientProvider client={queryClient}>
       <WagmiProvider config={config}>
         <SessionManager>
-          <NotificationProvider>
-            {children}
-          </NotificationProvider>
+          <WalletEventManager>
+            <NotificationProvider>
+              {children}
+            </NotificationProvider>
+          </WalletEventManager>
         </SessionManager>
       </WagmiProvider>
     </QueryClientProvider>
