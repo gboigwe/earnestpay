@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import {
   Wallet,
@@ -82,16 +82,38 @@ export const EVMWalletModal: React.FC<EVMWalletModalProps> = ({
   onClose,
   onSuccess
 }) => {
-  const { open } = useAppKit();
+  const { open, getWalletConnectUri } = useAppKit();
   const { isConnected } = useAppKitAccount();
   const { chainId } = useAppKitNetwork();
   const [showMobileQR, setShowMobileQR] = useState(false);
   const [showWalletInfo, setShowWalletInfo] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [wcUri, setWcUri] = useState('');
 
   // Check if Reown is configured
   const reownProjectId = import.meta.env.VITE_REOWN_PROJECT_ID;
   const reownEnabled = !!reownProjectId;
+
+  // Fetch WalletConnect URI when mobile QR dialog opens
+  useEffect(() => {
+    const fetchWcUri = async () => {
+      if (showMobileQR && getWalletConnectUri) {
+        try {
+          const uri = await getWalletConnectUri();
+          setWcUri(uri);
+        } catch (error) {
+          console.error('Failed to get WalletConnect URI:', error);
+          toast({
+            title: 'Error',
+            description: 'Failed to generate QR code. Please try again.',
+            variant: 'destructive',
+          });
+        }
+      }
+    };
+
+    fetchWcUri();
+  }, [showMobileQR, getWalletConnectUri]);
 
   const handleWalletConnect = async () => {
     if (!reownEnabled) {
@@ -283,12 +305,18 @@ export const EVMWalletModal: React.FC<EVMWalletModalProps> = ({
 
           <div className="space-y-6">
             <div className="bg-white p-6 rounded-2xl">
-              <QRCodeSVG
-                value={`${window.location.origin}?connect=evm`}
-                size={256}
-                level="H"
-                className="w-full h-auto"
-              />
+              {wcUri ? (
+                <QRCodeSVG
+                  value={wcUri}
+                  size={256}
+                  level="H"
+                  className="w-full h-auto"
+                />
+              ) : (
+                <div className="w-64 h-64 flex items-center justify-center bg-gray-100 rounded-lg">
+                  <p className="text-gray-500 text-sm text-center">Generating QR code...</p>
+                </div>
+              )}
             </div>
 
             <div className="space-y-3">
