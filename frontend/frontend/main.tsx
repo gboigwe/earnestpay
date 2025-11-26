@@ -6,6 +6,7 @@ import ReactDOM from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createAppKit } from "@reown/appkit";
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
+import { WagmiProvider } from 'wagmi';
 
 import App from "@/App.tsx";
 // Internal components
@@ -25,16 +26,28 @@ import {
 
 const queryClient = new QueryClient();
 
+// Create Wagmi adapter globally if Reown is configured
+let wagmiAdapter: WagmiAdapter | null = null;
+
+if (isReownConfigured()) {
+  wagmiAdapter = new WagmiAdapter({
+    networks: SUPPORTED_NETWORKS,
+    projectId: REOWN_PROJECT_ID,
+    ssr: false
+  });
+}
+
 /**
  * ReownInitializer Component
  *
  * Initializes Reown AppKit once and handles cleanup.
- * Does NOT use AppKitProvider wrapper since createAppKit handles this internally.
+ * Wraps children in WagmiProvider to provide Wagmi context.
  *
  * Features:
  * - Prevents double initialization in React.StrictMode
  * - Proper cleanup on unmount
  * - Graceful handling when Reown not configured
+ * - Provides WagmiProvider context for hooks
  */
 function ReownInitializer({ children }: { children: React.ReactNode }) {
   const initialized = useRef(false);
@@ -45,20 +58,13 @@ function ReownInitializer({ children }: { children: React.ReactNode }) {
     if (initialized.current) return;
 
     // Skip initialization if Reown not configured
-    if (!isReownConfigured()) {
+    if (!isReownConfigured() || !wagmiAdapter) {
       console.warn('[Reown] Project ID not configured. EVM wallet connections will be disabled.');
       console.warn('[Reown] Get your project ID from https://cloud.reown.com');
       return;
     }
 
     try {
-      // Create Wagmi adapter for EVM chains with Reown
-      const wagmiAdapter = new WagmiAdapter({
-        networks: SUPPORTED_NETWORKS,
-        projectId: REOWN_PROJECT_ID,
-        ssr: false
-      });
-
       // Initialize AppKit with configuration
       // Note: createAppKit automatically handles provider setup internally
       const appKitInstance = createAppKit({
@@ -93,7 +99,17 @@ function ReownInitializer({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  // Always render children - don't block on AppKit initialization
+  // If Reown is configured, wrap in WagmiProvider
+  // Otherwise, just render children
+  if (wagmiAdapter) {
+    return (
+      <WagmiProvider config={wagmiAdapter.wagmiConfig}>
+        {children}
+      </WagmiProvider>
+    );
+  }
+
+  // Reown not configured - render children without WagmiProvider
   return <>{children}</>;
 }
 

@@ -20,6 +20,10 @@ import {
 } from './ui/dialog';
 import { useMultiChainErrorHandler } from '@/hooks/useMultiChainErrorHandler.tsx';
 import { motion } from 'framer-motion';
+import {
+  withTimeout,
+  DEFAULT_CONNECTION_TIMEOUT,
+} from '@/utils/wallet';
 
 interface WalletInfo {
   name: string;
@@ -93,7 +97,20 @@ export const EnhancedWalletModal: React.FC<EnhancedWalletModalProps> = ({
     setIsConnecting(true);
 
     try {
-      await connect(walletName);
+      // Connect with timeout - wrap connect call in Promise
+      await withTimeout(
+        new Promise<void>((resolve, reject) => {
+          try {
+            connect(walletName);
+            // Give time for connection to complete
+            setTimeout(() => resolve(), 1000);
+          } catch (err) {
+            reject(err);
+          }
+        }),
+        DEFAULT_CONNECTION_TIMEOUT,
+        `Connection to ${walletName} timed out after 30 seconds. Please try again.`
+      );
 
       toast({
         title: "Wallet Connected",
