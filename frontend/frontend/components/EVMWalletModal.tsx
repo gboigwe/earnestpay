@@ -24,6 +24,11 @@ import {
   isDeepLinkSupported,
   getWalletStoreUrl,
 } from '@/utils/mobile';
+import {
+  withTimeout,
+  getWalletErrorMessage,
+  DEFAULT_CONNECTION_TIMEOUT,
+} from '@/utils/wallet';
 
 interface EVMWalletInfo {
   name: string;
@@ -147,8 +152,12 @@ export const EVMWalletModal: React.FC<EVMWalletModalProps> = ({
     setIsConnecting(true);
 
     try {
-      // Open Reown AppKit modal
-      await open();
+      // Open Reown AppKit modal with timeout
+      await withTimeout(
+        open(),
+        DEFAULT_CONNECTION_TIMEOUT,
+        'Wallet connection timed out after 30 seconds. Please try again.'
+      );
 
       toast({
         title: "Wallet Connected",
@@ -160,10 +169,7 @@ export const EVMWalletModal: React.FC<EVMWalletModalProps> = ({
     } catch (error: any) {
       console.error('EVM wallet connection failed:', error);
 
-      let errorMessage = 'Failed to connect wallet. Please try again.';
-      if (error.message?.includes('User rejected')) {
-        errorMessage = 'Connection cancelled by user.';
-      }
+      const errorMessage = getWalletErrorMessage(error);
 
       toast({
         title: "Connection Error",
@@ -185,10 +191,14 @@ export const EVMWalletModal: React.FC<EVMWalletModalProps> = ({
     try {
       setIsConnecting(true);
 
-      // First, initiate connection to get WalletConnect URI
+      // First, initiate connection to get WalletConnect URI with timeout
       // In production, you'd get the actual URI from WalletConnect client
       // For now, we'll trigger the AppKit connection which handles this
-      await open();
+      await withTimeout(
+        open(),
+        DEFAULT_CONNECTION_TIMEOUT,
+        `Failed to open ${wallet.name} - connection timed out after 30 seconds`
+      );
 
       // If we had a WalletConnect URI, we would use it like this:
       // openWalletDeepLink(wallet.deepLinkId, wcUri, true);
@@ -200,9 +210,11 @@ export const EVMWalletModal: React.FC<EVMWalletModalProps> = ({
     } catch (error: any) {
       console.error('Deep link connection failed:', error);
 
+      const errorMessage = getWalletErrorMessage(error);
+
       toast({
         title: "Connection Error",
-        description: `Failed to open ${wallet.name}. Please try again.`,
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
