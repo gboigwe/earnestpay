@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { QRCodeSVG } from 'qrcode.react';
+import React, { useState } from 'react';
 import {
   Wallet,
   HelpCircle,
@@ -82,38 +81,15 @@ export const EVMWalletModal: React.FC<EVMWalletModalProps> = ({
   onClose,
   onSuccess
 }) => {
-  const { open, getWalletConnectUri } = useAppKit();
+  const { open } = useAppKit();
   const { isConnected } = useAppKitAccount();
   const { chainId } = useAppKitNetwork();
-  const [showMobileQR, setShowMobileQR] = useState(false);
   const [showWalletInfo, setShowWalletInfo] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
-  const [wcUri, setWcUri] = useState('');
 
   // Check if Reown is configured
   const reownProjectId = import.meta.env.VITE_REOWN_PROJECT_ID;
   const reownEnabled = !!reownProjectId;
-
-  // Fetch WalletConnect URI when mobile QR dialog opens
-  useEffect(() => {
-    const fetchWcUri = async () => {
-      if (showMobileQR && getWalletConnectUri) {
-        try {
-          const uri = await getWalletConnectUri();
-          setWcUri(uri);
-        } catch (error) {
-          console.error('Failed to get WalletConnect URI:', error);
-          toast({
-            title: 'Error',
-            description: 'Failed to generate QR code. Please try again.',
-            variant: 'destructive',
-          });
-        }
-      }
-    };
-
-    fetchWcUri();
-  }, [showMobileQR, getWalletConnectUri]);
 
   const handleWalletConnect = async () => {
     if (!reownEnabled) {
@@ -157,12 +133,13 @@ export const EVMWalletModal: React.FC<EVMWalletModalProps> = ({
   };
 
   const handleMobileConnect = () => {
-    setShowMobileQR(true);
+    // Open AppKit modal directly - it handles mobile connections
+    handleWalletConnect();
   };
 
   return (
     <>
-      <Dialog open={isOpen && !showWalletInfo && !showMobileQR} onOpenChange={(open) => !open && onClose()}>
+      <Dialog open={isOpen && !showWalletInfo} onOpenChange={(open) => !open && onClose()}>
         <DialogContent className="sm:max-w-md bg-gray-900 border-gray-800 text-white">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold">
@@ -286,65 +263,6 @@ export const EVMWalletModal: React.FC<EVMWalletModalProps> = ({
             >
               <HelpCircle size={16} />
               What is an EVM wallet?
-            </button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Mobile QR Code Dialog */}
-      <Dialog open={showMobileQR} onOpenChange={(open) => !open && setShowMobileQR(false)}>
-        <DialogContent className="sm:max-w-md bg-gray-900 border-gray-800 text-white">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold">
-              Connect via Mobile
-            </DialogTitle>
-            <DialogDescription className="text-gray-400">
-              Scan this QR code with your mobile wallet
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-6">
-            <div className="bg-white p-6 rounded-2xl">
-              {wcUri ? (
-                <QRCodeSVG
-                  value={wcUri}
-                  size={256}
-                  level="H"
-                  className="w-full h-auto"
-                />
-              ) : (
-                <div className="w-64 h-64 flex items-center justify-center bg-gray-100 rounded-lg">
-                  <p className="text-gray-500 text-sm text-center">Generating QR code...</p>
-                </div>
-              )}
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex items-start gap-3 text-sm text-gray-300">
-                <div className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-blue-400 font-bold">1</span>
-                </div>
-                <div>Open your EVM wallet app on your mobile device</div>
-              </div>
-              <div className="flex items-start gap-3 text-sm text-gray-300">
-                <div className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-blue-400 font-bold">2</span>
-                </div>
-                <div>Find the WalletConnect or QR scanner feature</div>
-              </div>
-              <div className="flex items-start gap-3 text-sm text-gray-300">
-                <div className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-blue-400 font-bold">3</span>
-                </div>
-                <div>Scan this QR code to connect</div>
-              </div>
-            </div>
-
-            <button
-              onClick={() => setShowMobileQR(false)}
-              className="w-full py-3 px-4 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
-            >
-              Use Desktop Instead
             </button>
           </div>
         </DialogContent>

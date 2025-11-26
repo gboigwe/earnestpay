@@ -1,13 +1,11 @@
 import "../vite.polyfills";
 import "./index.css";
 
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import ReactDOM from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { AppKitProvider } from "@reown/appkit/react";
 import { createAppKit } from "@reown/appkit";
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
-import { mainnet, arbitrum, base, polygon } from '@reown/appkit/networks';
 
 import App from "@/App.tsx";
 // Internal components
@@ -16,84 +14,87 @@ import { MultiChainWalletProvider } from "@/components/MultiChainWalletProvider.
 import { WrongNetworkAlert } from "@/components/WrongNetworkAlert";
 import { ChainProvider } from "@/contexts/ChainContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+// Centralized Reown configuration
+import {
+  REOWN_PROJECT_ID,
+  REOWN_METADATA,
+  SUPPORTED_NETWORKS,
+  APPKIT_FEATURES,
+  isReownConfigured
+} from "@/config/reown.config";
 
 const queryClient = new QueryClient();
 
-// Get Reown project ID from environment
-const projectId = import.meta.env.VITE_REOWN_PROJECT_ID || '';
-
-// Configure metadata for your dApp
-const metadata = {
-  name: 'EarnestPay',
-  description: 'Blockchain payroll and payouts platform',
-  url: typeof window !== 'undefined' ? window.location.origin : 'https://earnestpay.com',
-  icons: ['/logo192.png']
-};
-
-// Configure supported EVM networks
-// Type assertion to satisfy the tuple type requirement
-const networks = [mainnet, arbitrum, base, polygon] as unknown as [any, ...any[]];
-
-// Create a wrapper component that initializes AppKit
-function AppKitWrapper({ children }: { children: React.ReactNode }) {
-  const [appKit, setAppKit] = useState<any>(null);
-  const [error, setError] = useState<Error | null>(null);
+/**
+ * ReownInitializer Component
+ *
+ * Initializes Reown AppKit once and handles cleanup.
+ * Does NOT use AppKitProvider wrapper since createAppKit handles this internally.
+ *
+ * Features:
+ * - Prevents double initialization in React.StrictMode
+ * - Proper cleanup on unmount
+ * - Graceful handling when Reown not configured
+ */
+function ReownInitializer({ children }: { children: React.ReactNode }) {
   const initialized = useRef(false);
+  const appKitRef = useRef<any>(null);
 
   useEffect(() => {
     // Prevent double initialization in development with React.StrictMode
     if (initialized.current) return;
-    
-    try {
-      if (!projectId) {
-        console.warn('Reown Project ID not found. EVM wallet connections will be disabled.');
-        return;
-      }
 
+    // Skip initialization if Reown not configured
+    if (!isReownConfigured()) {
+      console.warn('[Reown] Project ID not configured. EVM wallet connections will be disabled.');
+      console.warn('[Reown] Get your project ID from https://cloud.reown.com');
+      return;
+    }
+
+    try {
       // Create Wagmi adapter for EVM chains with Reown
       const wagmiAdapter = new WagmiAdapter({
-        networks,
-        projectId,
+        networks: SUPPORTED_NETWORKS,
+        projectId: REOWN_PROJECT_ID,
         ssr: false
       });
 
       // Initialize AppKit with configuration
+      // Note: createAppKit automatically handles provider setup internally
       const appKitInstance = createAppKit({
         adapters: [wagmiAdapter],
-        networks,
-        projectId,
-        metadata,
-        features: {
-          analytics: true
-        }
+        networks: SUPPORTED_NETWORKS,
+        projectId: REOWN_PROJECT_ID,
+        metadata: REOWN_METADATA,
+        features: APPKIT_FEATURES
       });
-      
-      setAppKit(appKitInstance);
+
+      appKitRef.current = appKitInstance;
       initialized.current = true;
-      
-      // Cleanup function
-      return () => {
-        // Add any cleanup code here if needed
-      };
+
+      console.log('[Reown] AppKit initialized successfully');
     } catch (err) {
-      console.error('Failed to initialize AppKit:', err);
-      setError(err instanceof Error ? err : new Error('Failed to initialize AppKit'));
+      console.error('[Reown] Failed to initialize AppKit:', err);
+      // Don't block app rendering on Reown failure
+      // User can still use Aptos wallet
     }
+
+    // Cleanup function
+    return () => {
+      if (appKitRef.current) {
+        try {
+          // Close any open modals
+          appKitRef.current.close?.();
+          console.log('[Reown] AppKit cleaned up');
+        } catch (err) {
+          console.error('[Reown] Cleanup error:', err);
+        }
+      }
+    };
   }, []);
 
-  if (error) {
-    return <div>Error initializing AppKit: {error.message}</div>;
-  }
-
-  if (!appKit) {
-    return <div>Loading AppKit...</div>;
-  }
-
-  return (
-    <AppKitProvider {...appKit}>
-      {children}
-    </AppKitProvider>
-  );
+  // Always render children - don't block on AppKit initialization
+  return <>{children}</>;
 }
 
 // Get the root element
@@ -109,7 +110,7 @@ root.render(
   <React.StrictMode>
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <AppKitWrapper>
+        <ReownInitializer>
           <MultiChainWalletProvider>
             <ChainProvider>
               <App />
@@ -117,7 +118,7 @@ root.render(
               <Toaster />
             </ChainProvider>
           </MultiChainWalletProvider>
-        </AppKitWrapper>
+        </ReownInitializer>
       </QueryClientProvider>
     </ErrorBoundary>
   </React.StrictMode>
