@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
-import { Aptos, AptosConfig, Network, AccountAddress } from '@aptos-labs/ts-sdk';
+import { Aptos, AptosConfig, Network } from '@aptos-labs/ts-sdk';
 
 type TransactionCost = {
   gasFee: number; // in APT
@@ -15,7 +15,7 @@ export function useTransactionCost() {
   const [aptPrice, setAptPrice] = useState<number | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const { network } = useWallet();
+  const { account } = useWallet();
 
   // Fetch APT price in USD
   useEffect(() => {
@@ -47,38 +47,34 @@ export function useTransactionCost() {
       // Initialize Aptos client with the correct network
       const config = new AptosConfig({ network: Network.TESTNET });
       const client = new Aptos(config);
-      
-      // Get gas price estimation
-      const gasPrice = await client.estimateGasPrice();
-      
-      // Simulate the transaction to get gas used
-      const senderAddress = AccountAddress.fromString(transaction.sender);
-      const simulation = await client.transaction.simulate.simple({
-        signerPublicKey: senderAddress, // Using signerPublicKey instead of sender
-        transaction: {
-          sender: senderAddress,
-          data: transaction.payload,
-          options: {
-            maxGasAmount: transaction.maxGasAmount?.toString() || '100000',
-          },
+
+      // Build the transaction for simulation
+      const rawTransaction = await client.transaction.build.simple({
+        sender: transaction.sender,
+        data: transaction.payload,
+        options: {
+          maxGasAmount: Number(transaction.maxGasAmount) || 100000,
         },
-        withEffects: true,
-        estimateGasUnitPrice: true,
-        estimateMaxGasAmount: true,
       });
 
-      if (!simulation[0]?.success) {
+      // Simulate the transaction to get gas used
+      const [simulation] = await client.transaction.simulate.simple({
+        signerPublicKey: account?.publicKey,
+        transaction: rawTransaction,
+      });
+
+      if (!simulation?.success) {
         throw new Error('Transaction simulation failed');
       }
 
-      const gasUsed = Number(simulation[0].gas_used);
-      const gasPriceValue = Number(gasPrice.gas_estimate);
+      const gasUsed = Number(simulation.gas_used);
+      const gasPriceValue = Number(simulation.gas_unit_price);
       const gasFee = (gasUsed * gasPriceValue) / 1e8; // Convert to APT
 
       return {
         gasFee,
         gasFeeUSD: aptPrice ? gasFee * aptPrice : null,
-        gasPrice,
+        gasPrice: gasPriceValue,
         gasLimit: gasUsed,
         loading: false,
         error: null,

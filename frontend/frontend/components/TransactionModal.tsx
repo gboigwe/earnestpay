@@ -1,8 +1,6 @@
-import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Loader2, AlertCircle, ExternalLink } from 'lucide-react';
-import { formatUnits } from 'viem';
+import { Loader2, AlertCircle } from 'lucide-react';
 
 interface TransactionModalProps {
   isOpen: boolean;
