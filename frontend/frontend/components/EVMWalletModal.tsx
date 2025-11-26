@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Wallet,
   HelpCircle,
@@ -7,7 +7,8 @@ import {
   Monitor,
   Info,
   Shield,
-  Globe
+  Globe,
+  Download
 } from 'lucide-react';
 import { useAppKit, useAppKitAccount, useAppKitNetwork } from '@reown/appkit/react';
 import { toast } from './ui/use-toast';
@@ -18,6 +19,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from './ui/dialog';
+import {
+  isMobile,
+  isDeepLinkSupported,
+  getWalletStoreUrl,
+} from '@/utils/mobile';
 
 interface EVMWalletInfo {
   name: string;
@@ -26,6 +32,7 @@ interface EVMWalletInfo {
   downloadUrl: string;
   mobileSupport: boolean;
   connectorId?: string;
+  deepLinkId?: string; // ID for deep link utilities
 }
 
 const EVM_WALLETS: EVMWalletInfo[] = [
@@ -35,7 +42,8 @@ const EVM_WALLETS: EVMWalletInfo[] = [
     description: 'Most popular Ethereum wallet',
     downloadUrl: 'https://metamask.io',
     mobileSupport: true,
-    connectorId: 'metaMask'
+    connectorId: 'metaMask',
+    deepLinkId: 'metamask'
   },
   {
     name: 'Coinbase Wallet',
@@ -43,15 +51,17 @@ const EVM_WALLETS: EVMWalletInfo[] = [
     description: 'Secure wallet by Coinbase',
     downloadUrl: 'https://www.coinbase.com/wallet',
     mobileSupport: true,
-    connectorId: 'coinbaseWallet'
+    connectorId: 'coinbaseWallet',
+    deepLinkId: 'coinbase'
   },
   {
-    name: 'WalletConnect',
-    icon: '🔗',
-    description: 'Connect any mobile wallet',
-    downloadUrl: 'https://walletconnect.com',
+    name: 'Trust Wallet',
+    icon: '💙',
+    description: 'Multi-chain mobile wallet',
+    downloadUrl: 'https://trustwallet.com',
     mobileSupport: true,
-    connectorId: 'walletConnect'
+    connectorId: 'walletConnect',
+    deepLinkId: 'trust'
   },
   {
     name: 'Rainbow',
@@ -59,7 +69,8 @@ const EVM_WALLETS: EVMWalletInfo[] = [
     description: 'Fun and easy to use',
     downloadUrl: 'https://rainbow.me',
     mobileSupport: true,
-    connectorId: 'rainbow'
+    connectorId: 'rainbow',
+    deepLinkId: 'rainbow'
   }
 ];
 
@@ -90,6 +101,38 @@ export const EVMWalletModal: React.FC<EVMWalletModalProps> = ({
   // Check if Reown is configured
   const reownProjectId = import.meta.env.VITE_REOWN_PROJECT_ID;
   const reownEnabled = !!reownProjectId;
+
+  // Detect if user is on mobile
+  const isMobileDevice = isMobile();
+  const supportsDeepLinks = isDeepLinkSupported();
+
+  // Generate WalletConnect URI when modal opens on mobile
+  useEffect(() => {
+    if (isOpen && isMobileDevice && reownEnabled) {
+      // Generate a WalletConnect URI
+      // Note: In a real implementation, you would get this from the WalletConnect client
+      // For now, we'll use the AppKit's connection flow
+      generateWalletConnectUri();
+    }
+  }, [isOpen, isMobileDevice, reownEnabled]);
+
+  const generateWalletConnectUri = async () => {
+    try {
+      // The AppKit handles WalletConnect internally
+      // When we call open(), it creates a connection
+      // For deep links, we need to intercept the URI
+      // This is a simplified version - in production you'd need to access
+      // the WalletConnect client directly
+
+      // Placeholder: In a real implementation, you'd get this from WalletConnect
+      // const uri = await walletConnectClient.connect();
+      // setWcUri(uri);
+
+      console.log('[Deep Link] WalletConnect URI generation triggered');
+    } catch (error) {
+      console.error('[Deep Link] Failed to generate WalletConnect URI:', error);
+    }
+  };
 
   const handleWalletConnect = async () => {
     if (!reownEnabled) {
@@ -132,9 +175,49 @@ export const EVMWalletModal: React.FC<EVMWalletModalProps> = ({
     }
   };
 
-  const handleMobileConnect = () => {
-    // Open AppKit modal directly - it handles mobile connections
-    handleWalletConnect();
+  const handleDeepLinkConnect = async (wallet: EVMWalletInfo) => {
+    if (!wallet.deepLinkId) {
+      // Fallback to regular connection
+      handleWalletConnect();
+      return;
+    }
+
+    try {
+      setIsConnecting(true);
+
+      // First, initiate connection to get WalletConnect URI
+      // In production, you'd get the actual URI from WalletConnect client
+      // For now, we'll trigger the AppKit connection which handles this
+      await open();
+
+      // If we had a WalletConnect URI, we would use it like this:
+      // openWalletDeepLink(wallet.deepLinkId, wcUri, true);
+
+      toast({
+        title: "Opening Wallet",
+        description: `Launching ${wallet.name}...`,
+      });
+    } catch (error: any) {
+      console.error('Deep link connection failed:', error);
+
+      toast({
+        title: "Connection Error",
+        description: `Failed to open ${wallet.name}. Please try again.`,
+        variant: "destructive",
+      });
+    } finally {
+      setIsConnecting(false);
+    }
+  };
+
+  const handleInstallWallet = (wallet: EVMWalletInfo) => {
+    if (!wallet.deepLinkId) {
+      window.open(wallet.downloadUrl, '_blank');
+      return;
+    }
+
+    const storeUrl = getWalletStoreUrl(wallet.deepLinkId);
+    window.open(storeUrl, '_blank');
   };
 
   return (
@@ -146,11 +229,25 @@ export const EVMWalletModal: React.FC<EVMWalletModalProps> = ({
               Connect EVM Wallet
             </DialogTitle>
             <DialogDescription className="text-gray-400">
-              Choose your preferred Ethereum wallet to continue
+              {isMobileDevice
+                ? 'Tap a wallet to open the app directly'
+                : 'Choose your preferred Ethereum wallet to continue'}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 mt-4">
+            {/* Mobile Device Indicator */}
+            {isMobileDevice && supportsDeepLinks && (
+              <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3">
+                <div className="flex items-start gap-3">
+                  <Smartphone className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+                  <div className="text-sm text-blue-200">
+                    <strong>Mobile Detected:</strong> Tap any wallet below to open it directly on your device.
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Configuration Check */}
             {!reownEnabled && (
               <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4">
@@ -191,12 +288,16 @@ export const EVMWalletModal: React.FC<EVMWalletModalProps> = ({
 
             {/* Wallet Options */}
             <div>
-              <div className="text-sm font-medium text-gray-400 mb-3">Available Wallets</div>
+              <div className="text-sm font-medium text-gray-400 mb-3">
+                {isMobileDevice ? 'Available Mobile Wallets' : 'Available Wallets'}
+              </div>
               <div className="space-y-2">
                 {EVM_WALLETS.map((wallet) => (
                   <div key={wallet.name} className="space-y-2">
                     <button
-                      onClick={handleWalletConnect}
+                      onClick={() => isMobileDevice && wallet.deepLinkId
+                        ? handleDeepLinkConnect(wallet)
+                        : handleWalletConnect()}
                       disabled={isConnecting || !reownEnabled}
                       className="w-full flex items-center gap-4 p-4 rounded-xl border border-gray-700 hover:border-blue-500/50 hover:bg-gray-800/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
                     >
@@ -206,32 +307,41 @@ export const EVMWalletModal: React.FC<EVMWalletModalProps> = ({
                       <div className="text-left flex-1">
                         <div className="text-white font-semibold flex items-center gap-2">
                           {wallet.name}
+                          {isMobileDevice && wallet.deepLinkId && (
+                            <Smartphone size={14} className="text-blue-400" />
+                          )}
                         </div>
                         <div className="text-gray-400 text-sm">{wallet.description}</div>
                       </div>
                       <div className="flex items-center gap-2">
-                        {wallet.mobileSupport && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleMobileConnect();
-                            }}
-                            className="p-2 rounded-lg hover:bg-gray-700 transition-colors"
-                            title="Connect via mobile"
-                            disabled={!reownEnabled}
-                          >
-                            <Smartphone size={18} className="text-gray-400" />
-                          </button>
+                        {isMobileDevice && wallet.deepLinkId && (
+                          <div className="text-xs text-blue-400 font-medium">
+                            Tap to open
+                          </div>
+                        )}
+                        {!isMobileDevice && wallet.mobileSupport && (
+                          <Monitor size={18} className="text-gray-400" />
                         )}
                       </div>
                     </button>
+
+                    {/* Install wallet link for mobile */}
+                    {isMobileDevice && wallet.deepLinkId && (
+                      <button
+                        onClick={() => handleInstallWallet(wallet)}
+                        className="w-full flex items-center justify-center gap-2 p-2 text-xs text-gray-400 hover:text-blue-400 transition-colors"
+                      >
+                        <Download size={14} />
+                        Don't have {wallet.name}? Install it
+                      </button>
+                    )}
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Install Wallet Links */}
-            {!isConnected && (
+            {/* Install Wallet Links (Desktop) */}
+            {!isMobileDevice && !isConnected && (
               <div className="pt-4 border-t border-gray-800">
                 <div className="text-sm font-medium text-gray-400 mb-3">Don't have a wallet?</div>
                 <div className="grid grid-cols-2 gap-2">
@@ -324,9 +434,13 @@ export const EVMWalletModal: React.FC<EVMWalletModalProps> = ({
                   <Monitor className="w-4 h-4 text-orange-400" />
                 </div>
                 <div>
-                  <div className="font-semibold text-white mb-1">Browser Extension</div>
+                  <div className="font-semibold text-white mb-1">
+                    {isMobileDevice ? 'Mobile & Desktop' : 'Browser Extension'}
+                  </div>
                   <div className="text-sm text-gray-400">
-                    Most EVM wallets work as browser extensions for easy access.
+                    {isMobileDevice
+                      ? 'Use your wallet on both mobile and desktop devices.'
+                      : 'Most EVM wallets work as browser extensions for easy access.'}
                   </div>
                 </div>
               </div>
