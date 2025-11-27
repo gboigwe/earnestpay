@@ -30,6 +30,7 @@ import {
 } from '@/utils/wallet';
 import { useMultiChainErrorHandler } from '@/hooks/useMultiChainErrorHandler.tsx';
 import { useChain } from '@/contexts/ChainContext';
+import { useWalletAnalytics } from '@/hooks/useWalletAnalytics';
 
 interface EVMWalletInfo {
   name: string;
@@ -108,6 +109,9 @@ export const EVMWalletModal: React.FC<EVMWalletModalProps> = ({
   const { handleWalletError } = useMultiChainErrorHandler();
   const { selectedChain } = useChain();
 
+  // Analytics tracking
+  const { trackError } = useWalletAnalytics();
+
   // Check if Reown is configured
   const reownProjectId = import.meta.env.VITE_REOWN_PROJECT_ID;
   const reownEnabled = !!reownProjectId;
@@ -172,6 +176,13 @@ export const EVMWalletModal: React.FC<EVMWalletModalProps> = ({
       onSuccess?.();
       onClose();
     } catch (error: any) {
+      // Track connection failure in analytics
+      trackError(
+        'connection_error',
+        error?.message || 'EVM wallet connection failed',
+        'EVM Wallet'
+      );
+
       // Use MultiChainError system for consistent error handling
       handleWalletError(
         error,
@@ -210,6 +221,13 @@ export const EVMWalletModal: React.FC<EVMWalletModalProps> = ({
         description: `Launching ${wallet.name}...`,
       });
     } catch (error: any) {
+      // Track deep link connection failure in analytics
+      trackError(
+        'deep_link_connection_error',
+        error?.message || `Failed to open ${wallet.name}`,
+        wallet.name
+      );
+
       // Use MultiChainError system for consistent error handling
       handleWalletError(
         error,

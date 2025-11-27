@@ -9,6 +9,7 @@ import { EVMWalletModal } from './EVMWalletModal';
 import { WalletManager } from './WalletManager';
 import { toast } from './ui/use-toast';
 import { useMultiChainErrorHandler } from '@/hooks/useMultiChainErrorHandler.tsx';
+import { useWalletAnalytics } from '@/hooks/useWalletAnalytics';
 // reconnect import removed as it's not used
 
 // Helper to check if we're in a browser environment
@@ -51,6 +52,9 @@ export const UnifiedWalletButton: React.FC = () => {
 
   // Multi-chain error handling
   const { handleWalletError } = useMultiChainErrorHandler();
+
+  // Analytics tracking
+  const { trackError } = useWalletAnalytics();
 
   // Aptos wallet state
   const { connected: aptosConnected, account: aptosAccount, disconnect: aptosDisconnect } = useAptosWallet();
@@ -139,6 +143,13 @@ export const UnifiedWalletButton: React.FC = () => {
       }
       setShowDropdown(false);
     } catch (error) {
+      // Track error in analytics
+      trackError(
+        'disconnect_error',
+        error instanceof Error ? error.message : 'Unknown disconnect error',
+        isAptosChain ? 'Aptos Wallet' : 'EVM Wallet'
+      );
+
       // Use MultiChainError system for consistent error handling
       handleWalletError(
         error,

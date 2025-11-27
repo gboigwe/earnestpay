@@ -10,6 +10,7 @@ import { useChain } from '@/contexts/ChainContext';
 import { UnifiedTransaction, formatAptosTransaction, formatEVMTransaction } from '@/types/transactions';
 import { getPaymentProcessedEvents } from '@/utils/payroll';
 import { toast } from '@/components/ui/use-toast';
+import { useWalletAnalytics } from './useWalletAnalytics';
 
 export const useTransactionHistory = (limit = 20) => {
   const { account } = useWallet();
@@ -21,6 +22,9 @@ export const useTransactionHistory = (limit = 20) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pendingTxs, setPendingTxs] = useState<Set<string>>(new Set());
+
+  // Analytics tracking
+  const { trackTransaction: trackTx, trackError } = useWalletAnalytics();
 
   // Polling interval ref
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -142,6 +146,12 @@ export const useTransactionHistory = (limit = 20) => {
           watchedTxs.current.delete(txHash);
         }
 
+        // Track transaction completion in analytics
+        trackTx(
+          receipt.status === 'success' ? 'confirmed' : 'failed',
+          { txHash, chain: selectedChain }
+        );
+
         // Show notification
         toast({
           title: receipt.status === 'success' ? "Transaction Confirmed" : "Transaction Failed",
@@ -178,10 +188,13 @@ export const useTransactionHistory = (limit = 20) => {
 
   // Add a new pending transaction to watch
   const addPendingTransaction = useCallback((tx: UnifiedTransaction) => {
+    // Track transaction initiation in analytics
+    trackTx('initiated', { txHash: tx.hash, chain: tx.chain });
+
     setTransactions(prev => [tx, ...prev]);
     setPendingTxs(prev => new Set(prev).add(tx.hash));
     pollTransactionStatus(tx.hash);
-  }, [pollTransactionStatus]);
+  }, [pollTransactionStatus, trackTx]);
 
   // Retry a failed transaction
   const { sendTransaction } = useSendTransaction();
@@ -216,13 +229,21 @@ export const useTransactionHistory = (limit = 20) => {
       });
     } catch (err) {
       console.error('Error retrying transaction:', err);
+
+      // Track retry error in analytics
+      trackError(
+        'transaction_retry_error',
+        err instanceof Error ? err.message : 'Failed to retry transaction',
+        'EVM Wallet'
+      );
+
       toast({
         title: "Retry Failed",
         description: "Failed to retry transaction. Please try again.",
         variant: "destructive"
       });
     }
-  }, [evmAddress, selectedChain, sendTransaction]);
+  }, [evmAddress, selectedChain, sendTransaction, trackError]);
 
   // Cancel/Speed up transaction (by replacing with higher gas)
   const speedUpTransaction = useCallback(async (tx: UnifiedTransaction) => {
@@ -268,13 +289,21 @@ export const useTransactionHistory = (limit = 20) => {
       });
     } catch (err) {
       console.error('Error speeding up transaction:', err);
+
+      // Track speed up error in analytics
+      trackError(
+        'transaction_speedup_error',
+        err instanceof Error ? err.message : 'Failed to speed up transaction',
+        'EVM Wallet'
+      );
+
       toast({
         title: "Speed Up Failed",
         description: "Failed to speed up transaction. Please try again.",
         variant: "destructive"
       });
     }
-  }, [evmAddress, selectedChain, publicClient, sendTransaction]);
+  }, [evmAddress, selectedChain, publicClient, sendTransaction, trackError]);
 
   // Cancel transaction (by sending 0 ETH to self with same nonce)
   const cancelTransaction = useCallback(async (tx: UnifiedTransaction) => {
@@ -320,13 +349,21 @@ export const useTransactionHistory = (limit = 20) => {
       });
     } catch (err) {
       console.error('Error cancelling transaction:', err);
+
+      // Track cancellation error in analytics
+      trackError(
+        'transaction_cancel_error',
+        err instanceof Error ? err.message : 'Failed to cancel transaction',
+        'EVM Wallet'
+      );
+
       toast({
         title: "Cancellation Failed",
         description: "Failed to cancel transaction. Please try again.",
         variant: "destructive"
       });
     }
-  }, [evmAddress, selectedChain, publicClient, sendTransaction]);
+  }, [evmAddress, selectedChain, publicClient, sendTransaction, trackError]);
 
   // Refresh function that can be called from the UI
   const refresh = useCallback(() => {
