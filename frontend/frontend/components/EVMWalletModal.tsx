@@ -26,9 +26,10 @@ import {
 } from '@/utils/mobile';
 import {
   withTimeout,
-  getWalletErrorMessage,
   DEFAULT_CONNECTION_TIMEOUT,
 } from '@/utils/wallet';
+import { useMultiChainErrorHandler } from '@/hooks/useMultiChainErrorHandler.tsx';
+import { useChain } from '@/contexts/ChainContext';
 
 interface EVMWalletInfo {
   name: string;
@@ -103,6 +104,10 @@ export const EVMWalletModal: React.FC<EVMWalletModalProps> = ({
   const [showWalletInfo, setShowWalletInfo] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
 
+  // Multi-chain error handling
+  const { handleWalletError } = useMultiChainErrorHandler();
+  const { selectedChain } = useChain();
+
   // Check if Reown is configured
   const reownProjectId = import.meta.env.VITE_REOWN_PROJECT_ID;
   const reownEnabled = !!reownProjectId;
@@ -167,15 +172,12 @@ export const EVMWalletModal: React.FC<EVMWalletModalProps> = ({
       onSuccess?.();
       onClose();
     } catch (error: any) {
-      console.error('EVM wallet connection failed:', error);
-
-      const errorMessage = getWalletErrorMessage(error);
-
-      toast({
-        title: "Connection Error",
-        description: errorMessage,
-        variant: "destructive",
-      });
+      // Use MultiChainError system for consistent error handling
+      handleWalletError(
+        error,
+        selectedChain,
+        () => handleWalletConnect() // Retry action
+      );
     } finally {
       setIsConnecting(false);
     }
@@ -208,15 +210,12 @@ export const EVMWalletModal: React.FC<EVMWalletModalProps> = ({
         description: `Launching ${wallet.name}...`,
       });
     } catch (error: any) {
-      console.error('Deep link connection failed:', error);
-
-      const errorMessage = getWalletErrorMessage(error);
-
-      toast({
-        title: "Connection Error",
-        description: errorMessage,
-        variant: "destructive",
-      });
+      // Use MultiChainError system for consistent error handling
+      handleWalletError(
+        error,
+        selectedChain,
+        () => handleDeepLinkConnect(wallet) // Retry action
+      );
     } finally {
       setIsConnecting(false);
     }

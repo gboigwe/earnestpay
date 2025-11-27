@@ -2,6 +2,8 @@ import React, { useState, lazy, Suspense } from 'react';
 import { Wallet, ChevronDown } from 'lucide-react';
 import { useAppKit } from '@reown/appkit/react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useMultiChainErrorHandler } from '@/hooks/useMultiChainErrorHandler.tsx';
+import { useChain } from '@/contexts/ChainContext';
 
 /**
  * Lazy load EnhancedWalletModal to reduce initial bundle
@@ -32,6 +34,10 @@ export const SplitWalletButton: React.FC = () => {
   // Get Reown AppKit modal hook
   const { open: openReownModal } = useAppKit();
 
+  // Get error handler and chain context
+  const { handleWalletError } = useMultiChainErrorHandler();
+  const { selectedChain } = useChain();
+
   // Check if Reown is configured
   const reownProjectId = import.meta.env.VITE_REOWN_PROJECT_ID;
   const evmEnabled = !!reownProjectId;
@@ -41,10 +47,15 @@ export const SplitWalletButton: React.FC = () => {
     setIsDropdownOpen(false);
   };
 
-  const handleEVMConnect = () => {
-    if (evmEnabled) {
-      openReownModal();
+  const handleEVMConnect = async () => {
+    if (!evmEnabled) return;
+
+    try {
+      await openReownModal();
       setIsDropdownOpen(false);
+    } catch (error) {
+      // Use MultiChainError system for consistent error handling
+      handleWalletError(error, selectedChain, () => handleEVMConnect());
     }
   };
 
