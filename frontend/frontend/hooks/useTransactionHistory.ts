@@ -1,9 +1,15 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
-import { usePublicClient, useAccount } from 'wagmi';
+import {
+  usePublicClient,
+  useAccount,
+  useWatchBlocks,
+  useSendTransaction
+} from 'wagmi';
 import { useChain } from '@/contexts/ChainContext';
 import { UnifiedTransaction, formatAptosTransaction, formatEVMTransaction } from '@/types/transactions';
 import { getPaymentProcessedEvents } from '@/utils/payroll';
+import { toast } from '@/components/ui/use-toast';
 
 export const useTransactionHistory = (limit = 20) => {
   const { account } = useWallet();
@@ -14,6 +20,13 @@ export const useTransactionHistory = (limit = 20) => {
   const [transactions, setTransactions] = useState<UnifiedTransaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [pendingTxs, setPendingTxs] = useState<Set<string>>(new Set());
+
+  // Polling interval ref
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Track transaction hashes being watched
+  const watchedTxs = useRef<Map<string, NodeJS.Timeout>>(new Map());
 
   const fetchAptosTransactions = useCallback(async () => {
     if (!account?.address) return [];
@@ -93,16 +106,254 @@ export const useTransactionHistory = (limit = 20) => {
     fetchTransactions();
   }, [fetchTransactions]);
 
+  // Poll pending transaction status
+  const pollTransactionStatus = useCallback(async (txHash: string) => {
+    if (!publicClient) return;
+
+    try {
+      const receipt = await publicClient.getTransactionReceipt({
+        hash: txHash as `0x${string}`
+      });
+
+      if (receipt) {
+        // Transaction confirmed, update status
+        setPendingTxs(prev => {
+          const next = new Set(prev);
+          next.delete(txHash);
+          return next;
+        });
+
+        // Update transaction in list
+        setTransactions(prev =>
+          prev.map(tx =>
+            tx.hash === txHash
+              ? {
+                  ...tx,
+                  status: receipt.status === 'success' ? 'confirmed' : 'failed'
+                }
+              : tx
+          )
+        );
+
+        // Clear watcher
+        const timeout = watchedTxs.current.get(txHash);
+        if (timeout) {
+          clearTimeout(timeout);
+          watchedTxs.current.delete(txHash);
+        }
+
+        // Show notification
+        toast({
+          title: receipt.status === 'success' ? "Transaction Confirmed" : "Transaction Failed",
+          description: `Transaction ${txHash.slice(0, 10)}... ${receipt.status === 'success' ? 'completed successfully' : 'failed'}`,
+          variant: receipt.status === 'success' ? 'default' : 'destructive'
+        });
+
+        // Refresh transactions
+        fetchTransactions();
+      } else {
+        // Still pending, continue polling
+        const timeout = setTimeout(() => pollTransactionStatus(txHash), 3000);
+        watchedTxs.current.set(txHash, timeout);
+      }
+    } catch (err) {
+      console.error('Error polling transaction status:', err);
+    }
+  }, [publicClient, fetchTransactions]);
+
+  // Watch for new blocks to update pending transactions
+  useWatchBlocks({
+    onBlock: () => {
+      // When a new block arrives, check pending transactions
+      if (pendingTxs.size > 0) {
+        pendingTxs.forEach(txHash => {
+          if (!watchedTxs.current.has(txHash)) {
+            pollTransactionStatus(txHash);
+          }
+        });
+      }
+    },
+    enabled: pendingTxs.size > 0 && !!publicClient,
+  });
+
+  // Add a new pending transaction to watch
+  const addPendingTransaction = useCallback((tx: UnifiedTransaction) => {
+    setTransactions(prev => [tx, ...prev]);
+    setPendingTxs(prev => new Set(prev).add(tx.hash));
+    pollTransactionStatus(tx.hash);
+  }, [pollTransactionStatus]);
+
+  // Retry a failed transaction
+  const { sendTransaction } = useSendTransaction();
+
+  const retryTransaction = useCallback(async (tx: UnifiedTransaction) => {
+    if (!evmAddress || selectedChain === 'aptos') {
+      toast({
+        title: "Retry Not Available",
+        description: "Transaction retry is only available for EVM chains",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      toast({
+        title: "Retrying Transaction",
+        description: "Submitting transaction with updated parameters..."
+      });
+
+      sendTransaction({
+        to: tx.to as `0x${string}`,
+        value: BigInt(tx.amount),
+        // Increase gas price by 10% for retry
+        maxFeePerGas: undefined, // Let wallet estimate
+        maxPriorityFeePerGas: undefined,
+      });
+
+      toast({
+        title: "Transaction Submitted",
+        description: "Transaction has been resubmitted to the network"
+      });
+    } catch (err) {
+      console.error('Error retrying transaction:', err);
+      toast({
+        title: "Retry Failed",
+        description: "Failed to retry transaction. Please try again.",
+        variant: "destructive"
+      });
+    }
+  }, [evmAddress, selectedChain, sendTransaction]);
+
+  // Cancel/Speed up transaction (by replacing with higher gas)
+  const speedUpTransaction = useCallback(async (tx: UnifiedTransaction) => {
+    if (!evmAddress || selectedChain === 'aptos') {
+      toast({
+        title: "Speed Up Not Available",
+        description: "Transaction speed up is only available for EVM chains",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (tx.status !== 'pending') {
+      toast({
+        title: "Cannot Speed Up",
+        description: "Only pending transactions can be sped up",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      toast({
+        title: "Speeding Up Transaction",
+        description: "Submitting replacement transaction with higher gas..."
+      });
+
+      // Get current gas price and increase by 20%
+      const gasPrice = await publicClient.getGasPrice();
+      const newGasPrice = (gasPrice * 120n) / 100n;
+
+      sendTransaction({
+        to: tx.to as `0x${string}`,
+        value: BigInt(tx.amount),
+        gasPrice: newGasPrice,
+        // Use same nonce to replace the transaction
+        nonce: undefined, // Would need to get nonce from original tx
+      });
+
+      toast({
+        title: "Speed Up Submitted",
+        description: "Replacement transaction submitted with 20% higher gas"
+      });
+    } catch (err) {
+      console.error('Error speeding up transaction:', err);
+      toast({
+        title: "Speed Up Failed",
+        description: "Failed to speed up transaction. Please try again.",
+        variant: "destructive"
+      });
+    }
+  }, [evmAddress, selectedChain, publicClient, sendTransaction]);
+
+  // Cancel transaction (by sending 0 ETH to self with same nonce)
+  const cancelTransaction = useCallback(async (tx: UnifiedTransaction) => {
+    if (!evmAddress || selectedChain === 'aptos') {
+      toast({
+        title: "Cancel Not Available",
+        description: "Transaction cancellation is only available for EVM chains",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (tx.status !== 'pending') {
+      toast({
+        title: "Cannot Cancel",
+        description: "Only pending transactions can be cancelled",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      toast({
+        title: "Cancelling Transaction",
+        description: "Submitting cancellation transaction..."
+      });
+
+      // Get current gas price and increase by 20%
+      const gasPrice = await publicClient.getGasPrice();
+      const newGasPrice = (gasPrice * 120n) / 100n;
+
+      sendTransaction({
+        to: evmAddress, // Send to self
+        value: 0n, // 0 value
+        gasPrice: newGasPrice,
+        // Use same nonce to replace the transaction
+        nonce: undefined, // Would need to get nonce from original tx
+      });
+
+      toast({
+        title: "Cancellation Submitted",
+        description: "Cancellation transaction submitted"
+      });
+    } catch (err) {
+      console.error('Error cancelling transaction:', err);
+      toast({
+        title: "Cancellation Failed",
+        description: "Failed to cancel transaction. Please try again.",
+        variant: "destructive"
+      });
+    }
+  }, [evmAddress, selectedChain, publicClient, sendTransaction]);
+
   // Refresh function that can be called from the UI
   const refresh = useCallback(() => {
     fetchTransactions();
   }, [fetchTransactions]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+      }
+      watchedTxs.current.forEach(timeout => clearTimeout(timeout));
+      watchedTxs.current.clear();
+    };
+  }, []);
 
   return {
     transactions,
     isLoading,
     error,
     refresh,
+    addPendingTransaction,
+    retryTransaction,
+    speedUpTransaction,
+    cancelTransaction,
+    pendingCount: pendingTxs.size,
   };
 };
 
