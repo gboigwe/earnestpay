@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Wallet, Copy, ExternalLink, LogOut, ChevronDown, Loader2 } from 'lucide-react';
+import { Wallet, Copy, ExternalLink, LogOut, ChevronDown, Loader2, Settings } from 'lucide-react';
 import { EnsDisplay } from './EnsDisplay';
 import { useWallet as useAptosWallet } from '@aptos-labs/wallet-adapter-react';
 import { useAccount as useEVMAccount, useDisconnect, useConnect } from 'wagmi';
 import { useChain } from '@/contexts/ChainContext';
 import { EnhancedWalletModal } from './EnhancedWalletModal';
 import { EVMWalletModal } from './EVMWalletModal';
+import { WalletManager } from './WalletManager';
 import { toast } from './ui/use-toast';
 import { useMultiChainErrorHandler } from '@/hooks/useMultiChainErrorHandler.tsx';
 // reconnect import removed as it's not used
@@ -104,6 +105,7 @@ export const UnifiedWalletButton: React.FC = () => {
   const [showAptosModal, setShowAptosModal] = useState(false);
   const [showEVMModal, setShowEVMModal] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showWalletManager, setShowWalletManager] = useState(false);
 
   // Determine which wallet is connected for the current chain
   const isConnectedToCurrentChain = isAptosChain ? aptosConnected : evmConnected;
@@ -271,6 +273,17 @@ export const UnifiedWalletButton: React.FC = () => {
               {/* Actions */}
               <div className="p-2">
                 <button
+                  onClick={() => {
+                    setShowWalletManager(true);
+                    setShowDropdown(false);
+                  }}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-800 transition-colors text-left group"
+                >
+                  <Settings size={16} className="text-gray-400 group-hover:text-blue-400" />
+                  <span className="text-white text-sm group-hover:text-blue-400">Manage Wallets</span>
+                </button>
+
+                <button
                   onClick={handleCopyAddress}
                   className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-800 transition-colors text-left"
                 >
@@ -331,6 +344,12 @@ export const UnifiedWalletButton: React.FC = () => {
         isOpen={showEVMModal}
         onClose={() => setShowEVMModal(false)}
         onSuccess={() => setShowEVMModal(false)}
+      />
+
+      {/* Wallet Manager */}
+      <WalletManager
+        isOpen={showWalletManager}
+        onClose={() => setShowWalletManager(false)}
       />
     </>
   );
