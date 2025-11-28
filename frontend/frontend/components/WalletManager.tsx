@@ -10,28 +10,12 @@ import { EnhancedWalletModal } from './EnhancedWalletModal';
 import { EVMWalletModal } from './EVMWalletModal';
 import { EnsDisplay } from './EnsDisplay';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getExplorerAccountUrl, NetworkType } from '@/config/networks';
 
 interface WalletManagerProps {
   isOpen: boolean;
   onClose: () => void;
 }
-
-const getExplorerUrl = (address: string, chain: string): string => {
-  switch (chain) {
-    case 'aptos':
-      return `https://explorer.aptoslabs.com/account/${address}?network=testnet`;
-    case 'ethereum':
-      return `https://etherscan.io/address/${address}`;
-    case 'arbitrum':
-      return `https://arbiscan.io/address/${address}`;
-    case 'base':
-      return `https://basescan.org/address/${address}`;
-    case 'polygon':
-      return `https://polygonscan.com/address/${address}`;
-    default:
-      return '#';
-  }
-};
 
 /**
  * WalletManager Component
@@ -123,7 +107,7 @@ export const WalletManager: React.FC<WalletManagerProps> = ({ isOpen, onClose })
   };
 
   const handleViewExplorer = (address: string, chain: string) => {
-    window.open(getExplorerUrl(address, chain), '_blank');
+    window.open(getExplorerAccountUrl(chain as NetworkType, address), '_blank');
   };
 
   const handleConnectNewWallet = (type: 'aptos' | 'evm') => {

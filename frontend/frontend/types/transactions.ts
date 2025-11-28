@@ -1,3 +1,5 @@
+import { getExplorerTxUrl, NetworkType } from '@/config/networks';
+
 export type ChainType = 'aptos' | 'ethereum' | 'arbitrum' | 'base' | 'polygon';
 export type TransactionStatus = 'pending' | 'confirmed' | 'failed';
 
@@ -24,8 +26,9 @@ export interface TransactionListProps {
 
 export const formatAptosTransaction = (event: any): UnifiedTransaction => {
   // Convert Aptos event to unified format
+  const txHash = event.txHash || event.version || '';
   return {
-    hash: event.txHash || event.version || '',
+    hash: txHash,
     chain: 'aptos',
     type: 'payment', // Default type, can be determined from event data
     from: event.from || '',
@@ -34,7 +37,7 @@ export const formatAptosTransaction = (event: any): UnifiedTransaction => {
     token: 'APT',
     timestamp: event.timestamp ? new Date(event.timestamp).getTime() : Date.now(),
     status: 'confirmed', // Default status for Aptos events
-    explorerUrl: `https://explorer.aptoslabs.com/txn/${event.txHash || event.version}?network=mainnet`,
+    explorerUrl: getExplorerTxUrl('aptos' as NetworkType, txHash),
     label: event.label
   };
 };
@@ -52,21 +55,8 @@ export const getTokenSymbol = (chain: ChainType): 'APT' | 'ETH' | 'MATIC' | 'USD
   }
 };
 
-// Helper to get explorer URL based on chain
-export const getExplorerBaseUrl = (chain: ChainType): string => {
-  const urls: Record<Exclude<ChainType, 'aptos'>, string> = {
-    ethereum: 'https://etherscan.io/tx/',
-    arbitrum: 'https://arbiscan.io/tx/',
-    base: 'https://basescan.org/tx/',
-    polygon: 'https://polygonscan.com/tx/'
-  };
-  
-  return urls[chain as Exclude<ChainType, 'aptos'>] || 'https://etherscan.io/tx/';
-};
-
 export const formatEVMTransaction = (tx: any, chain: Exclude<ChainType, 'aptos'>): UnifiedTransaction => {
   const token = getTokenSymbol(chain);
-  const explorerBaseUrl = getExplorerBaseUrl(chain);
 
   return {
     hash: tx.hash,
@@ -78,6 +68,6 @@ export const formatEVMTransaction = (tx: any, chain: Exclude<ChainType, 'aptos'>
     token,
     timestamp: tx.blockTimestamp ? Number(tx.blockTimestamp) * 1000 : Date.now(),
     status: tx.status === 1 || tx.status === '0x1' ? 'confirmed' : 'failed',
-    explorerUrl: `${explorerBaseUrl}${tx.hash}`
+    explorerUrl: getExplorerTxUrl(chain as NetworkType, tx.hash)
   };
 };

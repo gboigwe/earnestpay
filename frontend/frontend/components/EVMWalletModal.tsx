@@ -31,10 +31,20 @@ import {
 import { useMultiChainErrorHandler } from '@/hooks/useMultiChainErrorHandler.tsx';
 import { useChain } from '@/contexts/ChainContext';
 import { useWalletAnalytics } from '@/hooks/useWalletAnalytics';
+import {
+  MetaMaskIcon,
+  CoinbaseIcon,
+  TrustWalletIcon,
+  RainbowIcon,
+  EthereumIcon,
+  ArbitrumIcon,
+  BaseIcon,
+  PolygonIcon
+} from './icons';
 
 interface EVMWalletInfo {
   name: string;
-  icon: string;
+  icon: React.ComponentType<{ className?: string; size?: number }>;
   description: string;
   downloadUrl: string;
   mobileSupport: boolean;
@@ -45,7 +55,7 @@ interface EVMWalletInfo {
 const EVM_WALLETS: EVMWalletInfo[] = [
   {
     name: 'MetaMask',
-    icon: '🦊',
+    icon: MetaMaskIcon,
     description: 'Most popular Ethereum wallet',
     downloadUrl: 'https://metamask.io',
     mobileSupport: true,
@@ -54,7 +64,7 @@ const EVM_WALLETS: EVMWalletInfo[] = [
   },
   {
     name: 'Coinbase Wallet',
-    icon: '🔵',
+    icon: CoinbaseIcon,
     description: 'Secure wallet by Coinbase',
     downloadUrl: 'https://www.coinbase.com/wallet',
     mobileSupport: true,
@@ -63,7 +73,7 @@ const EVM_WALLETS: EVMWalletInfo[] = [
   },
   {
     name: 'Trust Wallet',
-    icon: '💙',
+    icon: TrustWalletIcon,
     description: 'Multi-chain mobile wallet',
     downloadUrl: 'https://trustwallet.com',
     mobileSupport: true,
@@ -72,7 +82,7 @@ const EVM_WALLETS: EVMWalletInfo[] = [
   },
   {
     name: 'Rainbow',
-    icon: '🌈',
+    icon: RainbowIcon,
     description: 'Fun and easy to use',
     downloadUrl: 'https://rainbow.me',
     mobileSupport: true,
@@ -82,10 +92,10 @@ const EVM_WALLETS: EVMWalletInfo[] = [
 ];
 
 const NETWORK_INFO = {
-  mainnet: { name: 'Ethereum', icon: '⟠', color: 'blue' },
-  arbitrum: { name: 'Arbitrum', icon: '🔷', color: 'sky' },
-  base: { name: 'Base', icon: '🔵', color: 'indigo' },
-  polygon: { name: 'Polygon', icon: '🟣', color: 'purple' }
+  mainnet: { name: 'Ethereum', icon: EthereumIcon, color: 'blue' },
+  arbitrum: { name: 'Arbitrum', icon: ArbitrumIcon, color: 'sky' },
+  base: { name: 'Base', icon: BaseIcon, color: 'indigo' },
+  polygon: { name: 'Polygon', icon: PolygonIcon, color: 'purple' }
 };
 
 interface EVMWalletModalProps {
@@ -301,8 +311,12 @@ export const EVMWalletModal: React.FC<EVMWalletModalProps> = ({
             {isConnected && chainId && (
               <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center text-xl">
-                    {NETWORK_INFO[chainId as keyof typeof NETWORK_INFO]?.icon || '🌐'}
+                  <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
+                    {NETWORK_INFO[chainId as keyof typeof NETWORK_INFO]?.icon ? (
+                      React.createElement(NETWORK_INFO[chainId as keyof typeof NETWORK_INFO].icon, { size: 24 })
+                    ) : (
+                      <Globe size={24} className="text-green-400" />
+                    )}
                   </div>
                   <div className="flex-1">
                     <div className="text-sm font-medium text-green-400">Connected</div>
@@ -330,8 +344,8 @@ export const EVMWalletModal: React.FC<EVMWalletModalProps> = ({
                       disabled={isConnecting || !reownEnabled}
                       className="w-full flex items-center gap-4 p-4 rounded-xl border border-gray-700 hover:border-blue-500/50 hover:bg-gray-800/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
                     >
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-2xl">
-                        {wallet.icon}
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
+                        <wallet.icon size={32} />
                       </div>
                       <div className="text-left flex-1">
                         <div className="text-white font-semibold flex items-center gap-2">
@@ -382,7 +396,7 @@ export const EVMWalletModal: React.FC<EVMWalletModalProps> = ({
                       rel="noopener noreferrer"
                       className="flex items-center gap-2 p-3 rounded-lg border border-gray-700 hover:border-purple-500/50 hover:bg-gray-800/50 transition-all text-sm"
                     >
-                      <span className="text-xl">{wallet.icon}</span>
+                      <wallet.icon size={24} />
                       <div className="flex-1">
                         <div className="text-white font-medium text-xs">{wallet.name}</div>
                       </div>
