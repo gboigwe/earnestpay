@@ -12,6 +12,7 @@ import { useMultiChainErrorHandler } from '@/hooks/useMultiChainErrorHandler.tsx
 import { useWalletAnalytics } from '@/hooks/useWalletAnalytics';
 import { getExplorerAccountUrl, NetworkType } from '@/config/networks';
 import { WalletStatusIndicator } from './WalletStatusIndicator';
+import { AccountSwitcher } from './AccountSwitcher';
 // reconnect import removed as it's not used
 
 // Helper to check if we're in a browser environment
@@ -268,6 +269,13 @@ export const UnifiedWalletButton: React.FC = () => {
                       </div>
                     )}
                   </div>
+                </div>
+              )}
+
+              {/* Account Switcher (EVM only) */}
+              {isEVMChain && evmConnected && (
+                <div className="p-3 border-b border-gray-800">
+                  <AccountSwitcher compact={false} showBalance={true} />
                 </div>
               )}
 
