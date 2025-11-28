@@ -4,6 +4,7 @@ import { WagmiProvider, createConfig, http } from 'wagmi';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { NotificationProvider } from '@/contexts/NotificationContext';
 import { useWalletEvents } from '@/hooks/useWalletEvents';
+import { useWalletRecovery } from '@/hooks/useWalletRecovery';
 
 // Create the query client instance with persistence
 let browserQueryClient: QueryClient | undefined;
@@ -66,6 +67,9 @@ const WalletEventManager = ({ children }: { children: React.ReactNode }) => {
       // Handle errors (e.g., show error toast)
     },
   });
+
+  // Enable automatic wallet connection recovery
+  useWalletRecovery();
 
   return <>{children}</>;
 };
