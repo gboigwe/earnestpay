@@ -11,6 +11,7 @@ import { toast } from './ui/use-toast';
 import { useMultiChainErrorHandler } from '@/hooks/useMultiChainErrorHandler.tsx';
 import { useWalletAnalytics } from '@/hooks/useWalletAnalytics';
 import { getExplorerAccountUrl, NetworkType } from '@/config/networks';
+import { WalletStatusIndicator } from './WalletStatusIndicator';
 // reconnect import removed as it's not used
 
 // Helper to check if we're in a browser environment
@@ -225,11 +226,16 @@ export const UnifiedWalletButton: React.FC = () => {
                   {isAptosChain ? 'Aptos Network' : `${selectedChain.charAt(0).toUpperCase() + selectedChain.slice(1)} Network`}
                 </div>
                 <div className="text-sm text-white break-all">
-                  <EnsDisplay 
-                    address={currentAddress || ''} 
+                  <EnsDisplay
+                    address={currentAddress || ''}
                     showAddress={true}
                     avatarSize="sm"
                   />
+                </div>
+
+                {/* Connection Status Indicator */}
+                <div className="mt-3">
+                  <WalletStatusIndicator showLabel={true} compact={false} />
                 </div>
               </div>
 
