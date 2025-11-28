@@ -31,14 +31,14 @@ const getQueryClient = () => {
 };
 
 // Create Wagmi config with proper typing and session persistence
-const createWagmiConfig = () => {
+const createWagmiConfig = (customRpcs?: Record<string, string>) => {
   return createConfig({
     chains: [mainnet, arbitrum, base, polygon],
     transports: {
-      [mainnet.id]: http(),
-      [arbitrum.id]: http(),
-      [base.id]: http(),
-      [polygon.id]: http(),
+      [mainnet.id]: http(customRpcs?.ethereum),
+      [arbitrum.id]: http(customRpcs?.arbitrum),
+      [base.id]: http(customRpcs?.base),
+      [polygon.id]: http(customRpcs?.polygon),
     },
   });
 };
@@ -81,13 +81,40 @@ const SessionManager = ({ children }: { children: React.ReactNode }) => {
 
 /**
  * ReownProvider Component
- * 
+ *
  * Provides Wagmi and React Query context for the application.
  * Uses proper typing and handles client-side state persistence.
+ * Supports custom RPC endpoints from localStorage.
  */
 export function ReownProvider({ children }: PropsWithChildren) {
   const queryClient = useMemo(() => getQueryClient(), []);
-  const config = useMemo(() => createWagmiConfig(), []);
+
+  // Load custom RPC configs from localStorage
+  const customRpcs = useMemo(() => {
+    if (typeof window === 'undefined') return undefined;
+
+    try {
+      const saved = localStorage.getItem('custom-rpc-configs');
+      if (!saved) return undefined;
+
+      const configs = JSON.parse(saved);
+      const rpcs: Record<string, string> = {};
+
+      // Extract custom RPCs for each network
+      for (const [key, config] of Object.entries(configs) as [string, any][]) {
+        if (config.customRpc) {
+          rpcs[key] = config.customRpc;
+        }
+      }
+
+      return Object.keys(rpcs).length > 0 ? rpcs : undefined;
+    } catch (error) {
+      console.error('Failed to load custom RPC configs:', error);
+      return undefined;
+    }
+  }, []);
+
+  const config = useMemo(() => createWagmiConfig(customRpcs), [customRpcs]);
 
   return (
     <QueryClientProvider client={queryClient}>
