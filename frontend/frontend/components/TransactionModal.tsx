@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Loader2, AlertCircle, CheckCircle2, ExternalLink, XCircle } from 'lucide-react';
+import { getExplorerTxUrl, NetworkType } from '@/config/networks';
 
 export type TransactionState = 'idle' | 'signing' | 'pending' | 'success' | 'error';
 
@@ -54,15 +55,7 @@ export function TransactionModal({
     if (explorerUrl) return explorerUrl;
     if (!transactionHash) return null;
 
-    const explorers = {
-      aptos: `https://explorer.aptoslabs.com/txn/${transactionHash}?network=testnet`,
-      ethereum: `https://etherscan.io/tx/${transactionHash}`,
-      arbitrum: `https://arbiscan.io/tx/${transactionHash}`,
-      base: `https://basescan.org/tx/${transactionHash}`,
-      polygon: `https://polygonscan.com/tx/${transactionHash}`,
-    };
-
-    return explorers[chain];
+    return getExplorerTxUrl(chain as NetworkType, transactionHash);
   };
 
   // Render different content based on transaction state

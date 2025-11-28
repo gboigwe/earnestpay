@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
 import { Wallet, Copy, LogOut, ExternalLink, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getExplorerAccountUrl } from '@/config/networks';
 
 export function WalletButton() {
   const { account, connected, disconnect, wallets, connect } = useWallet();
@@ -202,7 +203,7 @@ export function WalletButton() {
               </button>
 
               <a
-                href={`https://explorer.aptoslabs.com/account/${account?.address?.toString()}?network=testnet`}
+                href={getExplorerAccountUrl('aptos', account?.address?.toString() || '')}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-all duration-200"

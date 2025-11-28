@@ -10,6 +10,7 @@ import { WalletManager } from './WalletManager';
 import { toast } from './ui/use-toast';
 import { useMultiChainErrorHandler } from '@/hooks/useMultiChainErrorHandler.tsx';
 import { useWalletAnalytics } from '@/hooks/useWalletAnalytics';
+import { getExplorerAccountUrl, NetworkType } from '@/config/networks';
 // reconnect import removed as it's not used
 
 // Helper to check if we're in a browser environment
@@ -27,23 +28,6 @@ const isBrowser = typeof window !== 'undefined';
  */
 
 // truncateAddress moved to utils.ts
-
-const getExplorerUrl = (address: string, chain: string): string => {
-  switch (chain) {
-    case 'aptos':
-      return `https://explorer.aptoslabs.com/account/${address}?network=testnet`;
-    case 'ethereum':
-      return `https://etherscan.io/address/${address}`;
-    case 'arbitrum':
-      return `https://arbiscan.io/address/${address}`;
-    case 'base':
-      return `https://basescan.org/address/${address}`;
-    case 'polygon':
-      return `https://polygonscan.com/address/${address}`;
-    default:
-      return '#';
-  }
-};
 
 export const UnifiedWalletButton: React.FC = () => {
   const { selectedChain, isAptosChain, isEVMChain } = useChain();
@@ -172,7 +156,7 @@ export const UnifiedWalletButton: React.FC = () => {
 
   const handleViewExplorer = () => {
     if (currentAddress) {
-      window.open(getExplorerUrl(currentAddress, selectedChain), '_blank');
+      window.open(getExplorerAccountUrl(selectedChain as NetworkType, currentAddress), '_blank');
       setShowDropdown(false);
     }
   };
