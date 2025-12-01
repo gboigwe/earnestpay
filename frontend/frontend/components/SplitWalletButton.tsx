@@ -65,14 +65,24 @@ export const SplitWalletButton: React.FC = () => {
       <div className="relative">
         <motion.button
           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-lg transition-all font-semibold text-white shadow-lg hover:shadow-xl"
-          whileHover={{ scale: 1.05, boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)" }}
+          className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-xl transition-all font-semibold text-white shadow-lg hover:shadow-xl border border-blue-400/20"
+          whileHover={{ 
+            scale: 1.05, 
+            boxShadow: "0 10px 25px -5px rgb(59 130 246 / 0.4), 0 8px 10px -6px rgb(59 130 246 / 0.2)",
+            borderColor: 'rgba(96, 165, 250, 0.4)'
+          }}
           whileTap={{ scale: 0.98 }}
-          transition={{ type: "spring", stiffness: 400, damping: 17 }}
+          transition={{ 
+            type: "spring", 
+            stiffness: 400, 
+            damping: 17,
+            borderColor: { duration: 0.2 }
+          }}
         >
-          <Wallet size={18} />
-          <span>Connect Wallet</span>
+          <Wallet size={18} className="text-blue-100" />
+          <span className="text-white/95">Connect Wallet</span>
           <motion.div
+            className="text-blue-100"
             animate={{ rotate: isDropdownOpen ? 180 : 0 }}
             transition={{ duration: 0.2 }}
           >
