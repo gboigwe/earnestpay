@@ -93,33 +93,46 @@ export const SplitWalletButton: React.FC = () => {
         <AnimatePresence>
           {isDropdownOpen && (
             <>
-              {/* Backdrop */}
+              {/* Backdrop with blur effect */}
               <motion.div
-                className="fixed inset-0 z-40"
+                className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm"
                 onClick={() => setIsDropdownOpen(false)}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.15 }}
+                transition={{ duration: 0.2 }}
               />
 
-              {/* Dropdown Menu */}
+              {/* Enhanced Dropdown Menu */}
               <motion.div
-                className="absolute top-full mt-2 right-0 w-64 bg-gray-900 border border-gray-800 rounded-xl shadow-xl z-50 overflow-hidden"
-                initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                className="absolute top-full mt-2 right-0 w-72 bg-gray-900/95 backdrop-blur-lg border border-gray-700/50 rounded-xl shadow-2xl z-50 overflow-hidden"
+                initial={{ opacity: 0, y: 10, scale: 0.98 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                transition={{ duration: 0.2, ease: "easeOut" }}
+                exit={{ opacity: 0, y: 10, scale: 0.98 }}
+                transition={{
+                  type: "spring",
+                  damping: 25,
+                  stiffness: 400,
+                  bounce: 0.2
+                }}
               >
-                <div className="p-3 border-b border-gray-800">
-                  <p className="text-xs text-gray-400 font-medium">CHOOSE WALLET TYPE</p>
+                {/* Header with gradient accent */}
+                <div className="relative p-3 border-b border-gray-800 bg-gradient-to-r from-blue-900/20 to-indigo-900/20">
+                  <p className="text-xs font-medium text-blue-300 uppercase tracking-wider">
+                    Connect Your Wallet
+                  </p>
+                  <p className="text-xs text-blue-100/70 mt-0.5">
+                    Select your preferred wallet type
+                  </p>
+                  {/* Decorative gradient dot */}
+                  <div className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full shadow-lg shadow-blue-500/50 animate-pulse" />
                 </div>
 
                 <div className="p-2">
                   {/* Aptos Wallet Option */}
                   <motion.button
                     onClick={handleAptosConnect}
-                    className="w-full flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-gray-800 transition-colors text-left group"
+                    className="w-full flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-gray-800/50 transition-all text-left group border border-transparent hover:border-blue-500/20"
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.05, duration: 0.2 }}
@@ -136,15 +149,16 @@ export const SplitWalletButton: React.FC = () => {
                       <div className="text-white font-medium">Aptos Wallet</div>
                       <div className="text-xs text-gray-400">Petra, Martian, Pontem, etc.</div>
                     </div>
+                    <ChevronRight className="h-4 w-4 text-gray-500 group-hover:text-blue-400 transition-colors" />
                   </motion.button>
 
                   {/* EVM Wallet Option */}
                   <motion.button
                     onClick={handleEVMConnect}
                     disabled={!evmEnabled}
-                    className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors text-left group ${
+                    className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-all text-left group border border-transparent ${
                       evmEnabled
-                        ? 'hover:bg-gray-800 cursor-pointer'
+                        ? 'hover:bg-gray-800/50 hover:border-blue-500/20 cursor-pointer'
                         : 'opacity-50 cursor-not-allowed'
                     }`}
                     initial={{ opacity: 0, x: -20 }}
@@ -168,6 +182,7 @@ export const SplitWalletButton: React.FC = () => {
                         }
                       </div>
                     </div>
+                    <ChevronRight className="h-4 w-4 text-gray-500 group-hover:text-blue-400 transition-colors" />
                   </motion.button>
                 </div>
 
