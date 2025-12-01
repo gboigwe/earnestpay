@@ -1,5 +1,5 @@
 import React, { useState, lazy, Suspense } from 'react';
-import { Wallet, ChevronDown } from 'lucide-react';
+import { Wallet, ChevronDown, ChevronRight } from 'lucide-react';
 import { useAppKit } from '@reown/appkit/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMultiChainErrorHandler } from '@/hooks/useMultiChainErrorHandler.tsx';
