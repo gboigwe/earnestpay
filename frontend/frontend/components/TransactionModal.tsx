@@ -1,6 +1,8 @@
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Loader2, AlertCircle, CheckCircle2, ExternalLink, XCircle } from 'lucide-react';
+import { SecurityWarning, type Transaction } from './SecurityWarning';
+import { useMemo } from 'react';
 import { getExplorerTxUrl, NetworkType } from '@/config/networks';
 
 export type TransactionState = 'idle' | 'signing' | 'pending' | 'success' | 'error';
@@ -28,6 +30,7 @@ interface TransactionModalProps {
     to: string;
     amount?: string;
     token?: string;
+    data?: string;
   };
   chain?: 'aptos' | 'ethereum' | 'arbitrum' | 'base' | 'polygon';
 }
@@ -44,7 +47,14 @@ export function TransactionModal({
   transactionDetails,
   chain = 'aptos',
 }: TransactionModalProps) {
-  const { title, description, from, to, amount, token = chain === 'aptos' ? 'APT' : 'ETH' } = transactionDetails;
+  const { title, description, from, to, amount, token = chain === 'aptos' ? 'APT' : 'ETH', data } = transactionDetails;
+
+  const transactionForAnalysis = useMemo<Transaction>(() => ({
+    to,
+    from,
+    value: amount,
+    data,
+  }), [to, from, amount, data]);
 
   const formatAddress = (addr: string) => {
     if (!addr) return '';
@@ -291,6 +301,10 @@ export function TransactionModal({
           </DialogTitle>
           {state === 'idle' && description && <DialogDescription>{description}</DialogDescription>}
         </DialogHeader>
+
+        {state === 'idle' && (
+          <SecurityWarning transaction={transactionForAnalysis} className="mb-4" />
+        )}
 
         {renderContent()}
 
