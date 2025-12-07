@@ -60,10 +60,20 @@ export const isReownConfigured = () => {
 /**
  * Network configuration for Wagmi
  * Maps network IDs to HTTP transport configurations
+ * Base uses primary RPC with fallback support
  */
 export const NETWORK_TRANSPORTS = {
   [mainnet.id]: 'https://eth.llamarpc.com',
   [arbitrum.id]: 'https://arbitrum.llamarpc.com',
-  [base.id]: 'https://mainnet.base.org',
+  [base.id]: 'https://mainnet.base.org', // Primary Base RPC
   [polygon.id]: 'https://polygon.llamarpc.com',
 } as const;
+
+/**
+ * Base RPC endpoints with fallback support
+ */
+export const BASE_RPC_ENDPOINTS = [
+  'https://mainnet.base.org',
+  'https://base.llamarpc.com',
+  'https://base.blockpi.network/v1/rpc/public',
+] as const;
