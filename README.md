@@ -61,9 +61,10 @@ EarnestPay supports multiple blockchains for flexible payroll solutions:
 ### Our Solutions
 
 1. **On-Chain Salary Disbursement**
-   - Stablecoin payments with ~$0.00005 transaction costs
-   - Instant payment settlement on Aptos blockchain
+   - Stablecoin payments with ultra-low transaction costs (~$0.00005 on Aptos, ~$0.01 on Base)
+   - Instant payment settlement on Aptos and Base blockchains
    - Complete transparency with immutable transaction records
+   - Base integration provides seamless Coinbase ecosystem access
 
 2. **Automated Tax Calculation & Compliance**
    - Real-time, multi-jurisdiction tax calculation
@@ -76,9 +77,10 @@ EarnestPay supports multiple blockchains for flexible payroll solutions:
    - Multi-signature treasury management for security
 
 4. **Global Accessibility**
-   - Anyone with an Aptos wallet can receive payments
+   - Anyone with an Aptos or EVM wallet can receive payments
+   - Base support enables direct integration with Coinbase accounts
    - No traditional banking infrastructure required
-   - Support for employees worldwide
+   - Support for employees worldwide with multi-chain flexibility
 
 5. **Enterprise-Grade Features**
    - Employee registry with comprehensive profiles
