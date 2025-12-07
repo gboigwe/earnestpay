@@ -2,7 +2,7 @@
 
 ## Overview
 
-EarnestPay is a modern payroll and payouts platform for companies and salary earners, secured by Aptos. This system enables on-chain salary disbursement in stablecoins with integrated tax calculation and compliance features.
+EarnestPay is a modern payroll and payouts platform for companies and salary earners, secured by Aptos and Base. This system enables on-chain salary disbursement in stablecoins with integrated tax calculation and compliance features across multiple blockchains.
 
 **🏆 Built for Aptos Ctrl+MOVE Hackathon 2025**
 **Target Categories:** Main Track ($65,000 pool) and Best Tech Implementation ($15,000)
@@ -13,10 +13,18 @@ EarnestPay supports multiple blockchains for flexible payroll solutions:
 
 ### Supported Chains
 - **Aptos** - Primary blockchain (active)
+- **Base** - Coinbase's L2 solution (active) - Chain ID: 8453
 - **Ethereum** - EVM compatibility (coming soon)
 - **Arbitrum** - Low-cost L2 (coming soon)
-- **Base** - Coinbase's L2 (coming soon)
 - **Polygon** - Fast and low-cost (coming soon)
+
+### Base Network Details
+**Base** is Coinbase's Ethereum Layer 2 (L2) solution built on the OP Stack:
+- **Chain ID**: 8453 (Mainnet), 84532 (Sepolia Testnet)
+- **Native Token**: ETH
+- **Block Time**: ~2 seconds
+- **Transaction Costs**: Ultra-low fees (~$0.01 average)
+- **Benefits**: Coinbase ecosystem integration, high security, fast finality
 
 [🚀 Get Started with Multi-Chain](./docs/MULTI_CHAIN_SETUP.md)
 [🏗️ View Architecture](./docs/ARCHITECTURE.md)
@@ -53,9 +61,10 @@ EarnestPay supports multiple blockchains for flexible payroll solutions:
 ### Our Solutions
 
 1. **On-Chain Salary Disbursement**
-   - Stablecoin payments with ~$0.00005 transaction costs
-   - Instant payment settlement on Aptos blockchain
+   - Stablecoin payments with ultra-low transaction costs (~$0.00005 on Aptos, ~$0.01 on Base)
+   - Instant payment settlement on Aptos and Base blockchains
    - Complete transparency with immutable transaction records
+   - Base integration provides seamless Coinbase ecosystem access
 
 2. **Automated Tax Calculation & Compliance**
    - Real-time, multi-jurisdiction tax calculation
@@ -68,9 +77,10 @@ EarnestPay supports multiple blockchains for flexible payroll solutions:
    - Multi-signature treasury management for security
 
 4. **Global Accessibility**
-   - Anyone with an Aptos wallet can receive payments
+   - Anyone with an Aptos or EVM wallet can receive payments
+   - Base support enables direct integration with Coinbase accounts
    - No traditional banking infrastructure required
-   - Support for employees worldwide
+   - Support for employees worldwide with multi-chain flexibility
 
 5. **Enterprise-Grade Features**
    - Employee registry with comprehensive profiles
@@ -136,13 +146,16 @@ frontend/src/
 - Node.js 16+ and npm
 - Aptos CLI (installed and configured)
 - Supported Aptos wallet (Petra, Martian, etc.)
+- EVM-compatible wallet for Base (MetaMask, Coinbase Wallet, WalletConnect)
+- Base network added to your wallet (see Base Configuration below)
 
 ## 🌐 Multi-Chain Support
 
 EarnestPay now supports multiple blockchains with a unified, polished wallet experience:
 
 - ✅ **Aptos** - Primary blockchain (fully functional)
-- ✅ **Ethereum, Arbitrum, Base, Polygon** - EVM support ready (requires Reown configuration)
+- ✅ **Base** - Coinbase L2 (fully functional)
+- ✅ **Ethereum, Arbitrum, Polygon** - EVM support ready (requires Reown configuration)
 
 ### ✨ Multi-Chain Features (71.4% Complete)
 
@@ -162,7 +175,27 @@ EarnestPay now supports multiple blockchains with a unified, polished wallet exp
 - Cross-chain transaction history
 - Complete documentation
 
-### Quick Setup for EVM Chains (Optional)
+### Base Network Configuration
+
+**Adding Base to MetaMask:**
+1. Open MetaMask and click on the network dropdown
+2. Select "Add Network" or "Add a network manually"
+3. Enter the following details:
+   - **Network Name**: Base Mainnet
+   - **RPC URL**: https://mainnet.base.org
+   - **Chain ID**: 8453
+   - **Currency Symbol**: ETH
+   - **Block Explorer**: https://basescan.org
+
+**For Base Sepolia Testnet:**
+   - **Network Name**: Base Sepolia
+   - **RPC URL**: https://sepolia.base.org
+   - **Chain ID**: 84532
+   - **Currency Symbol**: ETH
+   - **Block Explorer**: https://sepolia.basescan.org
+   - **Faucet**: https://www.coinbase.com/faucets/base-ethereum-goerli-faucet
+
+### Quick Setup for EVM Chains (Required for Base)
 
 1. Visit [https://cloud.reown.com](https://cloud.reown.com) and sign up
 2. Create a new project named "EarnestPay"
@@ -216,7 +249,7 @@ The application will be available at `http://localhost:5173`
 ## 🎯 MVP Demonstration
 
 ### For Employers:
-1. **Connect Wallet**: Connect your Aptos wallet (Petra recommended)
+1. **Connect Wallet**: Connect your Aptos wallet (Petra recommended) or Base wallet (MetaMask, Coinbase Wallet)
 2. **Register Company**: Set up your company profile
 3. **Add Employees**: Register employee wallet addresses and profiles
 4. **Fund Treasury**: Add funds to the company treasury
@@ -238,9 +271,11 @@ The application will be available at `http://localhost:5173`
 
 ## 💰 Cost Efficiency
 
-- **Low Transaction Costs**: ~$0.00005 per transaction on Aptos
-- **Parallel Execution**: Optimized for high throughput with Block-STM
-- **Gas Optimization**: Efficient contract design minimizes fees
+- **Low Transaction Costs**: ~$0.00005 per transaction on Aptos, ~$0.01 on Base
+- **Parallel Execution**: Optimized for high throughput with Block-STM (Aptos)
+- **Base L2 Efficiency**: Significantly lower fees than Ethereum mainnet
+- **Gas Optimization**: Efficient contract design minimizes fees across all chains
+- **Multi-chain Flexibility**: Choose the most cost-effective chain for your needs
 
 ## 🌟 Innovation Highlights
 
