@@ -173,7 +173,27 @@ EarnestPay now supports multiple blockchains with a unified, polished wallet exp
 - Cross-chain transaction history
 - Complete documentation
 
-### Quick Setup for EVM Chains (Optional)
+### Base Network Configuration
+
+**Adding Base to MetaMask:**
+1. Open MetaMask and click on the network dropdown
+2. Select "Add Network" or "Add a network manually"
+3. Enter the following details:
+   - **Network Name**: Base Mainnet
+   - **RPC URL**: https://mainnet.base.org
+   - **Chain ID**: 8453
+   - **Currency Symbol**: ETH
+   - **Block Explorer**: https://basescan.org
+
+**For Base Sepolia Testnet:**
+   - **Network Name**: Base Sepolia
+   - **RPC URL**: https://sepolia.base.org
+   - **Chain ID**: 84532
+   - **Currency Symbol**: ETH
+   - **Block Explorer**: https://sepolia.basescan.org
+   - **Faucet**: https://www.coinbase.com/faucets/base-ethereum-goerli-faucet
+
+### Quick Setup for EVM Chains (Required for Base)
 
 1. Visit [https://cloud.reown.com](https://cloud.reown.com) and sign up
 2. Create a new project named "EarnestPay"
