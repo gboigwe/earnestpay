@@ -249,7 +249,7 @@ The application will be available at `http://localhost:5173`
 ## 🎯 MVP Demonstration
 
 ### For Employers:
-1. **Connect Wallet**: Connect your Aptos wallet (Petra recommended)
+1. **Connect Wallet**: Connect your Aptos wallet (Petra recommended) or Base wallet (MetaMask, Coinbase Wallet)
 2. **Register Company**: Set up your company profile
 3. **Add Employees**: Register employee wallet addresses and profiles
 4. **Fund Treasury**: Add funds to the company treasury
