@@ -144,13 +144,16 @@ frontend/src/
 - Node.js 16+ and npm
 - Aptos CLI (installed and configured)
 - Supported Aptos wallet (Petra, Martian, etc.)
+- EVM-compatible wallet for Base (MetaMask, Coinbase Wallet, WalletConnect)
+- Base network added to your wallet (see Base Configuration below)
 
 ## 🌐 Multi-Chain Support
 
 EarnestPay now supports multiple blockchains with a unified, polished wallet experience:
 
 - ✅ **Aptos** - Primary blockchain (fully functional)
-- ✅ **Ethereum, Arbitrum, Base, Polygon** - EVM support ready (requires Reown configuration)
+- ✅ **Base** - Coinbase L2 (fully functional)
+- ✅ **Ethereum, Arbitrum, Polygon** - EVM support ready (requires Reown configuration)
 
 ### ✨ Multi-Chain Features (71.4% Complete)
 
