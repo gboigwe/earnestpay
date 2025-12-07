@@ -13,10 +13,18 @@ EarnestPay supports multiple blockchains for flexible payroll solutions:
 
 ### Supported Chains
 - **Aptos** - Primary blockchain (active)
+- **Base** - Coinbase's L2 solution (active) - Chain ID: 8453
 - **Ethereum** - EVM compatibility (coming soon)
 - **Arbitrum** - Low-cost L2 (coming soon)
-- **Base** - Coinbase's L2 (coming soon)
 - **Polygon** - Fast and low-cost (coming soon)
+
+### Base Network Details
+**Base** is Coinbase's Ethereum Layer 2 (L2) solution built on the OP Stack:
+- **Chain ID**: 8453 (Mainnet), 84532 (Sepolia Testnet)
+- **Native Token**: ETH
+- **Block Time**: ~2 seconds
+- **Transaction Costs**: Ultra-low fees (~$0.01 average)
+- **Benefits**: Coinbase ecosystem integration, high security, fast finality
 
 [🚀 Get Started with Multi-Chain](./docs/MULTI_CHAIN_SETUP.md)
 [🏗️ View Architecture](./docs/ARCHITECTURE.md)
