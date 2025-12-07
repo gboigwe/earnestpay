@@ -160,6 +160,7 @@ export const ChainSelector = () => {
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
         transition={{ type: "spring", stiffness: 400, damping: 17 }}
+        layout
       >
         <motion.span
           className="text-xl"

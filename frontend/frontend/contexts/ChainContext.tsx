@@ -93,6 +93,13 @@ export const ChainProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
   const switchChain = async (chain: ChainType, disconnectOthers = false): Promise<void> => {
     setSelectedChain(chain, { disconnectOthers });
+    
+    // Emit custom event for network switch
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('chainSwitched', { 
+        detail: { chain, timestamp: Date.now() } 
+      }));
+    }
   };
 
   return (
