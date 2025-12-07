@@ -271,9 +271,11 @@ The application will be available at `http://localhost:5173`
 
 ## 💰 Cost Efficiency
 
-- **Low Transaction Costs**: ~$0.00005 per transaction on Aptos
-- **Parallel Execution**: Optimized for high throughput with Block-STM
-- **Gas Optimization**: Efficient contract design minimizes fees
+- **Low Transaction Costs**: ~$0.00005 per transaction on Aptos, ~$0.01 on Base
+- **Parallel Execution**: Optimized for high throughput with Block-STM (Aptos)
+- **Base L2 Efficiency**: Significantly lower fees than Ethereum mainnet
+- **Gas Optimization**: Efficient contract design minimizes fees across all chains
+- **Multi-chain Flexibility**: Choose the most cost-effective chain for your needs
 
 ## 🌟 Innovation Highlights
 
