@@ -1,27 +1,18 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useWallet as useAptosWallet } from '@aptos-labs/wallet-adapter-react';
-import { useAccount as useEVMAccount, useDisconnect as useEVMDisconnect } from 'wagmi';
+import { useAccount, useDisconnect } from 'wagmi';
 
-export type ChainType = 'aptos' | 'ethereum' | 'arbitrum' | 'base' | 'polygon';
+export type ChainType = 'base' | 'base-sepolia';
 
 interface WalletConnectionState {
-  aptos: {
-    isConnected: boolean;
-    address?: string;
-  };
-  evm: {
-    isConnected: boolean;
-    address?: string;
-  };
+  isConnected: boolean;
+  address?: string;
 }
 
 interface ChainContextType {
   selectedChain: ChainType;
-  setSelectedChain: (chain: ChainType, options?: { disconnectOthers?: boolean }) => void;
-  isAptosChain: boolean;
-  isEVMChain: boolean;
-  walletConnections: WalletConnectionState;
-  switchChain: (chain: ChainType, disconnectOthers?: boolean) => Promise<void>;
+  setSelectedChain: (chain: ChainType) => void;
+  walletConnection: WalletConnectionState;
+  switchChain: (chain: ChainType) => Promise<void>;
 }
 
 const ChainContext = createContext<ChainContextType | undefined>(undefined);
@@ -33,40 +24,21 @@ export const ChainProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [selectedChain, setSelectedChainState] = useState<ChainType>(() => {
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored && ['aptos', 'ethereum', 'arbitrum', 'base', 'polygon'].includes(stored)) {
+      if (stored && ['base', 'base-sepolia'].includes(stored)) {
         return stored as ChainType;
       }
     }
-    return 'aptos';
+    return 'base';
   });
 
-  // Track wallet connections with safe defaults
-  const aptosWallet = useAptosWallet();
-  const evmAccount = useEVMAccount();
-  const evmDisconnectHook = useEVMDisconnect();
+  // Track wallet connection with safe defaults
+  const account = useAccount();
+  const { disconnect } = useDisconnect();
 
-  // Use nullish coalescing to provide safe defaults
-  const aptosConnected = aptosWallet.connected ?? false;
-  const aptosAccount = aptosWallet.account ?? undefined;
-  const aptosDisconnect = aptosWallet.disconnect ?? (() => {});
-
-  const evmConnected = evmAccount.isConnected ?? false;
-  const evmAddress = evmAccount.address ?? undefined;
-  const evmDisconnect = evmDisconnectHook.disconnect ?? (() => {});
-
-  const walletConnections: WalletConnectionState = {
-    aptos: {
-      isConnected: aptosConnected,
-      address: aptosAccount?.address?.toString(),
-    },
-    evm: {
-      isConnected: evmConnected,
-      address: evmAddress,
-    },
+  const walletConnection: WalletConnectionState = {
+    isConnected: account.isConnected ?? false,
+    address: account.address,
   };
-
-  const isAptosChain = selectedChain === 'aptos';
-  const isEVMChain = ['ethereum', 'arbitrum', 'base', 'polygon'].includes(selectedChain);
 
   // Persist selected chain to localStorage
   useEffect(() => {
@@ -75,29 +47,17 @@ export const ChainProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }
   }, [selectedChain]);
 
-  const setSelectedChain = (chain: ChainType, options?: { disconnectOthers?: boolean }) => {
+  const setSelectedChain = (chain: ChainType) => {
     setSelectedChainState(chain);
-
-    // Optional: disconnect wallets when switching chains
-    if (options?.disconnectOthers) {
-      const newIsAptos = chain === 'aptos';
-      const newIsEVM = ['ethereum', 'arbitrum', 'base', 'polygon'].includes(chain);
-
-      if (newIsAptos && evmConnected && evmDisconnect) {
-        evmDisconnect();
-      } else if (newIsEVM && aptosConnected && aptosDisconnect) {
-        aptosDisconnect();
-      }
-    }
   };
 
-  const switchChain = async (chain: ChainType, disconnectOthers = false): Promise<void> => {
-    setSelectedChain(chain, { disconnectOthers });
-    
+  const switchChain = async (chain: ChainType): Promise<void> => {
+    setSelectedChain(chain);
+
     // Emit custom event for network switch
     if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('chainSwitched', { 
-        detail: { chain, timestamp: Date.now() } 
+      window.dispatchEvent(new CustomEvent('chainSwitched', {
+        detail: { chain, timestamp: Date.now() }
       }));
     }
   };
@@ -107,9 +67,7 @@ export const ChainProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       value={{
         selectedChain,
         setSelectedChain,
-        isAptosChain,
-        isEVMChain,
-        walletConnections,
+        walletConnection,
         switchChain,
       }}
     >
