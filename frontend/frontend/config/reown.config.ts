@@ -1,8 +1,8 @@
-import { mainnet, arbitrum, base, polygon } from '@reown/appkit/networks';
+import { base, baseSepolia } from '@reown/appkit/networks';
 import type { AppKitNetwork } from '@reown/appkit/networks';
 
 /**
- * Centralized Reown/WalletConnect Configuration
+ * Centralized Reown/WalletConnect Configuration for Base
  *
  * Single source of truth for all Reown AppKit settings.
  * Used across the application for consistent metadata and network configuration.
@@ -19,7 +19,7 @@ export const REOWN_PROJECT_ID = import.meta.env.VITE_REOWN_PROJECT_ID || '';
  */
 export const REOWN_METADATA = {
   name: 'EarnestPay',
-  description: 'Blockchain payroll and payouts platform - Multi-chain support',
+  description: 'Blockchain payroll and payouts platform on Base',
   url: typeof window !== 'undefined' ? window.location.origin : 'https://earnestpay.com',
   icons: [
     typeof window !== 'undefined'
@@ -29,14 +29,12 @@ export const REOWN_METADATA = {
 };
 
 /**
- * Supported EVM networks
- * Configured for multi-chain payroll operations
+ * Supported Base networks
+ * Configured for Base mainnet and testnet
  */
 export const SUPPORTED_NETWORKS: [AppKitNetwork, ...AppKitNetwork[]] = [
-  mainnet,    // Ethereum Mainnet
-  arbitrum,   // Arbitrum One
-  base,       // Base
-  polygon     // Polygon
+  base,        // Base Mainnet
+  baseSepolia  // Base Sepolia Testnet
 ];
 
 /**
@@ -63,10 +61,8 @@ export const isReownConfigured = () => {
  * Base uses primary RPC with fallback support
  */
 export const NETWORK_TRANSPORTS = {
-  [mainnet.id]: 'https://eth.llamarpc.com',
-  [arbitrum.id]: 'https://arbitrum.llamarpc.com',
   [base.id]: 'https://mainnet.base.org', // Primary Base RPC
-  [polygon.id]: 'https://polygon.llamarpc.com',
+  [baseSepolia.id]: 'https://sepolia.base.org', // Base Sepolia RPC
 } as const;
 
 /**
