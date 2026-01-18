@@ -1,15 +1,23 @@
 import { getExplorerTxUrl, getExplorerAccountUrl as getCentralizedExplorerAccountUrl } from '@/config/networks';
 
-export const NETWORK = import.meta.env.VITE_APP_NETWORK ?? "testnet";
-export const MODULE_ADDRESS = import.meta.env.VITE_MODULE_ADDRESS ??
-  "0x4f5ccbe1c0d287233e5d0bdf4d884c2558dbfa43816f96c4286fbab9f0047e44";
-export const APTOS_API_KEY = import.meta.env.VITE_APTOS_API_KEY;
+// Base network configuration
+export const NETWORK = import.meta.env.VITE_APP_NETWORK ?? "base-sepolia";
+export const CONTRACT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS ?? "";
+
+// Base chain IDs
+export const BASE_MAINNET_CHAIN_ID = 8453;
+export const BASE_SEPOLIA_CHAIN_ID = 84532;
+
+// Get current chain ID based on network
+export const CURRENT_CHAIN_ID = NETWORK === "base" ? BASE_MAINNET_CHAIN_ID : BASE_SEPOLIA_CHAIN_ID;
 
 // Explorer URL helpers - using centralized config
 export const getExplorerTxnUrl = (txnHash: string) => {
-  return getExplorerTxUrl('aptos', txnHash);
+  const chainType = NETWORK === "base" ? "base" : "base-sepolia";
+  return getExplorerTxUrl(chainType, txnHash);
 };
 
 export const getExplorerAccountUrl = (address: string) => {
-  return getCentralizedExplorerAccountUrl('aptos', address);
+  const chainType = NETWORK === "base" ? "base" : "base-sepolia";
+  return getCentralizedExplorerAccountUrl(chainType, address);
 };
