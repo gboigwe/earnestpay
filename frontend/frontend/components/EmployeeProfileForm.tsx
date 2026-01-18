@@ -12,6 +12,7 @@ import {
 import { upsertEmployee } from "@/lib/employeeCache";
 import { isCompanyRegistered } from "@/utils/payroll";
 import { getSupportedJurisdictions } from "@/utils/payroll";
+import { validateField, aptosAddressValidator, emailValidator } from "@/lib/validation";
 
 type EmployeeProfileFormProps = { onCreated?: () => void };
 
@@ -37,6 +38,41 @@ export function EmployeeProfileForm({ onCreated }: EmployeeProfileFormProps) {
   const [jurisLoading, setJurisLoading] = useState(false);
   const [registered, setRegistered] = useState<boolean>(false);
   const [regLoading, setRegLoading] = useState<boolean>(false);
+
+  // Field-level validation errors
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Validation handlers
+  const validateEmployeeAddress = (value: string) => {
+    const error = validateField(aptosAddressValidator, value);
+    setErrors((prev) => ({ ...prev, employeeAddress: error || "" }));
+  };
+
+  const validateEmail = (value: string) => {
+    const error = validateField(emailValidator, value);
+    setErrors((prev) => ({ ...prev, email: error || "" }));
+  };
+
+  const validateName = (field: string, value: string, label: string) => {
+    if (!value || value.trim().length < 2) {
+      setErrors((prev) => ({ ...prev, [field]: `${label} must be at least 2 characters` }));
+    } else {
+      setErrors((prev) => ({ ...prev, [field]: "" }));
+    }
+  };
+
+  const validateSalary = (value: string) => {
+    if (!value) {
+      setErrors((prev) => ({ ...prev, salary: "Salary is required" }));
+      return;
+    }
+    const num = Number(value);
+    if (isNaN(num) || num <= 0) {
+      setErrors((prev) => ({ ...prev, salary: "Salary must be greater than 0" }));
+    } else {
+      setErrors((prev) => ({ ...prev, salary: "" }));
+    }
+  };
 
   // Autofill defaults
   React.useEffect(() => {
@@ -252,8 +288,18 @@ export function EmployeeProfileForm({ onCreated }: EmployeeProfileFormProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium mb-1">Employee Address *</label>
-          <Input placeholder="0x... employee address" value={employeeAddress} onChange={(e) => setEmployeeAddress(e.target.value)} disabled={!registered || regLoading} />
-          <p className="text-xs text-gray-500 mt-1">Recipient address for payroll and the employee identity key.</p>
+          <Input
+            id="employeeAddress"
+            placeholder="0x... employee address"
+            value={employeeAddress}
+            onChange={(e) => setEmployeeAddress(e.target.value)}
+            onBlur={(e) => validateEmployeeAddress(e.target.value)}
+            error={errors.employeeAddress}
+            disabled={!registered || regLoading}
+          />
+          {!errors.employeeAddress && (
+            <p className="text-xs text-gray-500 mt-1">Recipient address for payroll and the employee identity key.</p>
+          )}
         </div>
         <div>
           <label className="block text-sm font-medium mb-1">Employee ID</label>
@@ -262,16 +308,40 @@ export function EmployeeProfileForm({ onCreated }: EmployeeProfileFormProps) {
 
         <div>
           <label className="block text-sm font-medium mb-1">First Name *</label>
-          <Input placeholder="Deborah" value={firstName} onChange={(e) => setFirstName(e.target.value)} disabled={!registered || regLoading} />
+          <Input
+            id="firstName"
+            placeholder="Deborah"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+            onBlur={(e) => validateName("firstName", e.target.value, "First name")}
+            error={errors.firstName}
+            disabled={!registered || regLoading}
+          />
         </div>
         <div>
           <label className="block text-sm font-medium mb-1">Last Name *</label>
-          <Input placeholder="Martins" value={lastName} onChange={(e) => setLastName(e.target.value)} disabled={!registered || regLoading} />
+          <Input
+            id="lastName"
+            placeholder="Martins"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            onBlur={(e) => validateName("lastName", e.target.value, "Last name")}
+            error={errors.lastName}
+            disabled={!registered || regLoading}
+          />
         </div>
 
         <div>
           <label className="block text-sm font-medium mb-1">Email *</label>
-          <Input placeholder="gboigwe@gmail.com" value={email} onChange={(e) => setEmail(e.target.value)} disabled={!registered || regLoading} />
+          <Input
+            id="email"
+            placeholder="gboigwe@gmail.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            onBlur={(e) => validateEmail(e.target.value)}
+            error={errors.email}
+            disabled={!registered || regLoading}
+          />
         </div>
         <div>
           <label className="block text-sm font-medium mb-1">Role *</label>
@@ -291,11 +361,20 @@ export function EmployeeProfileForm({ onCreated }: EmployeeProfileFormProps) {
 
         <div>
           <label className="block text-sm font-medium mb-1">Department *</label>
-          <Input placeholder="Engineering" value={department} onChange={(e) => setDepartment(e.target.value)} disabled={!registered || regLoading} />
+          <Input
+            id="department"
+            placeholder="Engineering"
+            value={department}
+            onChange={(e) => setDepartment(e.target.value)}
+            onBlur={(e) => validateName("department", e.target.value, "Department")}
+            error={errors.department}
+            disabled={!registered || regLoading}
+          />
         </div>
         <div>
           <label className="block text-sm font-medium mb-1">Monthly Salary (APT) *</label>
           <Input
+            id="salary"
             type="number"
             inputMode="numeric"
             min={1}
@@ -310,9 +389,13 @@ export function EmployeeProfileForm({ onCreated }: EmployeeProfileFormProps) {
               const cleaned = v.replace(/[^0-9.]/g, "");
               setSalary(cleaned);
             }}
+            onBlur={(e) => validateSalary(e.target.value)}
+            error={errors.salary}
             disabled={!registered || regLoading}
           />
-          <p className="text-xs text-gray-500 mt-1">Enter salary in APT. It will be converted to Octas when submitting to the contract.</p>
+          {!errors.salary && (
+            <p className="text-xs text-gray-500 mt-1">Enter salary in APT. It will be converted to Octas when submitting to the contract.</p>
+          )}
         </div>
 
         <div>
