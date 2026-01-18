@@ -13,6 +13,20 @@ export function CompanyRegistration() {
   const [submitting, setSubmitting] = useState(false);
   const [txHash, setTxHash] = useState<string | null>(null);
   const [alreadyRegistered, setAlreadyRegistered] = useState<boolean | null>(null);
+  const [nameError, setNameError] = useState<string>("");
+
+  const validateCompanyName = (value: string) => {
+    const trimmed = value.trim();
+    if (!trimmed) {
+      setNameError("Company name is required");
+    } else if (trimmed.length < 3) {
+      setNameError("Company name must be at least 3 characters");
+    } else if (trimmed.length > 100) {
+      setNameError("Company name must be less than 100 characters");
+    } else {
+      setNameError("");
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -122,17 +136,22 @@ export function CompanyRegistration() {
           Company Name <span className="text-red-500">*</span>
         </label>
         <Input
+          id="companyName"
           placeholder="Enter your company name (e.g. Acme Corp)"
           value={companyName}
           onChange={(e) => setCompanyName(e.target.value)}
+          onBlur={(e) => validateCompanyName(e.target.value)}
+          error={nameError}
           className="text-base py-5"
         />
-        <p className="text-xs text-gray-500 mt-2 flex items-start gap-1">
-          <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-          </svg>
-          <span>This will be stored on-chain and cannot be changed later. Choose carefully!</span>
-        </p>
+        {!nameError && (
+          <p className="text-xs text-gray-500 mt-2 flex items-start gap-1">
+            <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+            </svg>
+            <span>This will be stored on-chain and cannot be changed later. Choose carefully!</span>
+          </p>
+        )}
       </div>
 
       <Button
