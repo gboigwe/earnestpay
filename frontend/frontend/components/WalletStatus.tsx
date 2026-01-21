@@ -87,10 +87,10 @@ export const WalletStatus = () => {
 
       {/* Balance info */}
       {balance && (
-        <div className="flex items-center gap-2 border-l border-gray-700 pl-3">
+        <div className="flex items-center gap-2 border-l border-green-200 pl-3">
           <div className="flex flex-col">
-            <span className="text-xs text-gray-500">Balance</span>
-            <span className="text-sm font-medium text-white">
+            <span className="text-xs text-green-600">Balance</span>
+            <span className="text-sm font-medium text-green-700">
               {parseFloat(formatEther(balance.value)).toFixed(4)} ETH
             </span>
           </div>
