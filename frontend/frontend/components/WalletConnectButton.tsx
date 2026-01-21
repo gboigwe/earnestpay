@@ -28,16 +28,16 @@ export const WalletConnectButton = () => {
   if (isConnected && address) {
     return (
       <div className="flex items-center gap-2">
-        <div className="flex items-center gap-2 px-4 py-2 bg-green-500/10 border border-green-500/30 rounded-lg">
+        <div className="flex items-center gap-2 px-4 py-2 bg-white border border-green-200 rounded-lg shadow-sm">
           <div className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
           </div>
-          <span className="text-sm font-medium text-green-400">
+          <span className="text-sm font-medium text-green-600">
             {formatAddress(address)}
           </span>
           {connector && (
-            <span className="text-xs text-gray-400">
+            <span className="text-xs text-green-500">
               via {connector.name}
             </span>
           )}
@@ -46,7 +46,7 @@ export const WalletConnectButton = () => {
           onClick={handleDisconnect}
           variant="outline"
           size="sm"
-          className="border-red-500/30 hover:bg-red-500/10"
+          className="border-red-200 hover:bg-red-50 text-red-600"
         >
           <LogOut className="w-4 h-4 mr-2" />
           Disconnect
