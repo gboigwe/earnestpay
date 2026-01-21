@@ -108,8 +108,8 @@ export const WalletStatusCompact = () => {
   const chainId = useChainId();
 
   const getChainIcon = () => {
-    if (chainId === base.id) return '🔵';
-    if (chainId === baseSepolia.id) return '🔷';
+    if (chainId === base.id) return '🟢';
+    if (chainId === baseSepolia.id) return '💚';
     return '❓';
   };
 
