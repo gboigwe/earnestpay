@@ -59,13 +59,13 @@ export const WalletStatus = () => {
       </div>
 
       {/* Wallet info */}
-      <div className="flex items-center gap-2 border-l border-gray-700 pl-3">
-        <Wallet className="w-4 h-4 text-gray-400" />
+      <div className="flex items-center gap-2 border-l border-green-200 pl-3">
+        <Wallet className="w-4 h-4 text-green-600" />
         <div className="flex flex-col">
-          <span className="text-xs text-gray-500">
+          <span className="text-xs text-green-600">
             {connector?.name || 'Wallet'}
           </span>
-          <span className="text-sm font-medium text-white">
+          <span className="text-sm font-medium text-green-700">
             {`${address.slice(0, 6)}...${address.slice(-4)}`}
           </span>
         </div>
