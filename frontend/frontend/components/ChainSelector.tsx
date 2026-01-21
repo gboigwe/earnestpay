@@ -199,7 +199,7 @@ export const ChainSelector = () => {
                           <span className="text-green-700 font-medium">{chain.name}</span>
                           {isCurrentNetwork && (
                             <motion.span
-                              className="text-xs px-2 py-0.5 bg-green-500/20 text-green-400 rounded-full"
+                              className="text-xs px-2 py-0.5 bg-green-100 text-green-600 rounded-full"
                               initial={{ scale: 0 }}
                               animate={{ scale: 1 }}
                               transition={{ delay: 0.2, type: "spring" }}
@@ -215,7 +215,7 @@ export const ChainSelector = () => {
                           animate={{ scale: 1, rotate: 0 }}
                           transition={{ type: "spring", stiffness: 500, damping: 25 }}
                         >
-                          <Check className="text-blue-400" size={18} />
+                          <Check className="text-green-600" size={18} />
                         </motion.div>
                       )}
                     </motion.button>
