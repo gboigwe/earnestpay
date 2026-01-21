@@ -44,7 +44,7 @@ export const WalletStatus = () => {
 
   return (
     <motion.div
-      className="flex items-center gap-3 px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg"
+      className="flex items-center gap-3 px-4 py-2 bg-white border border-green-200 rounded-lg"
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.2 }}
