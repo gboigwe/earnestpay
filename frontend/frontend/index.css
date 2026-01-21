@@ -4,38 +4,38 @@
 
 @layer base {
   :root {
-    /* Professional Payroll Theme - Clean, Trustworthy, Modern */
-    --background: 210 20% 98%;
-    --foreground: 215 25% 27%;
+    /* White and Green Theme - Fresh, Clean, Modern */
+    --background: 0 0% 100%;
+    --foreground: 142 76% 20%;
 
     --card: 0 0% 100%;
-    --card-foreground: 215 25% 27%;
+    --card-foreground: 142 76% 20%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 27%;
+    --popover-foreground: 142 76% 20%;
 
-    /* Primary: Professional Blue-Green (Trust & Money) */
-    --primary: 200 70% 45%;
+    /* Primary: Vibrant Green */
+    --primary: 142 71% 45%;
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary: Soft Slate */
-    --secondary: 210 15% 96%;
-    --secondary-foreground: 215 25% 27%;
-    --secondary-text: 215, 16%, 47%;
+    /* Secondary: Dark Green */
+    --secondary: 142 76% 36%;
+    --secondary-foreground: 0 0% 100%;
+    --secondary-text: 142 76% 36%;
 
-    /* Muted: Subtle Gray */
-    --muted: 210 15% 95%;
-    --muted-foreground: 215 15% 50%;
+    /* Muted: Light Green-tinted */
+    --muted: 120 10% 95%;
+    --muted-foreground: 142 71% 25%;
 
-    /* Accent: Success Green (for financial actions) */
+    /* Accent: Green */
     --accent: 142 71% 45%;
     --accent-foreground: 0 0% 100%;
 
-    /* Destructive: Softer Red */
+    /* Destructive: Red */
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    /* Success: Green (for confirmations) */
+    /* Success: Green */
     --success: 142 71% 45%;
     --success-foreground: 0 0% 100%;
 
@@ -43,13 +43,13 @@
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
 
-    /* Info: Blue */
-    --info: 217 91% 60%;
+    /* Info: Green variant */
+    --info: 142 60% 50%;
     --info-foreground: 0 0% 100%;
 
-    --border: 214 20% 88%;
-    --input: 214 20% 92%;
-    --ring: 200 70% 45%;
+    --border: 120 10% 90%;
+    --input: 120 10% 95%;
+    --ring: 142 71% 45%;
 
     --radius: 0.625rem;
   }
