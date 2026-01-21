@@ -72,10 +72,10 @@ export const WalletStatus = () => {
       </div>
 
       {/* Network info */}
-      <div className="flex items-center gap-2 border-l border-gray-700 pl-3">
-        <Network className="w-4 h-4 text-gray-400" />
+      <div className="flex items-center gap-2 border-l border-green-200 pl-3">
+        <Network className="w-4 h-4 text-green-600" />
         <div className="flex flex-col">
-          <span className="text-xs text-gray-500">Network</span>
+          <span className="text-xs text-green-600">Network</span>
           <div className="flex items-center gap-1">
             <span className="text-sm">{chainInfo.icon}</span>
             <span className={`text-sm font-medium ${chainInfo.color}`}>
