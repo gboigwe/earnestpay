@@ -162,14 +162,14 @@ export const ChainSelector = () => {
 
             {/* Dropdown */}
             <motion.div
-              className="absolute top-full mt-2 right-0 w-64 bg-gray-900 border border-gray-800 rounded-xl shadow-xl z-50 overflow-hidden"
+              className="absolute top-full mt-2 right-0 w-64 bg-white border border-green-200 rounded-xl shadow-xl z-50 overflow-hidden"
               initial={{ opacity: 0, y: -10, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -10, scale: 0.95 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
             >
-              <div className="p-3 border-b border-gray-800">
-                <p className="text-xs text-gray-400 font-medium">SELECT BASE NETWORK</p>
+              <div className="p-3 border-b border-green-100">
+                <p className="text-xs text-green-700 font-medium">SELECT BASE NETWORK</p>
               </div>
 
               <div className="p-2">
@@ -184,7 +184,7 @@ export const ChainSelector = () => {
                       disabled={isSwitching}
                       className={`
                         w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200
-                        ${isSelected ? 'bg-blue-500/10 border border-blue-500/30' : 'hover:bg-gray-800 hover:scale-[1.02]'}
+                        ${isSelected ? 'bg-green-50 border border-green-200' : 'hover:bg-green-50 hover:scale-[1.02]'}
                         cursor-pointer
                       `}
                       initial={{ opacity: 0, x: -20 }}
@@ -196,7 +196,7 @@ export const ChainSelector = () => {
                       <span className="text-2xl">{chain.icon}</span>
                       <div className="flex-1 text-left">
                         <div className="flex items-center gap-2">
-                          <span className="text-white font-medium">{chain.name}</span>
+                          <span className="text-green-700 font-medium">{chain.name}</span>
                           {isCurrentNetwork && (
                             <motion.span
                               className="text-xs px-2 py-0.5 bg-green-500/20 text-green-400 rounded-full"
