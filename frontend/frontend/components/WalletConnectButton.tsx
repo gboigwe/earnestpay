@@ -110,7 +110,7 @@ export const WalletConnectButton = () => {
                       setShowConnectors(false);
                     }}
                     disabled={isPending}
-                    className="w-full flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-gray-800 transition-all duration-200 disabled:opacity-50"
+                    className="w-full flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-green-50 transition-all duration-200 disabled:opacity-50"
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.05 }}
