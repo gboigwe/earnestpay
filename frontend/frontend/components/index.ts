@@ -7,6 +7,10 @@
 export { GasFeeDisplay, GasFeeDisplayCompact } from './GasFeeDisplay';
 export { GasEstimator, BatchGasEstimator } from './GasEstimator';
 
+// Transaction components
+export { TransactionConfirmation, TransactionStatusBadge } from './TransactionConfirmation';
+export { TransactionHistoryEnhanced } from './TransactionHistoryEnhanced';
+
 // Wallet components
 export { WalletConnectButton } from './WalletConnectButton';
 export { WalletStatus, WalletStatusCompact } from './WalletStatus';
