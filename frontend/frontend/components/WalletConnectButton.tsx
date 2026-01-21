@@ -142,14 +142,14 @@ export const WalletConnectButton = () => {
                 ))}
               </div>
 
-              <div className="p-3 border-t border-gray-800 bg-gray-800/50">
-                <p className="text-xs text-gray-400">
+              <div className="p-3 border-t border-green-100 bg-green-50">
+                <p className="text-xs text-green-600">
                   New to Ethereum wallets?{' '}
                   <a
                     href="https://ethereum.org/en/wallets/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-400 hover:underline"
+                    className="text-green-700 hover:underline font-medium"
                   >
                     Learn more
                   </a>
