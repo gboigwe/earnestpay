@@ -117,15 +117,15 @@ export const WalletConnectButton = () => {
                     whileHover={{ x: 4 }}
                     whileTap={{ scale: 0.98 }}
                   >
-                    <div className="w-10 h-10 rounded-lg bg-gray-800 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center">
                       {connector.id === 'coinbaseWallet' && (
-                        <span className="text-2xl">🔵</span>
+                        <span className="text-2xl">🟢</span>
                       )}
                       {connector.id === 'walletConnect' && (
-                        <span className="text-2xl">🔗</span>
+                        <span className="text-2xl">💚</span>
                       )}
                       {connector.id === 'injected' && (
-                        <span className="text-2xl">🦊</span>
+                        <span className="text-2xl">🌿</span>
                       )}
                     </div>
                     <div className="flex-1 text-left">
