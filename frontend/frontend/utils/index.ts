@@ -7,5 +7,8 @@
 export * from './gas';
 export * from './contractsOptimized';
 
+// Transaction utilities
+export * from './transactions';
+
 // Original contract utilities (legacy)
 export * from './contracts';
