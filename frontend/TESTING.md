@@ -1,6 +1,6 @@
-# Multi-Chain Testing Suite
+# Base Blockchain Testing Suite
 
-Comprehensive testing documentation for the EarnestPay multi-chain wallet functionality.
+Comprehensive testing documentation for the EarnestPay Base blockchain integration.
 
 ## 📋 Table of Contents
 
@@ -10,22 +10,26 @@ Comprehensive testing documentation for the EarnestPay multi-chain wallet functi
 - [Test Structure](#test-structure)
 - [Writing Tests](#writing-tests)
 - [Coverage](#coverage)
+- [E2E Testing](#e2e-testing)
 - [Troubleshooting](#troubleshooting)
 
 ## 🎯 Overview
 
 The testing suite covers:
 
-- ✅ **Unit Tests**: ChainContext, components, and utilities
-- ✅ **Integration Tests**: Wallet connections, chain switching
-- ✅ **Mock Providers**: Aptos (Petra) and EVM (MetaMask, Wagmi) wallets
+- ✅ **Unit Tests**: Components, hooks, and utilities
+- ✅ **Integration Tests**: Transaction flows, gas estimation
+- ✅ **E2E Tests**: Complete user journeys with Playwright
+- ✅ **Mock Providers**: Wagmi, Viem, and wallet connections
 - ✅ **Coverage Reporting**: Detailed coverage metrics with v8 provider
 
 ### Testing Framework
 
 - **Vitest**: Fast, Vite-native testing framework
 - **Testing Library**: React component testing utilities
+- **Playwright**: Cross-browser E2E testing
 - **jsdom**: Browser environment simulation
+- **Wagmi Mock Connector**: Wallet connection mocking
 
 ## 🚀 Setup
 
@@ -52,7 +56,7 @@ This will install all testing dependencies including:
 
 ## 🧪 Running Tests
 
-### Run All Tests (Watch Mode)
+### Run All Unit Tests (Watch Mode)
 
 ```bash
 npm test
@@ -76,6 +80,22 @@ npm run test:ui
 
 Opens an interactive UI to view and run tests.
 
+### Run E2E Tests
+
+```bash
+# Install Playwright browsers (first time only)
+npx playwright install
+
+# Run E2E tests
+npm run test:e2e
+
+# Run E2E tests with UI
+npm run test:e2e:ui
+
+# Run E2E tests in headed mode
+npm run test:e2e:headed
+```
+
 ### Generate Coverage Report
 
 ```bash
@@ -92,30 +112,71 @@ Generates detailed coverage reports in:
 ```
 frontend/
 ├── __tests__/
-│   ├── components/          # Component unit tests
-│   │   └── ChainSelector.test.tsx
-│   ├── contexts/            # Context unit tests
-│   │   └── ChainContext.test.tsx
-│   ├── integration/         # Integration tests
-│   │   └── wallet-connection.test.tsx
-│   └── mocks/              # Mock utilities
-│       └── wallets.ts
-├── vitest.config.ts        # Vitest configuration
-└── vitest.setup.ts         # Global test setup
+│   └── integration/                    # Integration tests
+│       └── transaction-flow.test.tsx
+├── components/
+│   └── __tests__/                     # Component unit tests
+│       ├── LoadingStates.test.tsx
+│       ├── ErrorStates.test.tsx
+│       └── MobileOptimized.test.tsx
+├── hooks/
+│   └── __tests__/                     # Hook unit tests
+│       ├── useGasEstimation.test.ts
+│       └── useTransactionStatus.test.ts
+├── utils/
+│   └── __tests__/                     # Utility unit tests
+│       ├── transactions.test.ts
+│       ├── gas.test.ts
+│       └── responsive.test.ts
+├── test/
+│   ├── setup.ts                       # Test environment setup
+│   └── utils.tsx                      # Test utilities and mocks
+├── e2e/                               # E2E tests
+│   ├── home.spec.ts
+│   └── wallet.spec.ts
+├── vitest.config.ts                   # Vitest configuration
+├── vitest.setup.ts                    # Global test setup
+└── playwright.config.ts               # Playwright E2E configuration
 ```
 
 ## ✍️ Writing Tests
 
-### Unit Test Example
+### Component Test Example
 
 ```typescript
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { Spinner } from '../LoadingStates';
 
-describe('MyComponent', () => {
-  it('should render correctly', () => {
-    render(<MyComponent />);
-    expect(screen.getByText('Hello')).toBeInTheDocument();
+describe('LoadingStates', () => {
+  it('renders spinner with default size', () => {
+    const { container } = render(<Spinner />);
+    const spinner = container.querySelector('svg');
+    expect(spinner).toBeInTheDocument();
+    expect(spinner).toHaveClass('w-6', 'h-6');
+  });
+});
+```
+
+### Hook Test Example
+
+```typescript
+import { renderHook, waitFor } from '@testing-library/react';
+import { useGasEstimation } from '../useGasEstimation';
+import { TestProviders } from '../../test/utils';
+
+describe('useGasEstimation', () => {
+  it('returns gas estimates', async () => {
+    const gasLimit = BigInt(200000);
+    const { result } = renderHook(
+      () => useGasEstimation(gasLimit),
+      { wrapper: TestProviders }
+    );
+
+    await waitFor(() => {
+      expect(result.current.gasPrices).toBeDefined();
+    });
   });
 });
 ```
@@ -123,38 +184,48 @@ describe('MyComponent', () => {
 ### Integration Test Example
 
 ```typescript
-import { renderHook, act } from '@testing-library/react';
-import { ChainProvider, useChain } from '@/contexts/ChainContext';
+describe('Transaction Flow', () => {
+  it('completes full transaction lifecycle', async () => {
+    // 1. Save transaction
+    saveTransaction(initialTx);
 
-describe('Chain Switching', () => {
-  it('should switch chains', () => {
-    const { result } = renderHook(() => useChain(), {
-      wrapper: ChainProvider,
-    });
+    // 2. Verify it's saved
+    const savedTx = getTransactionByHash(hash);
+    expect(savedTx).toBeDefined();
 
-    act(() => {
-      result.current.setSelectedChain('ethereum');
-    });
+    // 3. Update status
+    updateTransactionStatus(hash, 'confirmed', receipt);
 
-    expect(result.current.selectedChain).toBe('ethereum');
+    // 4. Verify status updated
+    const confirmedTx = getTransactionByHash(hash);
+    expect(confirmedTx?.status).toBe('confirmed');
   });
 });
 ```
 
-### Using Mock Wallets
+### Using Test Utilities
 
 ```typescript
-import { createMockPetraWallet, createMockMetaMaskWallet } from '../mocks/wallets';
+import {
+  TestProviders,
+  MOCK_ADDRESSES,
+  MOCK_TX_HASHES,
+  createMockTransaction,
+  createMockEmployee,
+  mockLocalStorage,
+} from '../../test/utils';
 
-// Mock Aptos wallet
-const mockPetra = createMockPetraWallet();
-vi.mock('@aptos-labs/wallet-adapter-react', () => ({
-  useWallet: () => mockPetra,
-}));
+// Use mock addresses
+const userAddress = MOCK_ADDRESSES.user1;
 
-// Mock EVM wallet
-const mockMetaMask = createMockMetaMaskWallet();
-(global as any).window.ethereum = mockMetaMask;
+// Create mock transaction
+const tx = createMockTransaction({
+  hash: MOCK_TX_HASHES.confirmed,
+  status: 'confirmed',
+});
+
+// Mock localStorage
+global.localStorage = mockLocalStorage() as any;
 ```
 
 ## 📊 Coverage
@@ -196,28 +267,95 @@ coverage: {
 }
 ```
 
+## 🎭 E2E Testing
+
+End-to-end tests verify complete user journeys using Playwright.
+
+### Writing E2E Tests
+
+```typescript
+import { test, expect } from '@playwright/test';
+
+test.describe('Wallet Connection', () => {
+  test('should display connect button', async ({ page }) => {
+    await page.goto('/');
+
+    const connectButton = page.getByRole('button', { name: /connect/i });
+    await expect(connectButton).toBeVisible();
+  });
+
+  test('should handle wallet modal', async ({ page }) => {
+    await page.goto('/');
+
+    const connectButton = page.getByRole('button', { name: /connect/i });
+    await connectButton.click();
+
+    // Wait for modal
+    await page.waitForTimeout(1000);
+    const modal = page.locator('[role="dialog"]');
+    await expect(modal).toBeVisible();
+  });
+});
+```
+
+### Running Specific E2E Tests
+
+```bash
+# Run specific test file
+npx playwright test wallet.spec.ts
+
+# Run on specific browser
+npx playwright test --project=chromium
+
+# Run on mobile viewport
+npx playwright test --project="Mobile Chrome"
+
+# Debug mode
+npx playwright test --debug
+
+# Headed mode with slowdown
+npx playwright test --headed --slow-mo=1000
+```
+
+### E2E Test Best Practices
+
+1. **Use semantic queries**: Prefer `getByRole`, `getByLabel` over selectors
+2. **Wait for elements**: Use `waitFor` instead of fixed timeouts
+3. **Test user flows**: Focus on complete journeys, not individual actions
+4. **Mobile testing**: Include mobile viewport tests
+5. **Accessibility**: Use ARIA roles and labels
+
 ## 🔧 Mock Providers
 
 ### Available Mocks
 
-Located in `__tests__/mocks/wallets.ts`:
+Located in `frontend/test/utils.tsx`:
 
-- **`createMockPetraWallet()`** - Mock Petra wallet (Aptos)
-- **`createMockMetaMaskWallet()`** - Mock MetaMask (EVM)
-- **`createMockAptosWalletAdapter()`** - Mock Aptos adapter
-- **`createMockWagmiAccount()`** - Mock Wagmi account hook
-- **`createMockWagmiDisconnect()`** - Mock disconnect hook
-- **`createMockWagmiSwitchChain()`** - Mock chain switching
-- **`createMockAppKit()`** - Mock Reown AppKit
+- **`TestProviders`** - Wrapper with WagmiProvider and QueryClientProvider
+- **`createMockWagmiConfig()`** - Mock Wagmi configuration
+- **`createMockTransaction()`** - Mock transaction data
+- **`createMockEmployee()`** - Mock employee data
+- **`createMockTxReceipt()`** - Mock transaction receipt
+- **`mockLocalStorage()`** - Mock localStorage
+- **`mockConnectedWallet()`** - Mock wallet connection
 
 ### Mock Usage Example
 
 ```typescript
-import { createMockPetraWallet } from '../mocks/wallets';
+import { TestProviders, MOCK_ADDRESSES, createMockTransaction } from '../../test/utils';
 
-vi.mock('@aptos-labs/wallet-adapter-react', () => ({
-  useWallet: () => createMockPetraWallet(),
-}));
+describe('My Component', () => {
+  it('renders with mocked data', () => {
+    const tx = createMockTransaction({
+      hash: MOCK_TX_HASHES.confirmed,
+      fromAddress: MOCK_ADDRESSES.user1,
+    });
+
+    render(<MyComponent transaction={tx} />, {
+      wrapper: TestProviders,
+    });
+  });
+});
 ```
 
 ## 🐛 Troubleshooting
