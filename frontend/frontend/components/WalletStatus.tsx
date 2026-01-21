@@ -115,21 +115,21 @@ export const WalletStatusCompact = () => {
 
   if (!isConnected || !address) {
     return (
-      <div className="flex items-center gap-2 px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg">
-        <AlertCircle className="w-4 h-4 text-yellow-400" />
-        <span className="text-xs text-gray-400">Disconnected</span>
+      <div className="flex items-center gap-2 px-3 py-2 bg-white border border-yellow-200 rounded-lg">
+        <AlertCircle className="w-4 h-4 text-yellow-600" />
+        <span className="text-xs text-gray-600">Disconnected</span>
       </div>
     );
   }
 
   return (
-    <div className="flex items-center gap-2 px-3 py-2 bg-green-500/10 border border-green-500/30 rounded-lg">
+    <div className="flex items-center gap-2 px-3 py-2 bg-white border border-green-200 rounded-lg">
       <div className="relative flex h-2 w-2">
         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
         <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
       </div>
       <span className="text-sm">{getChainIcon()}</span>
-      <span className="text-xs font-medium text-green-400">
+      <span className="text-xs font-medium text-green-700">
         {`${address.slice(0, 4)}...${address.slice(-4)}`}
       </span>
     </div>
