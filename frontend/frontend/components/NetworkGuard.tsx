@@ -84,14 +84,14 @@ export const NetworkGuard = ({ children, requireMainnet = false }: NetworkGuardP
             )}
           </Button>
 
-          <div className="pt-4 border-t border-gray-800">
-            <p className="text-xs text-gray-500">
+          <div className="pt-4 border-t border-green-100">
+            <p className="text-xs text-green-600">
               Having trouble switching networks?{' '}
               <a
                 href="https://docs.base.org/using-base"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-400 hover:underline"
+                className="text-green-700 hover:underline font-medium"
               >
                 Learn how to add Base to your wallet
               </a>
