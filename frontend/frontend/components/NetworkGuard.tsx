@@ -57,19 +57,19 @@ export const NetworkGuard = ({ children, requireMainnet = false }: NetworkGuardP
         </div>
 
         <div className="space-y-4">
-          <div className="p-4 bg-gray-800 rounded-lg">
-            <p className="text-sm text-gray-300 mb-2">
+          <div className="p-4 bg-green-50 rounded-lg">
+            <p className="text-sm text-green-700 mb-2">
               You're currently connected to an unsupported network.
             </p>
-            <p className="text-sm text-gray-400">
-              Please switch to <span className="text-blue-400 font-semibold">{targetChainName}</span> to use this application.
+            <p className="text-sm text-green-600">
+              Please switch to <span className="text-green-700 font-semibold">{targetChainName}</span> to use this application.
             </p>
           </div>
 
           <Button
             onClick={() => switchChain({ chainId: targetChain.id })}
             disabled={isPending}
-            className="w-full bg-blue-600 hover:bg-blue-700"
+            className="w-full bg-green-600 hover:bg-green-700"
             size="lg"
           >
             {isPending ? (
