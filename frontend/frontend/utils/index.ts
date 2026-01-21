@@ -10,5 +10,8 @@ export * from './contractsOptimized';
 // Transaction utilities
 export * from './transactions';
 
+// Responsive design utilities
+export * from './responsive';
+
 // Original contract utilities (legacy)
 export * from './contracts';
