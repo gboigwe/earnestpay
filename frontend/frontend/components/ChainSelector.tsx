@@ -26,16 +26,16 @@ const CHAINS: Chain[] = [
   {
     id: 'base',
     name: 'Base',
-    icon: '🔵',
+    icon: '🟢',
     chainId: base.id,
-    color: '#0052FF',
+    color: '#22c55e',
   },
   {
     id: 'base-sepolia',
     name: 'Base Sepolia',
-    icon: '🔷',
+    icon: '💚',
     chainId: baseSepolia.id,
-    color: '#0052FF',
+    color: '#16a34a',
   },
 ];
 
