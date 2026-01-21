@@ -31,13 +31,13 @@ export const WalletStatus = () => {
   if (!isConnected || !address) {
     return (
       <motion.div
-        className="flex items-center gap-2 px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg"
+        className="flex items-center gap-2 px-4 py-2 bg-white border border-yellow-200 rounded-lg"
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.2 }}
       >
-        <AlertCircle className="w-4 h-4 text-yellow-400" />
-        <span className="text-sm text-gray-400">Not Connected</span>
+        <AlertCircle className="w-4 h-4 text-yellow-600" />
+        <span className="text-sm text-gray-600">Not Connected</span>
       </motion.div>
     );
   }
