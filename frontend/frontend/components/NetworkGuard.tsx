@@ -120,17 +120,17 @@ export const NetworkWarning = () => {
 
   return (
     <motion.div
-      className="mb-4 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg"
+      className="mb-4 p-4 bg-yellow-50 border border-yellow-300 rounded-lg"
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
     >
       <div className="flex items-start gap-3">
-        <AlertTriangle className="w-5 h-5 text-yellow-500 mt-0.5" />
+        <AlertTriangle className="w-5 h-5 text-yellow-600 mt-0.5" />
         <div className="flex-1">
-          <h3 className="text-sm font-semibold text-yellow-500 mb-1">
+          <h3 className="text-sm font-semibold text-yellow-700 mb-1">
             Wrong Network
           </h3>
-          <p className="text-sm text-gray-300 mb-3">
+          <p className="text-sm text-gray-700 mb-3">
             You're on an unsupported network. Switch to Base or Base Sepolia to continue.
           </p>
           <div className="flex gap-2">
@@ -139,7 +139,7 @@ export const NetworkWarning = () => {
               disabled={isPending}
               size="sm"
               variant="outline"
-              className="border-blue-500/30 hover:bg-blue-500/10"
+              className="border-green-300 hover:bg-green-50 text-green-700"
             >
               {isPending ? 'Switching...' : 'Switch to Base'}
             </Button>
@@ -148,7 +148,7 @@ export const NetworkWarning = () => {
               disabled={isPending}
               size="sm"
               variant="outline"
-              className="border-blue-400/30 hover:bg-blue-400/10"
+              className="border-green-300 hover:bg-green-50 text-green-700"
             >
               {isPending ? 'Switching...' : 'Switch to Base Sepolia'}
             </Button>
