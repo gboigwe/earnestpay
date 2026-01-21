@@ -95,8 +95,8 @@ export const WalletConnectButton = () => {
               exit={{ opacity: 0, y: -10, scale: 0.95 }}
               transition={{ duration: 0.2 }}
             >
-              <div className="p-3 border-b border-gray-800">
-                <p className="text-xs text-gray-400 font-medium">
+              <div className="p-3 border-b border-green-100">
+                <p className="text-xs text-green-700 font-medium">
                   CONNECT WALLET
                 </p>
               </div>
