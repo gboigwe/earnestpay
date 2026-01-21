@@ -18,10 +18,10 @@ export const WalletStatus = () => {
   // Get chain info
   const getChainInfo = () => {
     if (chainId === base.id) {
-      return { name: 'Base', color: 'text-blue-400', icon: '🔵' };
+      return { name: 'Base', color: 'text-green-600', icon: '🟢' };
     }
     if (chainId === baseSepolia.id) {
-      return { name: 'Base Sepolia', color: 'text-blue-300', icon: '🔷' };
+      return { name: 'Base Sepolia', color: 'text-green-500', icon: '💚' };
     }
     return { name: 'Unknown', color: 'text-gray-400', icon: '❓' };
   };
