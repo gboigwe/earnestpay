@@ -101,7 +101,7 @@ export const ChainSelector = () => {
       <motion.button
         onClick={() => setIsOpen(!isOpen)}
         disabled={isSwitching}
-        className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg border border-gray-700 transition-all duration-300 disabled:opacity-50"
+        className="flex items-center gap-2 px-4 py-2 bg-white hover:bg-green-50 rounded-lg border border-green-200 transition-all duration-300 disabled:opacity-50"
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
         transition={{ type: "spring", stiffness: 400, damping: 17 }}
@@ -117,7 +117,7 @@ export const ChainSelector = () => {
           {selectedChain.icon}
         </motion.span>
         <motion.span
-          className="text-white font-medium"
+          className="text-green-700 font-medium"
           key={`name-${selectedChain.id}`}
           initial={{ opacity: 0, x: -10 }}
           animate={{ opacity: 1, x: 0 }}
@@ -133,7 +133,7 @@ export const ChainSelector = () => {
         )}
         {isSwitching ? (
           <motion.div
-            className="w-4 h-4 border-2 border-gray-400 border-t-white rounded-full"
+            className="w-4 h-4 border-2 border-green-300 border-t-green-600 rounded-full"
             animate={{ rotate: 360 }}
             transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
           />
@@ -142,7 +142,7 @@ export const ChainSelector = () => {
             animate={{ rotate: isOpen ? 180 : 0 }}
             transition={{ duration: 0.2 }}
           >
-            <ChevronDown className="text-gray-400" size={16} />
+            <ChevronDown className="text-green-600" size={16} />
           </motion.div>
         )}
       </motion.button>
