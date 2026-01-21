@@ -41,18 +41,18 @@ export const NetworkGuard = ({ children, requireMainnet = false }: NetworkGuardP
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <motion.div
-        className="max-w-md w-full bg-gray-900 border border-yellow-500/30 rounded-xl p-6 shadow-xl"
+        className="max-w-md w-full bg-white border border-yellow-300 rounded-xl p-6 shadow-xl"
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.3 }}
       >
         <div className="flex items-center gap-3 mb-4">
-          <div className="p-3 bg-yellow-500/10 rounded-lg">
-            <AlertTriangle className="w-6 h-6 text-yellow-500" />
+          <div className="p-3 bg-yellow-100 rounded-lg">
+            <AlertTriangle className="w-6 h-6 text-yellow-600" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-white">Wrong Network</h2>
-            <p className="text-sm text-gray-400">Network switch required</p>
+            <h2 className="text-xl font-bold text-green-700">Wrong Network</h2>
+            <p className="text-sm text-gray-600">Network switch required</p>
           </div>
         </div>
 
