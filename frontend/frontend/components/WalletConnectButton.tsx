@@ -129,10 +129,10 @@ export const WalletConnectButton = () => {
                       )}
                     </div>
                     <div className="flex-1 text-left">
-                      <p className="text-white font-medium">
+                      <p className="text-green-700 font-medium">
                         {connector.name}
                       </p>
-                      <p className="text-xs text-gray-400">
+                      <p className="text-xs text-green-600">
                         {connector.id === 'coinbaseWallet' && 'Recommended for Base'}
                         {connector.id === 'walletConnect' && 'Mobile wallets'}
                         {connector.id === 'injected' && 'Browser extension'}
