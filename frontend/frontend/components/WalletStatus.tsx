@@ -18,10 +18,10 @@ export const WalletStatus = () => {
   // Get chain info
   const getChainInfo = () => {
     if (chainId === base.id) {
-      return { name: 'Base', color: 'text-blue-400', icon: '🔵' };
+      return { name: 'Base', color: 'text-green-600', icon: '🟢' };
     }
     if (chainId === baseSepolia.id) {
-      return { name: 'Base Sepolia', color: 'text-blue-300', icon: '🔷' };
+      return { name: 'Base Sepolia', color: 'text-green-500', icon: '💚' };
     }
     return { name: 'Unknown', color: 'text-gray-400', icon: '❓' };
   };
@@ -31,20 +31,20 @@ export const WalletStatus = () => {
   if (!isConnected || !address) {
     return (
       <motion.div
-        className="flex items-center gap-2 px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg"
+        className="flex items-center gap-2 px-4 py-2 bg-white border border-yellow-200 rounded-lg"
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.2 }}
       >
-        <AlertCircle className="w-4 h-4 text-yellow-400" />
-        <span className="text-sm text-gray-400">Not Connected</span>
+        <AlertCircle className="w-4 h-4 text-yellow-600" />
+        <span className="text-sm text-gray-600">Not Connected</span>
       </motion.div>
     );
   }
 
   return (
     <motion.div
-      className="flex items-center gap-3 px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg"
+      className="flex items-center gap-3 px-4 py-2 bg-white border border-green-200 rounded-lg"
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.2 }}
@@ -59,23 +59,23 @@ export const WalletStatus = () => {
       </div>
 
       {/* Wallet info */}
-      <div className="flex items-center gap-2 border-l border-gray-700 pl-3">
-        <Wallet className="w-4 h-4 text-gray-400" />
+      <div className="flex items-center gap-2 border-l border-green-200 pl-3">
+        <Wallet className="w-4 h-4 text-green-600" />
         <div className="flex flex-col">
-          <span className="text-xs text-gray-500">
+          <span className="text-xs text-green-600">
             {connector?.name || 'Wallet'}
           </span>
-          <span className="text-sm font-medium text-white">
+          <span className="text-sm font-medium text-green-700">
             {`${address.slice(0, 6)}...${address.slice(-4)}`}
           </span>
         </div>
       </div>
 
       {/* Network info */}
-      <div className="flex items-center gap-2 border-l border-gray-700 pl-3">
-        <Network className="w-4 h-4 text-gray-400" />
+      <div className="flex items-center gap-2 border-l border-green-200 pl-3">
+        <Network className="w-4 h-4 text-green-600" />
         <div className="flex flex-col">
-          <span className="text-xs text-gray-500">Network</span>
+          <span className="text-xs text-green-600">Network</span>
           <div className="flex items-center gap-1">
             <span className="text-sm">{chainInfo.icon}</span>
             <span className={`text-sm font-medium ${chainInfo.color}`}>
@@ -87,10 +87,10 @@ export const WalletStatus = () => {
 
       {/* Balance info */}
       {balance && (
-        <div className="flex items-center gap-2 border-l border-gray-700 pl-3">
+        <div className="flex items-center gap-2 border-l border-green-200 pl-3">
           <div className="flex flex-col">
-            <span className="text-xs text-gray-500">Balance</span>
-            <span className="text-sm font-medium text-white">
+            <span className="text-xs text-green-600">Balance</span>
+            <span className="text-sm font-medium text-green-700">
               {parseFloat(formatEther(balance.value)).toFixed(4)} ETH
             </span>
           </div>
@@ -108,28 +108,28 @@ export const WalletStatusCompact = () => {
   const chainId = useChainId();
 
   const getChainIcon = () => {
-    if (chainId === base.id) return '🔵';
-    if (chainId === baseSepolia.id) return '🔷';
+    if (chainId === base.id) return '🟢';
+    if (chainId === baseSepolia.id) return '💚';
     return '❓';
   };
 
   if (!isConnected || !address) {
     return (
-      <div className="flex items-center gap-2 px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg">
-        <AlertCircle className="w-4 h-4 text-yellow-400" />
-        <span className="text-xs text-gray-400">Disconnected</span>
+      <div className="flex items-center gap-2 px-3 py-2 bg-white border border-yellow-200 rounded-lg">
+        <AlertCircle className="w-4 h-4 text-yellow-600" />
+        <span className="text-xs text-gray-600">Disconnected</span>
       </div>
     );
   }
 
   return (
-    <div className="flex items-center gap-2 px-3 py-2 bg-green-500/10 border border-green-500/30 rounded-lg">
+    <div className="flex items-center gap-2 px-3 py-2 bg-white border border-green-200 rounded-lg">
       <div className="relative flex h-2 w-2">
         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
         <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
       </div>
       <span className="text-sm">{getChainIcon()}</span>
-      <span className="text-xs font-medium text-green-400">
+      <span className="text-xs font-medium text-green-700">
         {`${address.slice(0, 4)}...${address.slice(-4)}`}
       </span>
     </div>

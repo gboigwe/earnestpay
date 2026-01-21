@@ -28,16 +28,16 @@ export const WalletConnectButton = () => {
   if (isConnected && address) {
     return (
       <div className="flex items-center gap-2">
-        <div className="flex items-center gap-2 px-4 py-2 bg-green-500/10 border border-green-500/30 rounded-lg">
+        <div className="flex items-center gap-2 px-4 py-2 bg-white border border-green-200 rounded-lg shadow-sm">
           <div className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
           </div>
-          <span className="text-sm font-medium text-green-400">
+          <span className="text-sm font-medium text-green-600">
             {formatAddress(address)}
           </span>
           {connector && (
-            <span className="text-xs text-gray-400">
+            <span className="text-xs text-green-500">
               via {connector.name}
             </span>
           )}
@@ -46,7 +46,7 @@ export const WalletConnectButton = () => {
           onClick={handleDisconnect}
           variant="outline"
           size="sm"
-          className="border-red-500/30 hover:bg-red-500/10"
+          className="border-red-200 hover:bg-red-50 text-red-600"
         >
           <LogOut className="w-4 h-4 mr-2" />
           Disconnect
@@ -60,7 +60,7 @@ export const WalletConnectButton = () => {
       <Button
         onClick={() => setShowConnectors(!showConnectors)}
         disabled={isPending}
-        className="bg-blue-600 hover:bg-blue-700"
+        className="bg-green-600 hover:bg-green-700"
       >
         {isPending ? (
           <>
@@ -89,14 +89,14 @@ export const WalletConnectButton = () => {
 
             {/* Connector dropdown */}
             <motion.div
-              className="absolute top-full mt-2 right-0 w-72 bg-gray-900 border border-gray-800 rounded-xl shadow-xl z-50 overflow-hidden"
+              className="absolute top-full mt-2 right-0 w-72 bg-white border border-green-200 rounded-xl shadow-xl z-50 overflow-hidden"
               initial={{ opacity: 0, y: -10, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -10, scale: 0.95 }}
               transition={{ duration: 0.2 }}
             >
-              <div className="p-3 border-b border-gray-800">
-                <p className="text-xs text-gray-400 font-medium">
+              <div className="p-3 border-b border-green-100">
+                <p className="text-xs text-green-700 font-medium">
                   CONNECT WALLET
                 </p>
               </div>
@@ -110,29 +110,29 @@ export const WalletConnectButton = () => {
                       setShowConnectors(false);
                     }}
                     disabled={isPending}
-                    className="w-full flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-gray-800 transition-all duration-200 disabled:opacity-50"
+                    className="w-full flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-green-50 transition-all duration-200 disabled:opacity-50"
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.05 }}
                     whileHover={{ x: 4 }}
                     whileTap={{ scale: 0.98 }}
                   >
-                    <div className="w-10 h-10 rounded-lg bg-gray-800 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center">
                       {connector.id === 'coinbaseWallet' && (
-                        <span className="text-2xl">🔵</span>
+                        <span className="text-2xl">🟢</span>
                       )}
                       {connector.id === 'walletConnect' && (
-                        <span className="text-2xl">🔗</span>
+                        <span className="text-2xl">💚</span>
                       )}
                       {connector.id === 'injected' && (
-                        <span className="text-2xl">🦊</span>
+                        <span className="text-2xl">🌿</span>
                       )}
                     </div>
                     <div className="flex-1 text-left">
-                      <p className="text-white font-medium">
+                      <p className="text-green-700 font-medium">
                         {connector.name}
                       </p>
-                      <p className="text-xs text-gray-400">
+                      <p className="text-xs text-green-600">
                         {connector.id === 'coinbaseWallet' && 'Recommended for Base'}
                         {connector.id === 'walletConnect' && 'Mobile wallets'}
                         {connector.id === 'injected' && 'Browser extension'}
@@ -142,14 +142,14 @@ export const WalletConnectButton = () => {
                 ))}
               </div>
 
-              <div className="p-3 border-t border-gray-800 bg-gray-800/50">
-                <p className="text-xs text-gray-400">
+              <div className="p-3 border-t border-green-100 bg-green-50">
+                <p className="text-xs text-green-600">
                   New to Ethereum wallets?{' '}
                   <a
                     href="https://ethereum.org/en/wallets/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-400 hover:underline"
+                    className="text-green-700 hover:underline font-medium"
                   >
                     Learn more
                   </a>
